@@ -1,0 +1,13 @@
+{
+  "name": "niwa-web-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "niwa-db",
+      "database_id": "c89961a6-3b93-424a-9845-fc9c2fffe2c3"
+    }
+  ]
+}

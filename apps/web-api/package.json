@@ -1,0 +1,27 @@
+{
+  "name": "@niwa/web-api",
+  "version": "0.0.0",
+  "description": "REST API service",
+  "keywords": ["rest-api", "hono"],
+  "license": "ISC",
+  "author": "Hendra Sadewa <me@hendrasadewa.com>",
+  "main": "index.js",
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply niwa-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply niwa-db --remote"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.13.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260822.1",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.125.0"
+  }
+}
