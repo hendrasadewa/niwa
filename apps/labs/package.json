@@ -1,7 +1,12 @@
 {
   "name": "@niwa/labs",
   "version": "0.0.0",
-  "keywords": ["react", "experiments", "labs", "demos"],
+  "keywords": [
+    "react",
+    "experiments",
+    "labs",
+    "demos"
+  ],
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "type": "module",
   "packageManager": "pnpm@10.32.1",
@@ -13,9 +18,11 @@
     "deploy": "vite build && wrangler deploy"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router": "^8.3.0"
+    "react-router": "^8.3.0",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
