@@ -4,6 +4,7 @@ dist
 .wrangler
 .next
 *.local
+*.tsbuildinfo
 .DS_Store
 .docs/
 **/.docs/

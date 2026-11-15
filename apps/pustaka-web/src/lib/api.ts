@@ -1,0 +1,188 @@
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
+  "http://localhost:8787";
+
+export const TOKEN_STORAGE_KEY = "pustaka_auth_token";
+export const USER_STORAGE_KEY = "pustaka_auth_user";
+
+export class ApiError extends Error {
+  status: number;
+  code: string;
+  details?: unknown;
+
+  constructor(
+    status: number,
+    message: string,
+    code = "ApiError",
+    details?: unknown
+  ) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.details = details;
+  }
+}
+
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setOnUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function clearAuthToken(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.localStorage.removeItem(USER_STORAGE_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export interface RequestOptions extends Omit<RequestInit, "body"> {
+  body?: unknown;
+  params?: Record<string, string | number | boolean | undefined | null>;
+  skipAuthRedirect?: boolean;
+}
+
+function buildUrl(
+  endpoint: string,
+  params?: Record<string, string | number | boolean | undefined | null>
+): string {
+  const normalizedPath = endpoint.startsWith("http")
+    ? endpoint
+    : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+
+  if (!params) return normalizedPath;
+
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      searchParams.set(key, String(value));
+    }
+  }
+
+  const queryString = searchParams.toString();
+  return queryString ? `${normalizedPath}?${queryString}` : normalizedPath;
+}
+
+async function request<T>(
+  endpoint: string,
+  options: RequestOptions = {}
+): Promise<T> {
+  const { body, params, headers: customHeaders, skipAuthRedirect, ...rest } =
+    options;
+
+  const url = buildUrl(endpoint, params);
+  const headers = new Headers(customHeaders);
+
+  const token = getAuthToken();
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  let serializedBody: BodyInit | undefined;
+  if (body instanceof FormData || body instanceof Blob) {
+    serializedBody = body;
+  } else if (body !== undefined) {
+    if (!headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
+    serializedBody = JSON.stringify(body);
+  }
+
+  const response = await fetch(url, {
+    ...rest,
+    headers,
+    body: serializedBody,
+  });
+
+  if (response.status === 401 && !skipAuthRedirect && unauthorizedHandler) {
+    unauthorizedHandler();
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+  const payload = isJson ? await response.json().catch(() => null) : null;
+
+  if (!response.ok) {
+    const errorMessage =
+      (payload && typeof payload.message === "string" && payload.message) ||
+      (payload && typeof payload.error === "string" && payload.error) ||
+      `Request failed with status ${response.status}`;
+    const errorCode =
+      (payload && typeof payload.error === "string" && payload.error) ||
+      "HttpError";
+
+    throw new ApiError(
+      response.status,
+      errorMessage,
+      errorCode,
+      payload?.details ?? payload
+    );
+  }
+
+  return payload as T;
+}
+
+export const apiClient = {
+  get: <T>(endpoint: string, options?: Omit<RequestOptions, "method" | "body">) =>
+    request<T>(endpoint, { ...options, method: "GET" }),
+
+  post: <T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, "method" | "body">
+  ) => request<T>(endpoint, { ...options, method: "POST", body }),
+
+  put: <T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, "method" | "body">
+  ) => request<T>(endpoint, { ...options, method: "PUT", body }),
+
+  patch: <T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, "method" | "body">
+  ) => request<T>(endpoint, { ...options, method: "PATCH", body }),
+
+  delete: <T>(
+    endpoint: string,
+    options?: Omit<RequestOptions, "method" | "body">
+  ) => request<T>(endpoint, { ...options, method: "DELETE" }),
+
+  upload: <T>(
+    endpoint: string,
+    formData: FormData,
+    method: "PUT" | "POST" = "PUT",
+    options?: Omit<RequestOptions, "method" | "body">
+  ) => request<T>(endpoint, { ...options, method, body: formData }),
+};
+
+export function getBookCoverUrl(
+  bookId: string,
+  cacheBuster?: string | number | null
+): string {
+  const base = `${API_BASE_URL}/api/v1/books/${encodeURIComponent(bookId)}/cover`;
+  return cacheBuster ? `${base}?v=${encodeURIComponent(String(cacheBuster))}` : base;
+}
