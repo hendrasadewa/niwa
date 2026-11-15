@@ -1,5 +1,7 @@
 import type { ReadingStatus } from "@niwa/pustaka-validators";
 
+export type { ReadingStatus };
+
 export interface User {
   id: string;
   username: string;
