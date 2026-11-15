@@ -18,8 +18,12 @@
     "deploy": "vite build && wrangler deploy"
   },
   "dependencies": {
+    "@niwa/ui": "workspace:*",
+    "@sqlite.org/sqlite-wasm": "3.54.1-build1",
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-query": "^5.107.1",
     "react": "^19.2.8",
+    "react-barcode-scanner": "^4.1.0",
     "react-dom": "^19.2.8",
     "react-router": "^8.3.0",
     "tailwindcss": "^4.3.3"
