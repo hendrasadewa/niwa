@@ -16,6 +16,10 @@ import { apiClient } from "@/lib/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { AppShell } from "@/components/layout/app-shell";
 import { BookCard } from "@/components/books/book-card";
+import {
+  BookGridSkeleton,
+  BookRowSkeleton,
+} from "@/components/books/book-card-skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -167,12 +171,11 @@ export default function BooksCatalogPage() {
         </div>
 
         {booksQuery.isLoading ? (
-          <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Loading library catalog...
-            </p>
-          </div>
+          viewMode === "grid" ? (
+            <BookGridSkeleton count={10} />
+          ) : (
+            <BookRowSkeleton count={5} />
+          )
         ) : books.length === 0 ? (
           <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center">
             <BookOpen className="mb-3 h-10 w-10 text-muted-foreground/60" />

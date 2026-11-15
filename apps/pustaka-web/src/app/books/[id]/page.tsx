@@ -21,6 +21,7 @@ import { ReadingProgressCard } from "@/components/books/reading-progress-card";
 import { BookReviewsSection } from "@/components/books/book-reviews-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function BookDetailPage() {
   const params = useParams<{ id: string }>();
@@ -63,11 +64,16 @@ export default function BookDetailPage() {
         </div>
 
         {bookQuery.isLoading ? (
-          <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Loading book details...
-            </p>
+          <div className="grid gap-8 md:grid-cols-12">
+            <div className="mx-auto w-full max-w-[240px] md:col-span-4 lg:col-span-3">
+              <Skeleton className="aspect-[2/3] w-full rounded-lg" />
+            </div>
+            <div className="space-y-4 md:col-span-8 lg:col-span-9">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-9 w-3/4" />
+              <Skeleton className="h-5 w-1/3" />
+              <Skeleton className="h-44 w-full rounded-xl" />
+            </div>
           </div>
         ) : !book ? (
           <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center">

@@ -116,6 +116,46 @@ function buildUrl(
   return queryString ? `${normalizedPath}?${queryString}` : normalizedPath;
 }
 
+export function formatApiErrorMessage(
+  payload: Record<string, unknown> | null,
+  status: number
+): string {
+  if (!payload) {
+    return `Request failed with status ${status}`;
+  }
+
+  if (typeof payload.message === "string" && payload.message.trim()) {
+    return payload.message;
+  }
+
+  // Handle Hono @hono/zod-validator error shape: { success: false, error: { issues: [...] } }
+  const zodError = payload.error as
+    | { issues?: Array<{ path?: Array<string | number>; message?: string }> }
+    | string
+    | undefined;
+
+  if (
+    zodError &&
+    typeof zodError === "object" &&
+    Array.isArray(zodError.issues) &&
+    zodError.issues.length > 0
+  ) {
+    return zodError.issues
+      .map((issue) => {
+        const field = issue.path?.join(".");
+        return field ? `${field}: ${issue.message}` : issue.message;
+      })
+      .filter(Boolean)
+      .join("; ");
+  }
+
+  if (typeof zodError === "string" && zodError.trim()) {
+    return zodError;
+  }
+
+  return `Request failed with status ${status}`;
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
@@ -153,16 +193,24 @@ async function request<T>(
 
   const contentType = response.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
-  const payload = isJson ? await response.json().catch(() => null) : null;
+  const payload = isJson
+    ? ((await response.json().catch(() => null)) as Record<
+        string,
+        unknown
+      > | null)
+    : null;
 
   if (!response.ok) {
-    const errorMessage =
-      (payload && typeof payload.message === "string" && payload.message) ||
-      (payload && typeof payload.error === "string" && payload.error) ||
-      `Request failed with status ${response.status}`;
+    const errorMessage = formatApiErrorMessage(payload, response.status);
     const errorCode =
       (payload && typeof payload.error === "string" && payload.error) ||
-      "HttpError";
+      (response.status === 400
+        ? "BadRequest"
+        : response.status === 401
+          ? "Unauthorized"
+          : response.status === 403
+            ? "Forbidden"
+            : "HttpError");
 
     throw new ApiError(
       response.status,

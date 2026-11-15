@@ -17,6 +17,10 @@ import { apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { BookCard } from "@/components/books/book-card";
+import {
+  BookGridSkeleton,
+  BookRowSkeleton,
+} from "@/components/books/book-card-skeleton";
 import { ReadingListBookRow } from "@/components/books/reading-list-book-row";
 import { Button } from "@/components/ui/button";
 import {
@@ -154,9 +158,7 @@ export default function DashboardPage() {
           </div>
 
           {readingListQuery.isLoading ? (
-            <div className="flex items-center justify-center rounded-xl border py-12">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
+            <BookRowSkeleton count={2} />
           ) : currentlyReading.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-10 text-center">
@@ -222,9 +224,7 @@ export default function DashboardPage() {
           </div>
 
           {booksQuery.isLoading ? (
-            <div className="flex items-center justify-center rounded-xl border py-12">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
+            <BookGridSkeleton count={5} />
           ) : recentAdditions.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="py-10 text-center text-sm text-muted-foreground">

@@ -3,6 +3,7 @@ dist
 .open-next
 .wrangler
 .next
+next-env.d.ts
 *.local
 *.tsbuildinfo
 .DS_Store
