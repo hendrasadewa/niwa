@@ -4,4 +4,6 @@ dist
 .wrangler
 .next
 *.local
+.DS_Store
 .docs/
+**/.docs/
