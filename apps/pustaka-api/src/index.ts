@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { authRoutes } from "./routes/auth";
 import { booksRoutes } from "./routes/books";
 import { bookshelvesRoutes } from "./routes/bookshelves";
+import { meRoutes } from "./routes/me";
 import { usersRoutes } from "./routes/users";
 import type { AppEnv } from "./types";
 
@@ -25,5 +26,8 @@ app.route("/api/v1", authRoutes);
 // Inventory & Cloudflare R2 Media (/api/v1/bookshelves, /api/v1/books)
 app.route("/api/v1/bookshelves", bookshelvesRoutes);
 app.route("/api/v1/books", booksRoutes);
+
+// Reading Lists & Reading Progress (/api/v1/me)
+app.route("/api/v1/me", meRoutes);
 
 export default app;

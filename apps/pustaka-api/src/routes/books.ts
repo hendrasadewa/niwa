@@ -3,14 +3,15 @@ import {
   bookIdParamSchema,
   bookQuerySchema,
   createBookSchema,
+  createReviewSchema,
   updateBookLocationSchema,
   updateBookSchema,
 } from "@niwa/pustaka-validators";
 import { and, eq, like, or, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
-import { books, bookshelves, createDb } from "../db";
+import { bookReviews, books, bookshelves, createDb, users } from "../db";
 import { authMiddleware } from "../middleware/auth";
-import { requireRole } from "../middleware/rbac";
+import { requirePermission, requireRole } from "../middleware/rbac";
 import type { AppEnv } from "../types";
 
 const ALLOWED_IMAGE_MIME_TYPES: Record<string, string> = {
@@ -467,5 +468,86 @@ booksRoutes.get(
       status: 200,
       headers,
     });
+  }
+);
+
+// GET /api/v1/books/:id/reviews - List reviews for a book (Authenticated Member/Admin)
+booksRoutes.get(
+  "/:id/reviews",
+  authMiddleware,
+  zValidator("param", bookIdParamSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const db = createDb(c.env.DB);
+
+    const [book] = await db
+      .select({ id: books.id })
+      .from(books)
+      .where(eq(books.id, id))
+      .limit(1);
+
+    if (!book) {
+      return c.json({ error: "NotFound", message: "Book not found" }, 404);
+    }
+
+    const reviews = await db
+      .select({
+        id: bookReviews.id,
+        user_id: bookReviews.user_id,
+        username: users.username,
+        book_id: bookReviews.book_id,
+        rating: bookReviews.rating,
+        review_text: bookReviews.review_text,
+      })
+      .from(bookReviews)
+      .innerJoin(users, eq(bookReviews.user_id, users.id))
+      .where(eq(bookReviews.book_id, id));
+
+    return c.json({ reviews });
+  }
+);
+
+// POST /api/v1/books/:id/reviews - Add user review and rating for a book (Member/Admin)
+booksRoutes.post(
+  "/:id/reviews",
+  authMiddleware,
+  requirePermission("reviews:write"),
+  zValidator("param", bookIdParamSchema),
+  zValidator("json", createReviewSchema),
+  async (c) => {
+    const user = c.get("user");
+    const { id } = c.req.valid("param");
+    const { rating, review_text } = c.req.valid("json");
+    const db = createDb(c.env.DB);
+
+    const [book] = await db
+      .select({ id: books.id })
+      .from(books)
+      .where(eq(books.id, id))
+      .limit(1);
+
+    if (!book) {
+      return c.json({ error: "NotFound", message: "Book not found" }, 404);
+    }
+
+    const newReview = {
+      id: crypto.randomUUID(),
+      user_id: user.id,
+      book_id: id,
+      rating,
+      review_text,
+    };
+
+    await db.insert(bookReviews).values(newReview);
+
+    return c.json(
+      {
+        review: {
+          ...newReview,
+          username: user.username,
+        },
+      },
+      201
+    );
   }
 );

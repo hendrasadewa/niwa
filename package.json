@@ -11,6 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:web": "pnpm --filter @niwa/web dev",
     "dev:api": "pnpm --filter @niwa/web-api dev",
+    "dev:pustaka": "pnpm --filter @niwa/pustaka-api dev",
     "dev:labs": "pnpm --filter @niwa/labs dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck"
