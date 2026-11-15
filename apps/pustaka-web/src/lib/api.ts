@@ -1,9 +1,15 @@
+import type { User } from "@/types/api";
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
   "http://localhost:8787";
 
 export const TOKEN_STORAGE_KEY = "pustaka_auth_token";
 export const USER_STORAGE_KEY = "pustaka_auth_user";
+export const TOKEN_COOKIE_NAME = "pustaka_token";
+export const ROLES_COOKIE_NAME = "pustaka_roles";
+
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export class ApiError extends Error {
   status: number;
@@ -43,6 +49,29 @@ export function setAuthToken(token: string): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    document.cookie = `${TOKEN_COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function getStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(USER_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as User;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredUser(user: User): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    const rolesValue = (user.roles || []).join(",");
+    document.cookie = `${ROLES_COOKIE_NAME}=${encodeURIComponent(rolesValue)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
   } catch {
     // ignore storage errors
   }
@@ -53,6 +82,8 @@ export function clearAuthToken(): void {
   try {
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
     window.localStorage.removeItem(USER_STORAGE_KEY);
+    document.cookie = `${TOKEN_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
+    document.cookie = `${ROLES_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
   } catch {
     // ignore storage errors
   }
