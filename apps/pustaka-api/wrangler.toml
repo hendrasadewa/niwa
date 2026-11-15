@@ -1,0 +1,17 @@
+name = "niwa-pustaka-api"
+main = "src/index.ts"
+compatibility_date = "2026-08-22"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+JWT_SECRET = "pustaka-local-dev-jwt-secret-key"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pustaka-db"
+database_id = "00000000-0000-0000-0000-000000000001"
+migrations_dir = "drizzle"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "pustaka-covers"
