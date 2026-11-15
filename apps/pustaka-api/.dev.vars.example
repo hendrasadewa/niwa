@@ -1,0 +1,4 @@
+# Local development secrets for Cloudflare Workers (wrangler dev)
+# Copy this file to .dev.vars and customize your values.
+JWT_SECRET="replace-with-a-secure-random-32-byte-secret"
+ADMIN_EMAIL="admin@example.com"

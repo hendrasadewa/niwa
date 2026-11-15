@@ -18,5 +18,10 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const assignRoleSchema = z.object({
+  role: z.enum(["admin", "member"]),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type AssignRoleInput = z.infer<typeof assignRoleSchema>;
