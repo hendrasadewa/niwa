@@ -1,0 +1,31 @@
+{
+  "name": "@niwa/open-po-api",
+  "version": "0.0.0",
+  "description": "UMKM Pre-Order Management System API",
+  "keywords": ["open-po", "pre-order", "umkm", "hono", "cloudflare-workers"],
+  "license": "ISC",
+  "author": "Hendra Sadewa <me@hendrasadewa.com>",
+  "main": "src/index.ts",
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply open-po-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply open-po-db --remote"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
+    "@niwa/open-po-validators": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.13.3",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260822.1",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.125.0"
+  }
+}
