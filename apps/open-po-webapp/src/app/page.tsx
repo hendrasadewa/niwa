@@ -91,10 +91,10 @@ export default function HomePage() {
             <div className="relative flex-1">
               <PackageSearch className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Have an Order ID? Paste it here to track..."
+                placeholder="Enter Order Code (e.g. DAPU-261118-YVLP) to track..."
                 value={trackingIdInput}
                 onChange={(e) => setTrackingIdInput(e.target.value)}
-                className="pl-9 bg-background"
+                className="pl-9 bg-background font-mono text-sm"
               />
             </div>
             <Button type="submit" className="gap-1.5 shrink-0">
@@ -102,6 +102,15 @@ export default function HomePage() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>
+          <p className="text-xs text-muted-foreground">
+            Ordered as a guest?{" "}
+            <Link
+              href="/track?phone="
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              Find your orders by WhatsApp number
+            </Link>
+          </p>
         </div>
       </section>
 

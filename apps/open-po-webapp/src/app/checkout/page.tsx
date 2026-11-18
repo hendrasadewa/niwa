@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { checkoutOrderSchema } from "@niwa/open-po-validators";
 import {
   CheckCircle2,
   Copy,
   ExternalLink,
+  Hash,
   ImagePlus,
   Loader2,
   MapPin,
@@ -39,6 +41,7 @@ export default function CheckoutPage() {
 
   const [guestName, setGuestName] = React.useState("");
   const [guestWhatsapp, setGuestWhatsapp] = React.useState("");
+  const [customOrderSlug, setCustomOrderSlug] = React.useState("");
   const [customShippingAddress, setCustomShippingAddress] = React.useState<
     string | null
   >(null);
@@ -58,11 +61,31 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!cart.waveId || cart.items.length === 0) return;
 
-    if (!shippingAddress.trim()) {
+    const rawPayload = {
+      wave_id: cart.waveId,
+      slug: customOrderSlug.trim()
+        ? customOrderSlug.trim().toUpperCase()
+        : undefined,
+      shipping_address: shippingAddress.trim(),
+      ...(isAuthenticated
+        ? {}
+        : {
+            guest_name: guestName.trim(),
+            guest_whatsapp: guestWhatsapp.trim(),
+          }),
+      items: cart.items.map((i) => ({
+        wave_product_id: i.waveProductId,
+        quantity: i.quantity,
+      })),
+    };
+
+    const parsed = checkoutOrderSchema.safeParse(rawPayload);
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
       toast({
         variant: "destructive",
-        title: "Shipping address required",
-        description: "Please enter a complete delivery address.",
+        title: "Validation Error",
+        description: firstIssue?.message ?? "Please check your checkout fields.",
       });
       return;
     }
@@ -81,27 +104,14 @@ export default function CheckoutPage() {
     try {
       const res = await apiClient.post<CheckoutResponse>(
         "/api/v1/orders/checkout",
-        {
-          wave_id: cart.waveId,
-          shipping_address: shippingAddress.trim(),
-          ...(isAuthenticated
-            ? {}
-            : {
-                guest_name: guestName.trim(),
-                guest_whatsapp: guestWhatsapp.trim(),
-              }),
-          items: cart.items.map((i) => ({
-            wave_product_id: i.waveProductId,
-            quantity: i.quantity,
-          })),
-        }
+        parsed.data
       );
 
       setCheckoutResult(res);
       clearCart();
       toast({
         title: "Pre-order submitted!",
-        description: `Order ID ${res.order.id} has been created.`,
+        description: `Order Code ${res.order.slug || res.order.id} has been created.`,
       });
     } catch (err) {
       toast({
@@ -121,12 +131,13 @@ export default function CheckoutPage() {
     const file = e.target.files?.[0];
     if (!file || !checkoutResult) return;
 
+    const orderKey = checkoutResult.order.slug || checkoutResult.order.id;
     setIsUploadingReceipt(true);
     try {
       const formData = new FormData();
       formData.append("receipt", file);
       const res = await apiClient.upload<{ payment_receipt_url: string }>(
-        `/api/v1/orders/${checkoutResult.order.id}/receipt`,
+        `/api/v1/orders/${encodeURIComponent(orderKey)}/receipt`,
         formData,
         "PUT"
       );
@@ -151,6 +162,7 @@ export default function CheckoutPage() {
 
   if (checkoutResult) {
     const order = checkoutResult.order;
+    const orderCode = order.slug || order.id;
     return (
       <div className="mx-auto max-w-2xl px-4 py-10 space-y-6">
         <Card className="border-primary/30 shadow-sm">
@@ -162,7 +174,7 @@ export default function CheckoutPage() {
               Pre-Order Reserved!
             </CardTitle>
             <CardDescription>
-              Save your Order ID below to track fulfillment and confirm your
+              Save your Order Code below to track fulfillment and confirm your
               manual transfer payment.
             </CardDescription>
           </CardHeader>
@@ -171,24 +183,29 @@ export default function CheckoutPage() {
             <div className="rounded-xl border bg-muted/50 p-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">
-                  Unique Order Tracking ID
+                  Human-Readable Order Code
                 </p>
-                <p className="font-mono text-sm font-bold break-all">
-                  {order.id}
+                <p className="font-mono text-lg font-extrabold tracking-wide text-primary">
+                  {orderCode}
                 </p>
+                {order.slug && (
+                  <p className="text-[11px] text-muted-foreground font-mono">
+                    UUID: {order.id}
+                  </p>
+                )}
               </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  navigator.clipboard.writeText(order.id);
-                  toast({ title: "Order ID copied to clipboard" });
+                  navigator.clipboard.writeText(orderCode);
+                  toast({ title: `Order Code ${orderCode} copied!` });
                 }}
                 className="gap-1.5 shrink-0"
               >
                 <Copy className="h-3.5 w-3.5" />
-                Copy ID
+                Copy Code
               </Button>
             </div>
 
@@ -238,7 +255,7 @@ export default function CheckoutPage() {
                   <div className="max-h-56 overflow-hidden rounded-lg border bg-muted flex justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={getOrderReceiptUrl(order.id, receiptBust)}
+                      src={getOrderReceiptUrl(orderCode, receiptBust)}
                       alt="Payment Receipt"
                       className="max-h-52 object-contain"
                     />
@@ -267,8 +284,8 @@ export default function CheckoutPage() {
 
           <CardFooter className="flex flex-col sm:flex-row gap-2 border-t pt-4">
             <Button variant="outline" className="w-full sm:flex-1" asChild>
-              <Link href={`/track/${order.id}`}>
-                Open Live Order Tracking Page
+              <Link href={`/track/${encodeURIComponent(orderCode)}`}>
+                Open Live Order Tracking ({orderCode})
               </Link>
             </Button>
             {isAuthenticated && (
@@ -305,8 +322,10 @@ export default function CheckoutPage() {
           Pre-Order Checkout
         </h1>
         <p className="text-sm text-muted-foreground">
-          Store: <span className="font-medium text-foreground">{cart.storeName}</span>{" "}
-          • Wave: <span className="font-medium text-foreground">{cart.waveName}</span>
+          Store:{" "}
+          <span className="font-medium text-foreground">{cart.storeName}</span>{" "}
+          • Wave:{" "}
+          <span className="font-medium text-foreground">{cart.waveName}</span>
         </p>
       </div>
 
@@ -351,6 +370,10 @@ export default function CheckoutPage() {
                       onChange={(e) => setGuestWhatsapp(e.target.value)}
                       required
                     />
+                    <p className="text-[11px] text-muted-foreground">
+                      Used so you can look up all your guest orders anytime on
+                      the Track Order page.
+                    </p>
                   </div>
                 </div>
               )}
@@ -361,12 +384,32 @@ export default function CheckoutPage() {
                   Complete Shipping Address
                 </label>
                 <Textarea
-                  rows={4}
+                  rows={3}
                   placeholder="Street address, RT/RW, district, city, postal code, and delivery notes..."
                   value={shippingAddress}
                   onChange={(e) => setCustomShippingAddress(e.target.value)}
                   required
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <Hash className="h-3.5 w-3.5" />
+                  Custom Order Code / Slug (Optional)
+                </label>
+                <Input
+                  placeholder="Leave blank to auto-generate (e.g. DAPU-261118-YVLP)"
+                  value={customOrderSlug}
+                  onChange={(e) =>
+                    setCustomOrderSlug(e.target.value.toUpperCase())
+                  }
+                  maxLength={40}
+                  className="font-mono text-sm uppercase"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  3–40 letters, numbers, and hyphens. If left blank, a memorable
+                  short Order Code is generated automatically.
+                </p>
               </div>
 
               <Button

@@ -9,6 +9,7 @@ import {
 } from "@niwa/open-po-validators";
 import {
   ArrowRight,
+  Copy,
   Eye,
   ExternalLink,
   Loader2,
@@ -207,6 +208,7 @@ export default function SellerKanbanOrdersPage() {
                     </div>
                   ) : (
                     columnOrders.map((order) => {
+                      const orderCode = order.slug || order.id;
                       const customerName =
                         order.customer_name || order.guest_name || "Guest";
                       const customerWa =
@@ -217,14 +219,29 @@ export default function SellerKanbanOrdersPage() {
                         <Card key={order.id} className="shadow-xs">
                           <CardHeader className="p-3.5 pb-2 space-y-1">
                             <div className="flex items-center justify-between gap-2">
-                              <Link
-                                href={`/track/${order.id}`}
-                                target="_blank"
-                                className="font-mono text-[11px] text-muted-foreground hover:underline flex items-center gap-1"
-                              >
-                                #{order.id.slice(0, 8)}
-                                <ExternalLink className="h-3 w-3" />
-                              </Link>
+                              <div className="flex items-center gap-1">
+                                <Link
+                                  href={`/track/${encodeURIComponent(orderCode)}`}
+                                  target="_blank"
+                                  className="font-mono text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                                >
+                                  {orderCode}
+                                  <ExternalLink className="h-3 w-3" />
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(orderCode);
+                                    toast({
+                                      title: `Order Code ${orderCode} copied`,
+                                    });
+                                  }}
+                                  className="p-0.5 text-muted-foreground hover:text-foreground"
+                                  title="Copy Order Code"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </button>
+                              </div>
                               <span className="text-[11px] text-muted-foreground">
                                 {formatUnixDateTime(order.created_at)}
                               </span>
@@ -396,7 +413,12 @@ export default function SellerKanbanOrdersPage() {
           <DialogHeader>
             <DialogTitle>Payment Transfer Receipt</DialogTitle>
             <DialogDescription>
-              Order #{receiptPreviewOrder?.id.slice(0, 8)} •{" "}
+              Order{" "}
+              <span className="font-mono font-semibold text-foreground">
+                {receiptPreviewOrder?.slug ||
+                  receiptPreviewOrder?.id.slice(0, 8)}
+              </span>{" "}
+              •{" "}
               {receiptPreviewOrder
                 ? formatCurrencyIDR(receiptPreviewOrder.total_amount)
                 : ""}
@@ -407,7 +429,7 @@ export default function SellerKanbanOrdersPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={getOrderReceiptUrl(
-                  receiptPreviewOrder.id,
+                  receiptPreviewOrder.slug || receiptPreviewOrder.id,
                   receiptPreviewOrder.payment_receipt_url
                 )}
                 alt="Transfer Receipt"

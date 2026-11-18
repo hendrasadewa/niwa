@@ -75,16 +75,20 @@ export interface OrderItemRecord {
 
 export interface OrderRecord {
   id: string;
+  slug: string;
   wave_id: string;
   customer_id: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
   customer_whatsapp?: string | null;
+  customer_display_name?: string | null;
   guest_name: string | null;
   guest_whatsapp: string | null;
-  shipping_address: string;
+  shipping_address?: string;
   total_amount: number;
   payment_receipt_url: string | null;
+  has_payment_receipt?: boolean;
+  tracking_url?: string;
   status: OrderStatus;
   tracking_number: string | null;
   created_at: number;
@@ -116,6 +120,7 @@ export interface TrackingStep {
 
 export interface OrderTrackingDetail {
   order_id: string;
+  order_slug: string;
   status: OrderStatus;
   current_step_index: number;
   timeline: TrackingStep[];
@@ -141,6 +146,12 @@ export interface OrderTrackingDetail {
     whatsapp_contact: string;
   } | null;
   items: OrderItemRecord[];
+}
+
+export interface GuestPhoneLookupResponse {
+  phone: string;
+  total: number;
+  orders: OrderRecord[];
 }
 
 export interface ProductReview {

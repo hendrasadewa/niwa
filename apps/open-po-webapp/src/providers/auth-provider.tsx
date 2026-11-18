@@ -122,11 +122,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const response = await apiClient.get<ProfileResponse>("/api/v1/me", {
-          skipAuthRedirect: true,
-        });
-        syncProfileState(response, activeToken);
-        return response;
+        const [response, storesResponse] = await Promise.all([
+          apiClient.get<ProfileResponse>("/api/v1/me", {
+            skipAuthRedirect: true,
+          }),
+          apiClient
+            .get<{ stores: Store[] }>("/api/v1/me/stores", {
+              skipAuthRedirect: true,
+            })
+            .catch(() => null),
+        ]);
+        const mergedProfile: ProfileResponse = {
+          user: response.user,
+          stores: storesResponse?.stores ?? response.stores ?? [],
+        };
+        syncProfileState(mergedProfile, activeToken);
+        return mergedProfile;
       } catch {
         clearAuthToken();
         setToken(null);
@@ -209,10 +220,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Immediately fetch stores owned by this user
       try {
-        const profile = await apiClient.get<ProfileResponse>("/api/v1/me", {
-          skipAuthRedirect: true,
-        });
-        syncProfileState(profile, response.token);
+        const [profile, storesRes] = await Promise.all([
+          apiClient.get<ProfileResponse>("/api/v1/me", {
+            skipAuthRedirect: true,
+          }),
+          apiClient
+            .get<{ stores: Store[] }>("/api/v1/me/stores", {
+              skipAuthRedirect: true,
+            })
+            .catch(() => null),
+        ]);
+        syncProfileState(
+          {
+            user: profile.user,
+            stores: storesRes?.stores ?? profile.stores ?? [],
+          },
+          response.token
+        );
       } catch {
         // ignore
       }

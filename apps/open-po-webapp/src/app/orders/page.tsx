@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Copy,
   ExternalLink,
   Loader2,
   PackageCheck,
@@ -151,6 +152,7 @@ export default function MemberOrdersPage() {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => {
+            const orderCode = order.slug || order.id;
             const isReceived = order.status === "Received by Customer";
             const canConfirm =
               order.status === "Delivered" || order.status === "On Shipping";
@@ -160,6 +162,22 @@ export default function MemberOrdersPage() {
                 <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b">
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-sm font-bold text-primary">
+                        {orderCode}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => {
+                          navigator.clipboard.writeText(orderCode);
+                          toast({ title: `Order Code ${orderCode} copied` });
+                        }}
+                        title="Copy Order Code"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
                       {order.store && (
                         <Link
                           href={`/stores/${order.store.slug}`}
@@ -176,8 +194,8 @@ export default function MemberOrdersPage() {
                       )}
                     </div>
                     <CardDescription className="text-xs">
-                      Order #{order.id} • Placed{" "}
-                      {formatUnixDateTime(order.created_at)}
+                      Order Code: <span className="font-mono">{orderCode}</span>{" "}
+                      • Placed {formatUnixDateTime(order.created_at)}
                     </CardDescription>
                   </div>
 
@@ -188,8 +206,13 @@ export default function MemberOrdersPage() {
                     >
                       {order.status}
                     </Badge>
-                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1" asChild>
-                      <Link href={`/track/${order.id}`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs gap-1"
+                      asChild
+                    >
+                      <Link href={`/track/${encodeURIComponent(orderCode)}`}>
                         Track & Receipt
                         <ExternalLink className="h-3.5 w-3.5" />
                       </Link>
@@ -225,7 +248,7 @@ export default function MemberOrdersPage() {
                             type="button"
                             size="sm"
                             variant="secondary"
-                            onClick={() => openReviewModal(order.id, item)}
+                            onClick={() => openReviewModal(orderCode, item)}
                             className="h-8 text-xs gap-1.5 shrink-0"
                           >
                             <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
@@ -256,7 +279,7 @@ export default function MemberOrdersPage() {
                           size="sm"
                           disabled={confirmReceivedMutation.isPending}
                           onClick={() =>
-                            confirmReceivedMutation.mutate(order.id)
+                            confirmReceivedMutation.mutate(orderCode)
                           }
                           className="h-8 text-xs gap-1.5"
                         >

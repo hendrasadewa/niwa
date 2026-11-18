@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  ArrowLeft,
   CheckCircle2,
   Circle,
   Copy,
@@ -32,27 +33,29 @@ import { formatCurrencyIDR, formatUnixDateTime } from "@/lib/utils";
 
 export default function OrderTrackingTimelinePage() {
   const params = useParams<{ orderId: string }>();
-  const orderId = params.orderId;
+  const slugOrId = params.orderId;
   const queryClient = useQueryClient();
 
   const [isUploading, setIsUploading] = React.useState(false);
   const [receiptBust, setReceiptBust] = React.useState<number>(1);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["public-order-tracking", orderId],
+    queryKey: ["public-order-tracking", slugOrId],
     queryFn: () =>
       apiClient.get<{ tracking: OrderTrackingDetail }>(
-        `/api/v1/track/${encodeURIComponent(orderId)}`
+        `/api/v1/track/${encodeURIComponent(slugOrId)}`
       ),
-    enabled: Boolean(orderId),
+    enabled: Boolean(slugOrId),
   });
 
   const confirmReceivedMutation = useMutation({
     mutationFn: () =>
-      apiClient.patch(`/api/v1/track/${encodeURIComponent(orderId)}/confirm-received`),
+      apiClient.patch(
+        `/api/v1/track/${encodeURIComponent(slugOrId)}/confirm-received`
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["public-order-tracking", orderId],
+        queryKey: ["public-order-tracking", slugOrId],
       });
       queryClient.invalidateQueries({
         queryKey: ["member-orders"],
@@ -74,13 +77,13 @@ export default function OrderTrackingTimelinePage() {
       const formData = new FormData();
       formData.append("receipt", file);
       await apiClient.upload(
-        `/api/v1/orders/${encodeURIComponent(orderId)}/receipt`,
+        `/api/v1/orders/${encodeURIComponent(slugOrId)}/receipt`,
         formData,
         "PUT"
       );
       setReceiptBust((v) => v + 1);
       await queryClient.invalidateQueries({
-        queryKey: ["public-order-tracking", orderId],
+        queryKey: ["public-order-tracking", slugOrId],
       });
       toast({
         title: "Payment receipt uploaded",
@@ -111,28 +114,42 @@ export default function OrderTrackingTimelinePage() {
   if (isError || !tracking) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center space-y-3">
-        <h1 className="text-xl font-bold">Order ID Not Found</h1>
+        <h1 className="text-xl font-bold">Order Code Not Found</h1>
         <p className="text-sm text-muted-foreground">
-          We couldn&apos;t find an order matching ID{" "}
-          <span className="font-mono">{orderId}</span>.
+          We couldn&apos;t find an order matching Code or ID{" "}
+          <span className="font-mono font-semibold text-foreground">
+            {slugOrId}
+          </span>
+          .
         </p>
         <Button variant="outline" asChild>
-          <Link href="/track">Try Another Order ID</Link>
+          <Link href="/track">Try Order Code or Phone Lookup</Link>
         </Button>
       </div>
     );
   }
 
+  const orderCode = tracking.order_slug || tracking.order_id;
   const canConfirmReceived =
     tracking.status === "Delivered" || tracking.status === "On Shipping";
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      <div>
+        <Button variant="ghost" size="sm" className="gap-1.5 -ml-2" asChild>
+          <Link href="/track">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Order Lookup
+          </Link>
+        </Button>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">
-              Order Status Tracker
+              Order{" "}
+              <span className="font-mono text-primary">{orderCode}</span>
             </h1>
             <Badge variant="default">{tracking.status}</Badge>
           </div>
@@ -150,13 +167,13 @@ export default function OrderTrackingTimelinePage() {
           variant="outline"
           size="sm"
           onClick={() => {
-            navigator.clipboard.writeText(tracking.order_id);
-            toast({ title: "Order ID copied" });
+            navigator.clipboard.writeText(orderCode);
+            toast({ title: `Order Code ${orderCode} copied` });
           }}
           className="gap-1.5 font-mono text-xs"
         >
           <Copy className="h-3.5 w-3.5" />
-          {tracking.order_id.slice(0, 13)}...
+          Copy Code: {orderCode}
         </Button>
       </div>
 
@@ -334,7 +351,7 @@ export default function OrderTrackingTimelinePage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={getOrderReceiptUrl(
-                      tracking.order_id,
+                      orderCode,
                       `${tracking.payment_receipt_url}-${receiptBust}`
                     )}
                     alt="Payment Receipt"

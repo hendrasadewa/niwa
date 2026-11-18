@@ -18,16 +18,16 @@
 - **Store**: `createStoreSchema`, `updateStoreSchema`, `storeQuerySchema`, `idParamSchema`
 - **Product**: `createProductSchema`, `updateProductSchema`, `archiveProductSchema`, `productQuerySchema`
 - **Wave**: `WAVE_STATUSES`, `waveStatusEnum`, `createWaveSchema`, `updateWaveSchema`, `updateWaveStatusSchema`, `upsertWaveProductSchema`, `waveQuerySchema`
-- **Order**: `ORDER_STATUSES`, `orderStatusEnum`, `checkoutOrderSchema`, `updateOrderStatusSchema`, `orderQuerySchema`
+- **Order**: `ORDER_STATUSES`, `orderStatusEnum`, `orderSlugRegex`, `checkoutOrderSchema`, `updateOrderStatusSchema`, `orderQuerySchema`, `guestOrderLookupQuerySchema`
 - **Review**: `createReviewSchema`
 
 ## 3. Application Routes
 - **Public & Storefront**:
-  - `/`: Discovery homepage (Live active pre-order waves, UMKM stores directory, quick Order ID tracking bar)
+  - `/`: Discovery homepage (Live active pre-order waves, UMKM stores directory, quick Order Code tracking bar + guest phone lookup shortcut)
   - `/stores/[slug]`: Storefront page (store header, R2 logo, active pre-order waves with locked prices & remaining quotas, master catalog, cart integration)
   - `/products/[id]`: Product detail & customer reviews page (`GET /api/v1/products/:id`, `GET /api/v1/products/:id/reviews`)
-  - `/checkout`: Guest & Member wave checkout (`POST /api/v1/orders/checkout`), payment instructions, R2 transfer receipt upload (`PUT /api/v1/orders/:id/receipt`), and WhatsApp redirect confirmation
-  - `/track` & `/track/[orderId]`: Public 6-step visual order tracking (`GET /api/v1/track/:id`), receipt upload/preview, and delivery receipt confirmation (`PATCH /api/v1/track/:id/confirm-received`)
+  - `/checkout`: Guest & Member wave checkout (`POST /api/v1/orders/checkout` with optional custom `slug` / Order Code), payment instructions, R2 transfer receipt upload (`PUT /api/v1/orders/:slugOrId/receipt`), and WhatsApp redirect confirmation
+  - `/track` & `/track/[orderId]`: Dual-mode public tracking (`/track` supports both **Track by Order Code (`slug`)** and **Find Orders by WhatsApp / Phone Number** via `GET /api/v1/track/lookup?phone=...`) and 6-step visual status timeline (`GET /api/v1/track/:slugOrId`, `PATCH /api/v1/track/:slugOrId/confirm-received`)
 - **Auth**:
   - `/login`: Customer / Seller sign-in
   - `/register`: Customer / Seller registration
