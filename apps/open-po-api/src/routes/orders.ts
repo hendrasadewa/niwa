@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import {
   ORDER_STATUSES,
   checkoutOrderSchema,
+  guestOrderLookupQuerySchema,
   idParamSchema,
   orderQuerySchema,
   updateOrderStatusSchema,
@@ -22,6 +23,12 @@ import {
 import { authMiddleware, optionalAuthMiddleware } from "../middleware/auth";
 import { checkStoreOwnership } from "../middleware/rbac";
 import type { AppEnv } from "../types";
+import {
+  findOrderByIdOrSlug,
+  generateOrderSlug,
+  lookupOrdersByPhone,
+  normalizePhoneForStorage,
+} from "../utils/order";
 import { streamImageFromR2, uploadImageToR2 } from "../utils/r2";
 
 function formatWhatsAppPhone(phone: string): string {
@@ -33,6 +40,25 @@ function formatWhatsAppPhone(phone: string): string {
 }
 
 export const ordersRoutes = new Hono<AppEnv>();
+
+// GET /api/v1/orders/lookup - Guest / Customer order history lookup by phone/whatsapp number
+ordersRoutes.get(
+  "/lookup",
+  zValidator("query", guestOrderLookupQuerySchema),
+  async (c) => {
+    const { phone, whatsapp, store_id } = c.req.valid("query");
+    const targetPhone = (phone ?? whatsapp)!;
+    const db = createDb(c.env.DB);
+
+    const matchedOrders = await lookupOrdersByPhone(db, targetPhone, store_id);
+
+    return c.json({
+      phone: targetPhone,
+      total: matchedOrders.length,
+      orders: matchedOrders,
+    });
+  }
+);
 
 // POST /api/v1/orders/checkout - Submit an order for an active wave (Member or Guest)
 ordersRoutes.post(
@@ -110,6 +136,48 @@ ordersRoutes.post(
         },
         400
       );
+    }
+
+    // Resolve or generate a human-readable unique order slug (e.g. PO-261118-A7K9)
+    let orderSlug = payload.slug;
+    if (orderSlug) {
+      const [existingSlug] = await db
+        .select({ id: orders.id })
+        .from(orders)
+        .where(eq(orders.slug, orderSlug))
+        .limit(1);
+
+      if (existingSlug) {
+        return c.json(
+          {
+            error: "Conflict",
+            message: `An order with slug '${orderSlug}' already exists`,
+          },
+          409
+        );
+      }
+    } else {
+      const storePrefix =
+        store.slug
+          .split("-")[0]
+          ?.toUpperCase()
+          .replace(/[^A-Z0-9]/g, "")
+          .slice(0, 4) || "PO";
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = generateOrderSlug(storePrefix);
+        const [dup] = await db
+          .select({ id: orders.id })
+          .from(orders)
+          .where(eq(orders.slug, candidate))
+          .limit(1);
+        if (!dup) {
+          orderSlug = candidate;
+          break;
+        }
+      }
+      if (!orderSlug) {
+        orderSlug = generateOrderSlug("PO");
+      }
     }
 
     // Aggregate quantities in case duplicate wave_product_id entries were sent
@@ -223,12 +291,17 @@ ordersRoutes.post(
       });
     }
 
+    const normalizedGuestWhatsapp = payload.guest_whatsapp
+      ? normalizePhoneForStorage(payload.guest_whatsapp)
+      : null;
+
     const newOrder: typeof orders.$inferInsert = {
       id: orderId,
+      slug: orderSlug,
       wave_id: wave.id,
       customer_id: user ? user.id : null,
       guest_name: user ? null : (payload.guest_name ?? null),
-      guest_whatsapp: user ? null : (payload.guest_whatsapp ?? null),
+      guest_whatsapp: user ? null : normalizedGuestWhatsapp,
       shipping_address: shippingAddress,
       total_amount: totalAmount,
       payment_receipt_url: null,
@@ -242,9 +315,11 @@ ordersRoutes.post(
 
     const customerName = user ? user.name : (payload.guest_name ?? "Customer");
     const itemsText = enrichedItems
-      .map((item) => `- ${item.product_name} x${item.quantity} (${item.subtotal})`)
+      .map(
+        (item) => `- ${item.product_name} x${item.quantity} (${item.subtotal})`
+      )
       .join("\n");
-    const waMessage = `Halo ${store.name}, saya ${customerName} ingin konfirmasi pembayaran Pre-Order (${wave.name}).\n\nOrder ID: ${orderId}\n${itemsText}\nTotal: ${totalAmount}`;
+    const waMessage = `Halo ${store.name}, saya ${customerName} ingin konfirmasi pembayaran Pre-Order (${wave.name}).\n\nOrder Code: ${orderSlug}\n${itemsText}\nTotal: ${totalAmount}`;
     const waPhone = formatWhatsAppPhone(store.whatsapp_contact);
     const whatsappRedirectUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMessage)}`;
 
@@ -256,7 +331,7 @@ ordersRoutes.post(
         },
         payment_instructions: store.payment_instructions,
         whatsapp_redirect_url: whatsappRedirectUrl,
-        tracking_url: `/api/v1/track/${orderId}`,
+        tracking_url: `/api/v1/track/${orderSlug}`,
       },
       201
     );
@@ -345,6 +420,7 @@ ordersRoutes.get(
     const baseQuery = db
       .select({
         id: orders.id,
+        slug: orders.slug,
         wave_id: orders.wave_id,
         customer_id: orders.customer_id,
         customer_name: users.name,
@@ -448,7 +524,7 @@ ordersRoutes.get(
   }
 );
 
-// GET /api/v1/orders/:id - Get order details by ID
+// GET /api/v1/orders/:id - Get order details by UUID or slug
 ordersRoutes.get(
   "/:id",
   optionalAuthMiddleware,
@@ -457,12 +533,7 @@ ordersRoutes.get(
     const { id } = c.req.valid("param");
     const db = createDb(c.env.DB);
 
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, id))
-      .limit(1);
-
+    const order = await findOrderByIdOrSlug(db, id);
     if (!order) {
       return c.json({ error: "NotFound", message: "Order not found" }, 404);
     }
@@ -496,7 +567,7 @@ ordersRoutes.get(
       .from(orderItems)
       .innerJoin(waveProducts, eq(orderItems.wave_product_id, waveProducts.id))
       .innerJoin(products, eq(waveProducts.product_id, products.id))
-      .where(eq(orderItems.order_id, id));
+      .where(eq(orderItems.order_id, order.id));
 
     return c.json({
       order: {
@@ -521,12 +592,7 @@ ordersRoutes.patch(
     const { status, tracking_number } = c.req.valid("json");
     const db = createDb(c.env.DB);
 
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, id))
-      .limit(1);
-
+    const order = await findOrderByIdOrSlug(db, id);
     if (!order) {
       return c.json({ error: "NotFound", message: "Order not found" }, 404);
     }
@@ -561,7 +627,7 @@ ordersRoutes.patch(
         status,
         tracking_number: resolvedTrackingNumber,
       })
-      .where(eq(orders.id, id));
+      .where(eq(orders.id, order.id));
 
     return c.json({
       order: {
@@ -573,7 +639,7 @@ ordersRoutes.patch(
   }
 );
 
-// PUT /api/v1/orders/:id/receipt - Upload manual payment receipt to R2
+// PUT /api/v1/orders/:id/receipt - Upload manual payment receipt to R2 (by UUID or slug)
 ordersRoutes.put(
   "/:id/receipt",
   optionalAuthMiddleware,
@@ -582,12 +648,7 @@ ordersRoutes.put(
     const { id } = c.req.valid("param");
     const db = createDb(c.env.DB);
 
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, id))
-      .limit(1);
-
+    const order = await findOrderByIdOrSlug(db, id);
     if (!order) {
       return c.json({ error: "NotFound", message: "Order not found" }, 404);
     }
@@ -609,7 +670,7 @@ ordersRoutes.put(
     await db
       .update(orders)
       .set({ payment_receipt_url: uploadResult.objectKey })
-      .where(eq(orders.id, id));
+      .where(eq(orders.id, order.id));
 
     return c.json({
       order: {
@@ -621,7 +682,7 @@ ordersRoutes.put(
   }
 );
 
-// GET /api/v1/orders/:id/receipt - Stream payment receipt image from R2
+// GET /api/v1/orders/:id/receipt - Stream payment receipt image from R2 (by UUID or slug)
 ordersRoutes.get(
   "/:id/receipt",
   zValidator("param", idParamSchema),
@@ -629,15 +690,7 @@ ordersRoutes.get(
     const { id } = c.req.valid("param");
     const db = createDb(c.env.DB);
 
-    const [order] = await db
-      .select({
-        id: orders.id,
-        payment_receipt_url: orders.payment_receipt_url,
-      })
-      .from(orders)
-      .where(eq(orders.id, id))
-      .limit(1);
-
+    const order = await findOrderByIdOrSlug(db, id);
     if (!order || !order.payment_receipt_url) {
       return c.json(
         { error: "NotFound", message: "Payment receipt image not found" },

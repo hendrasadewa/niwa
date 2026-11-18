@@ -82,6 +82,7 @@ meRoutes.get("/orders", async (c) => {
   const userOrders = await db
     .select({
       id: orders.id,
+      slug: orders.slug,
       wave_id: orders.wave_id,
       customer_id: orders.customer_id,
       shipping_address: orders.shipping_address,

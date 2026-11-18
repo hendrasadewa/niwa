@@ -5,7 +5,6 @@ import { Hono } from "hono";
 import {
   createDb,
   orderItems,
-  orders,
   products,
   reviews,
   waveProducts,
@@ -13,6 +12,7 @@ import {
 import { authMiddleware } from "../middleware/auth";
 import { requirePermission } from "../middleware/rbac";
 import type { AppEnv } from "../types";
+import { findOrderByIdOrSlug } from "../utils/order";
 
 export const reviewsRoutes = new Hono<AppEnv>();
 
@@ -27,12 +27,7 @@ reviewsRoutes.post(
     const { order_id, product_id, rating, comment } = c.req.valid("json");
     const db = createDb(c.env.DB);
 
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, order_id))
-      .limit(1);
-
+    const order = await findOrderByIdOrSlug(db, order_id);
     if (!order) {
       return c.json({ error: "NotFound", message: "Order not found" }, 404);
     }
@@ -78,7 +73,7 @@ reviewsRoutes.post(
       )
       .where(
         and(
-          eq(orderItems.order_id, order_id),
+          eq(orderItems.order_id, order.id),
           eq(waveProducts.product_id, product_id)
         )
       )
@@ -99,7 +94,7 @@ reviewsRoutes.post(
       .from(reviews)
       .where(
         and(
-          eq(reviews.order_id, order_id),
+          eq(reviews.order_id, order.id),
           eq(reviews.product_id, product_id),
           eq(reviews.customer_id, user.id)
         )
@@ -110,7 +105,8 @@ reviewsRoutes.post(
       return c.json(
         {
           error: "Conflict",
-          message: "You have already submitted a review for this product on this order",
+          message:
+            "You have already submitted a review for this product on this order",
         },
         409
       );
@@ -119,7 +115,7 @@ reviewsRoutes.post(
     const newReview = {
       id: crypto.randomUUID(),
       product_id,
-      order_id,
+      order_id: order.id,
       customer_id: user.id,
       rating,
       comment,
@@ -132,6 +128,7 @@ reviewsRoutes.post(
       {
         review: {
           ...newReview,
+          order_slug: order.slug,
           customer_name: user.name,
         },
       },

@@ -33,7 +33,7 @@ All primary keys (`id`) use `TEXT` with UUIDs generated via `crypto.randomUUID()
 - `products`: `id` (TEXT PK), `store_id` (TEXT FK -> `stores.id`), `name` (TEXT), `description` (TEXT), `base_price` (INTEGER), `image_url` (TEXT Nullable), `is_archived` (INTEGER boolean)
 - `pre_order_waves`: `id` (TEXT PK), `store_id` (TEXT FK -> `stores.id`), `name` (TEXT), `start_date` (INTEGER), `end_date` (INTEGER), `status` (TEXT: `'Draft' | 'Active' | 'Closed'`)
 - `wave_products`: `id` (TEXT PK), `wave_id` (TEXT FK -> `pre_order_waves.id`), `product_id` (TEXT FK -> `products.id`), `locked_price` (INTEGER), `quota` (INTEGER Nullable)
-- `orders`: `id` (TEXT PK), `wave_id` (TEXT FK -> `pre_order_waves.id`), `customer_id` (TEXT FK -> `users.id` Nullable), `guest_name` (TEXT Nullable), `guest_whatsapp` (TEXT Nullable), `shipping_address` (TEXT), `total_amount` (INTEGER), `payment_receipt_url` (TEXT Nullable), `status` (TEXT: `'Received' | 'In Preparation' | 'Waiting for Shipment' | 'On Shipping' | 'Delivered' | 'Received by Customer'`), `tracking_number` (TEXT Nullable), `created_at` (INTEGER)
+- `orders`: `id` (TEXT PK), `slug` (TEXT Unique — human-readable order code, e.g. `DAPU-261118-A7K9` or custom slug), `wave_id` (TEXT FK -> `pre_order_waves.id`), `customer_id` (TEXT FK -> `users.id` Nullable), `guest_name` (TEXT Nullable), `guest_whatsapp` (TEXT Nullable), `shipping_address` (TEXT), `total_amount` (INTEGER), `payment_receipt_url` (TEXT Nullable), `status` (TEXT: `'Received' | 'In Preparation' | 'Waiting for Shipment' | 'On Shipping' | 'Delivered' | 'Received by Customer'`), `tracking_number` (TEXT Nullable), `created_at` (INTEGER)
 - `order_items`: `id` (TEXT PK), `order_id` (TEXT FK -> `orders.id`), `wave_product_id` (TEXT FK -> `wave_products.id`), `quantity` (INTEGER), `subtotal` (INTEGER)
 - `reviews`: `id` (TEXT PK), `product_id` (TEXT FK -> `products.id`), `order_id` (TEXT FK -> `orders.id`), `customer_id` (TEXT FK -> `users.id`), `rating` (INTEGER 1-5), `comment` (TEXT), `created_at` (INTEGER)
 
@@ -78,14 +78,16 @@ All request payloads and parameters are validated using `@hono/zod-validator` wi
 - `DELETE /api/v1/waves/:id/products/:wave_product_id`: Remove a product from a draft wave (Store Owner / Admin).
 
 ### Checkout, Orders, Kanban & Tracking (`/api/v1/orders`, `/api/v1/track`)
-- `POST /api/v1/orders/checkout`: Submit a Member or Guest order for an active wave, validate quotas, calculate totals, and generate WhatsApp redirect URL.
+- `POST /api/v1/orders/checkout`: Submit a Member or Guest order for an active wave (with auto-generated or custom `slug`), validate quotas, calculate totals, and generate WhatsApp redirect URL.
+- `GET /api/v1/orders/lookup`: Lookup guest/customer order history by phone number (`?phone=` or `?whatsapp=`, optional `?store_id=`).
 - `GET /api/v1/orders`: List orders for a store/wave (`?store_id=`, `?wave_id=`, `?status=`, `?view=kanban`) (Store Owner / Admin).
-- `GET /api/v1/orders/:id`: Get detailed order record (Store Owner / Order Customer / Admin).
-- `PATCH /api/v1/orders/:id/status`: Advance order status in state machine and optionally record `tracking_number` (Store Owner / Admin).
-- `PUT /api/v1/orders/:id/receipt`: Upload manual payment transfer proof image to R2.
-- `GET /api/v1/orders/:id/receipt`: Stream payment receipt image from R2.
-- `GET /api/v1/track/:id`: Public order tracking timeline by Order ID.
-- `PATCH /api/v1/track/:id/confirm-received`: Confirm delivery receipt (`Delivered` -> `Received by Customer`).
+- `GET /api/v1/orders/:id`: Get detailed order record by Order Slug or UUID (Store Owner / Order Customer / Admin).
+- `PATCH /api/v1/orders/:id/status`: Advance order status in state machine and optionally record `tracking_number` by Order Slug or UUID (Store Owner / Admin).
+- `PUT /api/v1/orders/:id/receipt`: Upload manual payment transfer proof image to R2 by Order Slug or UUID.
+- `GET /api/v1/orders/:id/receipt`: Stream payment receipt image from R2 by Order Slug or UUID.
+- `GET /api/v1/track` & `GET /api/v1/track/lookup`: Lookup guest/customer order history by phone number (`?phone=` or `?whatsapp=`, optional `?store_id=`).
+- `GET /api/v1/track/:id`: Public order tracking timeline by Order Slug (e.g. `DAPU-261118-A7K9`) or UUID.
+- `PATCH /api/v1/track/:id/confirm-received`: Confirm delivery receipt (`Delivered` -> `Received by Customer`) by Order Slug or UUID.
 
 ### Post-Delivery Reviews (`/api/v1/reviews`)
 - `POST /api/v1/reviews`: Submit a 1-5 star rating and comment for a product in an order with status `Received by Customer` (Member / Admin).

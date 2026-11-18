@@ -116,6 +116,7 @@ export const waveProducts = sqliteTable(
 
 export const orders = sqliteTable("orders", {
   id: text("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
   wave_id: text("wave_id")
     .notNull()
     .references(() => preOrderWaves.id, { onDelete: "restrict" }),

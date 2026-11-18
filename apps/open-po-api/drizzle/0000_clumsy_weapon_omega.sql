@@ -10,6 +10,7 @@ CREATE TABLE `order_items` (
 --> statement-breakpoint
 CREATE TABLE `orders` (
 	`id` text PRIMARY KEY NOT NULL,
+	`slug` text NOT NULL,
 	`wave_id` text NOT NULL,
 	`customer_id` text,
 	`guest_name` text,
@@ -24,6 +25,7 @@ CREATE TABLE `orders` (
 	FOREIGN KEY (`customer_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `orders_slug_unique` ON `orders` (`slug`);--> statement-breakpoint
 CREATE TABLE `permissions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`slug` text NOT NULL,

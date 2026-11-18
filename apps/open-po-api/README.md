@@ -83,14 +83,16 @@ pnpm dev:open-po
 - `DELETE /api/v1/waves/:id/products/:wave_product_id`: Remove product from a wave (Store Owner / Admin).
 
 ### Checkout, Orders, Kanban & Public Tracking (`/api/v1/orders`, `/api/v1/track`)
-- `POST /api/v1/orders/checkout`: Submit Member or Guest order for an active wave, enforce quotas, and return store `payment_instructions` + `whatsapp_redirect_url`.
+- `POST /api/v1/orders/checkout`: Submit Member or Guest order for an active wave (with auto-generated human-readable `slug` like `DAPU-261118-A7K9` or custom `slug`), enforce quotas, and return store `payment_instructions` + `whatsapp_redirect_url`.
+- `GET /api/v1/orders/lookup`: Guest/Customer order history lookup by phone/WhatsApp number (`?phone=` or `?whatsapp=`, optional `?store_id=`).
 - `GET /api/v1/orders`: List orders (`?store_id=`, `?wave_id=`, `?status=`, `?view=kanban`) (Store Owner / Admin).
-- `GET /api/v1/orders/:id`: Get detailed order record.
-- `PATCH /api/v1/orders/:id/status`: Advance order status (`Received` -> `In Preparation` -> `Waiting for Shipment` -> `On Shipping` -> `Delivered` -> `Received by Customer`) and record `tracking_number` (Store Owner / Admin).
-- `PUT /api/v1/orders/:id/receipt`: Upload payment transfer receipt image to R2.
-- `GET /api/v1/orders/:id/receipt`: Stream payment receipt image from R2.
-- `GET /api/v1/track/:id`: Public order tracking timeline by Order ID.
-- `PATCH /api/v1/track/:id/confirm-received`: Confirm delivery receipt (`Delivered` -> `Received by Customer`).
+- `GET /api/v1/orders/:id`: Get detailed order record by Order Slug or UUID.
+- `PATCH /api/v1/orders/:id/status`: Advance order status (`Received` -> `In Preparation` -> `Waiting for Shipment` -> `On Shipping` -> `Delivered` -> `Received by Customer`) and record `tracking_number` by Order Slug or UUID (Store Owner / Admin).
+- `PUT /api/v1/orders/:id/receipt`: Upload payment transfer receipt image to R2 by Order Slug or UUID.
+- `GET /api/v1/orders/:id/receipt`: Stream payment receipt image from R2 by Order Slug or UUID.
+- `GET /api/v1/track` & `GET /api/v1/track/lookup`: Guest/Customer order history lookup by phone/WhatsApp number (`?phone=` or `?whatsapp=`, optional `?store_id=`).
+- `GET /api/v1/track/:id`: Public order tracking timeline by Order Slug (e.g. `DAPU-261118-A7K9`) or UUID.
+- `PATCH /api/v1/track/:id/confirm-received`: Confirm delivery receipt (`Delivered` -> `Received by Customer`) by Order Slug or UUID.
 
 ### Post-Delivery Reviews (`/api/v1/reviews`)
 - `POST /api/v1/reviews`: Submit a 1–5 star product review once order status is `Received by Customer` (Member / Admin).
