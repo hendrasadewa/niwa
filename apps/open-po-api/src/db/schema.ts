@@ -1,64 +1,19 @@
 import {
   integer,
-  primaryKey,
   sqliteTable,
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  password_hash: text("password_hash").notNull(),
-  name: text("name").notNull(),
-  whatsapp_number: text("whatsapp_number").notNull(),
+export const customerProfiles = sqliteTable("customer_profiles", {
+  user_id: text("user_id").primaryKey(),
   default_shipping_address: text("default_shipping_address"),
-  created_at: integer("created_at").notNull(),
+  updated_at: integer("updated_at").notNull(),
 });
-
-export const roles = sqliteTable("roles", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description").notNull(),
-});
-
-export const userRoles = sqliteTable(
-  "user_roles",
-  {
-    user_id: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role_id: text("role_id")
-      .notNull()
-      .references(() => roles.id, { onDelete: "cascade" }),
-  },
-  (table) => [primaryKey({ columns: [table.user_id, table.role_id] })]
-);
-
-export const permissions = sqliteTable("permissions", {
-  id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  description: text("description").notNull(),
-});
-
-export const rolePermissions = sqliteTable(
-  "role_permissions",
-  {
-    role_id: text("role_id")
-      .notNull()
-      .references(() => roles.id, { onDelete: "cascade" }),
-    permission_id: text("permission_id")
-      .notNull()
-      .references(() => permissions.id, { onDelete: "cascade" }),
-  },
-  (table) => [primaryKey({ columns: [table.role_id, table.permission_id] })]
-);
 
 export const stores = sqliteTable("stores", {
   id: text("id").primaryKey(),
-  owner_id: text("owner_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+  owner_id: text("owner_id").notNull(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
   description: text("description").notNull(),
@@ -120,9 +75,9 @@ export const orders = sqliteTable("orders", {
   wave_id: text("wave_id")
     .notNull()
     .references(() => preOrderWaves.id, { onDelete: "restrict" }),
-  customer_id: text("customer_id").references(() => users.id, {
-    onDelete: "set null",
-  }),
+  customer_id: text("customer_id"),
+  customer_name: text("customer_name"),
+  customer_whatsapp: text("customer_whatsapp"),
   guest_name: text("guest_name"),
   guest_whatsapp: text("guest_whatsapp"),
   shipping_address: text("shipping_address").notNull(),
@@ -155,9 +110,8 @@ export const reviews = sqliteTable(
     order_id: text("order_id")
       .notNull()
       .references(() => orders.id, { onDelete: "cascade" }),
-    customer_id: text("customer_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    customer_id: text("customer_id").notNull(),
+    customer_name: text("customer_name").notNull(),
     rating: integer("rating").notNull(),
     comment: text("comment").notNull(),
     created_at: integer("created_at").notNull(),
