@@ -79,14 +79,14 @@ All request payloads and parameters are validated using `@hono/zod-validator` wi
 
 ### Checkout, Orders, Kanban & Tracking (`/api/v1/orders`, `/api/v1/track`)
 - `POST /api/v1/orders/checkout`: Submit a Member or Guest order for an active wave (with auto-generated or custom `slug`), validate quotas, calculate totals, and generate WhatsApp redirect URL.
-- `GET /api/v1/orders/lookup`: Lookup guest/customer order history by phone number (`?phone=` or `?whatsapp=`, optional `?store_id=`).
+- `GET /api/v1/orders/lookup`: Lookup guest/customer order history by phone number (`?phone=` or `?whatsapp=`, optional `?store_id=`). Masks PII for unauthenticated guests (`is_pii_masked: true`), unlocks PII for the authenticated owner, and returns `403 Forbidden` if a logged-in user queries another user's phone number.
 - `GET /api/v1/orders`: List orders for a store/wave (`?store_id=`, `?wave_id=`, `?status=`, `?view=kanban`) (Store Owner / Admin).
-- `GET /api/v1/orders/:id`: Get detailed order record by Order Slug or UUID (Store Owner / Order Customer / Admin).
+- `GET /api/v1/orders/:id`: Get detailed unmasked order record by Order Slug or UUID (Authenticated Order Owner / Store Owner / Admin only; returns `403 Forbidden` for other logged-in users).
 - `PATCH /api/v1/orders/:id/status`: Advance order status in state machine and optionally record `tracking_number` by Order Slug or UUID (Store Owner / Admin).
-- `PUT /api/v1/orders/:id/receipt`: Upload manual payment transfer proof image to R2 by Order Slug or UUID.
-- `GET /api/v1/orders/:id/receipt`: Stream payment receipt image from R2 by Order Slug or UUID.
-- `GET /api/v1/track` & `GET /api/v1/track/lookup`: Lookup guest/customer order history by phone number (`?phone=` or `?whatsapp=`, optional `?store_id=`).
-- `GET /api/v1/track/:id`: Public order tracking timeline by Order Slug (e.g. `DAPU-261118-A7K9`) or UUID.
+- `PUT /api/v1/orders/:id/receipt`: Upload manual payment transfer proof image to R2 by Order Slug or UUID (blocks other logged-in users with `403 Forbidden`).
+- `GET /api/v1/orders/:id/receipt`: Stream payment receipt image from R2 by Order Slug or UUID (Authenticated Order Owner / Store Owner / Admin only).
+- `GET /api/v1/track` & `GET /api/v1/track/lookup`: Lookup guest/customer order history by phone number (`?phone=` or `?whatsapp=`, optional `?store_id=`) with guest PII masking and cross-user protection.
+- `GET /api/v1/track/:id`: Public order tracking timeline by Order Slug (e.g. `DAPU-261118-A7K9`) or UUID. Masks PII (`customer_display_name`, `whatsapp_number`, `shipping_address`, `payment_receipt_url`) when unauthenticated (`is_pii_masked: true`), unlocks PII when logged in as the order/store owner (`is_pii_masked: false`), and blocks other logged-in users with `403 Forbidden`.
 - `PATCH /api/v1/track/:id/confirm-received`: Confirm delivery receipt (`Delivered` -> `Received by Customer`) by Order Slug or UUID.
 
 ### Post-Delivery Reviews (`/api/v1/reviews`)

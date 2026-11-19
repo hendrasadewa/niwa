@@ -24,12 +24,13 @@ import { authMiddleware, optionalAuthMiddleware } from "../middleware/auth";
 import { checkStoreOwnership } from "../middleware/rbac";
 import type { AppEnv } from "../types";
 import {
+  canUserAccessOrder,
   findOrderByIdOrSlug,
   generateOrderSlug,
-  lookupOrdersByPhone,
   normalizePhoneForStorage,
 } from "../utils/order";
 import { streamImageFromR2, uploadImageToR2 } from "../utils/r2";
+import { handlePhoneOrderLookup } from "./track";
 
 function formatWhatsAppPhone(phone: string): string {
   const digits = phone.replace(/[^0-9]/g, "");
@@ -42,21 +43,14 @@ function formatWhatsAppPhone(phone: string): string {
 export const ordersRoutes = new Hono<AppEnv>();
 
 // GET /api/v1/orders/lookup - Guest / Customer order history lookup by phone/whatsapp number
+// Masks PII when unauthenticated; unlocks PII when logged in as owner; blocks looking up other users' phone numbers when logged in
 ordersRoutes.get(
   "/lookup",
+  optionalAuthMiddleware,
   zValidator("query", guestOrderLookupQuerySchema),
   async (c) => {
-    const { phone, whatsapp, store_id } = c.req.valid("query");
-    const targetPhone = (phone ?? whatsapp)!;
-    const db = createDb(c.env.DB);
-
-    const matchedOrders = await lookupOrdersByPhone(db, targetPhone, store_id);
-
-    return c.json({
-      phone: targetPhone,
-      total: matchedOrders.length,
-      orders: matchedOrders,
-    });
+    const query = c.req.valid("query");
+    return handlePhoneOrderLookup(c, query);
   }
 );
 
@@ -524,12 +518,13 @@ ordersRoutes.get(
   }
 );
 
-// GET /api/v1/orders/:id - Get order details by UUID or slug
+// GET /api/v1/orders/:id - Get full unmasked order details by UUID or slug (Authenticated Order Owner / Store Owner / Admin only)
 ordersRoutes.get(
   "/:id",
-  optionalAuthMiddleware,
+  authMiddleware,
   zValidator("param", idParamSchema),
   async (c) => {
+    const user = c.get("user")!;
     const { id } = c.req.valid("param");
     const db = createDb(c.env.DB);
 
@@ -552,6 +547,17 @@ ordersRoutes.get(
           .limit(1)
       : [undefined];
 
+    if (!canUserAccessOrder(user, order, store?.owner_id)) {
+      return c.json(
+        {
+          error: "Forbidden",
+          message:
+            "You do not have permission to view another customer's order",
+        },
+        403
+      );
+    }
+
     const items = await db
       .select({
         id: orderItems.id,
@@ -572,6 +578,7 @@ ordersRoutes.get(
     return c.json({
       order: {
         ...order,
+        is_pii_masked: false,
         wave: wave ?? null,
         store: store ?? null,
         items,
@@ -645,12 +652,50 @@ ordersRoutes.put(
   optionalAuthMiddleware,
   zValidator("param", idParamSchema),
   async (c) => {
+    const user = c.get("user");
     const { id } = c.req.valid("param");
     const db = createDb(c.env.DB);
 
     const order = await findOrderByIdOrSlug(db, id);
     if (!order) {
       return c.json({ error: "NotFound", message: "Order not found" }, 404);
+    }
+
+    const [wave] = await db
+      .select({ store_id: preOrderWaves.store_id })
+      .from(preOrderWaves)
+      .where(eq(preOrderWaves.id, order.wave_id))
+      .limit(1);
+
+    const [store] = wave
+      ? await db
+          .select({ owner_id: stores.owner_id })
+          .from(stores)
+          .where(eq(stores.id, wave.store_id))
+          .limit(1)
+      : [undefined];
+
+    // Prevent a logged-in user from uploading a receipt to another user's order
+    if (user && !canUserAccessOrder(user, order, store?.owner_id)) {
+      return c.json(
+        {
+          error: "Forbidden",
+          message:
+            "You do not have permission to upload a payment receipt for another customer's order",
+        },
+        403
+      );
+    }
+
+    // If order belongs to a registered member, require the owner/seller/admin to be logged in
+    if (order.customer_id && !user) {
+      return c.json(
+        {
+          error: "Unauthorized",
+          message: "Please log in to upload a payment receipt for a member order",
+        },
+        401
+      );
     }
 
     const uploadResult = await uploadImageToR2(c, {
@@ -674,19 +719,24 @@ ordersRoutes.put(
 
     return c.json({
       order: {
-        ...order,
-        payment_receipt_url: uploadResult.objectKey,
+        id: order.id,
+        slug: order.slug,
+        status: order.status,
+        has_payment_receipt: true,
+        payment_receipt_url: user ? uploadResult.objectKey : null,
       },
-      payment_receipt_url: uploadResult.objectKey,
+      payment_receipt_url: user ? uploadResult.objectKey : null,
     });
   }
 );
 
-// GET /api/v1/orders/:id/receipt - Stream payment receipt image from R2 (by UUID or slug)
+// GET /api/v1/orders/:id/receipt - Stream payment receipt image from R2 (Authenticated Order Owner / Store Owner / Admin only)
 ordersRoutes.get(
   "/:id/receipt",
+  authMiddleware,
   zValidator("param", idParamSchema),
   async (c) => {
+    const user = c.get("user")!;
     const { id } = c.req.valid("param");
     const db = createDb(c.env.DB);
 
@@ -695,6 +745,31 @@ ordersRoutes.get(
       return c.json(
         { error: "NotFound", message: "Payment receipt image not found" },
         404
+      );
+    }
+
+    const [wave] = await db
+      .select({ store_id: preOrderWaves.store_id })
+      .from(preOrderWaves)
+      .where(eq(preOrderWaves.id, order.wave_id))
+      .limit(1);
+
+    const [store] = wave
+      ? await db
+          .select({ owner_id: stores.owner_id })
+          .from(stores)
+          .where(eq(stores.id, wave.store_id))
+          .limit(1)
+      : [undefined];
+
+    if (!canUserAccessOrder(user, order, store?.owner_id)) {
+      return c.json(
+        {
+          error: "Forbidden",
+          message:
+            "You do not have permission to view another customer's payment receipt",
+        },
+        403
       );
     }
 
