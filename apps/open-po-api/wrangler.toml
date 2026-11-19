@@ -5,6 +5,12 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 JWT_SECRET = "open-po-local-dev-jwt-secret-key"
+AUTH_API_URL = "http://127.0.0.1:8788"
+
+# Production Cloudflare Service Binding (enable once niwa-auth-api is deployed):
+# [[services]]
+# binding = "AUTH_API"
+# service = "niwa-auth-api"
 
 [[d1_databases]]
 binding = "DB"

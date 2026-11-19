@@ -2,18 +2,24 @@ import { zValidator } from "@hono/zod-validator";
 import { updateProfileSchema } from "@niwa/open-po-validators";
 import { desc, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import {
   createDb,
+  customerProfiles,
   orderItems,
   orders,
   preOrderWaves,
   products,
   stores,
-  users,
   waveProducts,
 } from "../db";
 import { authMiddleware } from "../middleware/auth";
-import type { AppEnv } from "../types";
+import type { AppEnv, AuthUser } from "../types";
+import {
+  fetchAuthApi,
+  mapAuthApiUserToOpenPoUser,
+  type AuthApiResponsePayload,
+} from "../utils/auth-client";
 
 export const meRoutes = new Hono<AppEnv>();
 
@@ -35,28 +41,91 @@ meRoutes.get("/", async (c) => {
   });
 });
 
-// PUT /api/v1/me - Update customer/seller profile
+// PUT /api/v1/me - Update customer/seller profile (identity delegated to auth-api, address stored locally)
 meRoutes.put("/", zValidator("json", updateProfileSchema), async (c) => {
   const user = c.get("user")!;
+  const authToken = c.get("authToken")!;
   const updates = c.req.valid("json");
   const db = createDb(c.env.DB);
 
-  const updatedFields = {
-    name: updates.name ?? user.name,
-    whatsapp_number: updates.whatsapp_number ?? user.whatsapp_number,
-    default_shipping_address:
-      updates.default_shipping_address !== undefined
-        ? updates.default_shipping_address
-        : user.default_shipping_address,
-  };
+  let updatedUser: AuthUser = { ...user };
+  let refreshedToken: string | undefined;
 
-  await db.update(users).set(updatedFields).where(eq(users.id, user.id));
+  if (updates.name !== undefined || updates.whatsapp_number !== undefined) {
+    let authRes: Response;
+    try {
+      authRes = await fetchAuthApi(c.env, "/api/v1/auth/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          ...(updates.name !== undefined ? { name: updates.name } : {}),
+          ...(updates.whatsapp_number !== undefined
+            ? { whatsapp_number: updates.whatsapp_number }
+            : {}),
+        }),
+      });
+    } catch {
+      return c.json(
+        {
+          error: "BadGateway",
+          message: "Unable to reach authentication service",
+        },
+        502
+      );
+    }
+
+    const authData = (await authRes
+      .json()
+      .catch(() => null)) as AuthApiResponsePayload | null;
+
+    if (!authRes.ok || !authData?.user) {
+      return c.json(
+        authData ?? {
+          error: "AuthError",
+          message: "Failed to update user identity in authentication service",
+        },
+        authRes.status as ContentfulStatusCode
+      );
+    }
+
+    updatedUser = mapAuthApiUserToOpenPoUser(
+      authData.user,
+      user.default_shipping_address
+    );
+    refreshedToken = authData.token;
+  }
+
+  if (updates.default_shipping_address !== undefined) {
+    const nextAddress = updates.default_shipping_address;
+    const now = Math.floor(Date.now() / 1000);
+
+    await db
+      .insert(customerProfiles)
+      .values({
+        user_id: user.id,
+        default_shipping_address: nextAddress,
+        updated_at: now,
+      })
+      .onConflictDoUpdate({
+        target: customerProfiles.user_id,
+        set: {
+          default_shipping_address: nextAddress,
+          updated_at: now,
+        },
+      });
+
+    updatedUser = {
+      ...updatedUser,
+      default_shipping_address: nextAddress,
+    };
+  }
 
   return c.json({
-    user: {
-      ...user,
-      ...updatedFields,
-    },
+    user: updatedUser,
+    ...(refreshedToken ? { token: refreshedToken } : {}),
   });
 });
 
@@ -85,6 +154,8 @@ meRoutes.get("/orders", async (c) => {
       slug: orders.slug,
       wave_id: orders.wave_id,
       customer_id: orders.customer_id,
+      customer_name: orders.customer_name,
+      customer_whatsapp: orders.customer_whatsapp,
       shipping_address: orders.shipping_address,
       total_amount: orders.total_amount,
       payment_receipt_url: orders.payment_receipt_url,

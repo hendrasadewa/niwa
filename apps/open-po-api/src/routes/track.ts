@@ -14,7 +14,6 @@ import {
   preOrderWaves,
   products,
   stores,
-  users,
   waveProducts,
 } from "../db";
 import { optionalAuthMiddleware } from "../middleware/auth";
@@ -152,22 +151,10 @@ trackRoutes.get(
       );
     }
 
-    let rawCustomerName = order.guest_name ?? "Customer";
-    let rawCustomerPhone = order.guest_whatsapp ?? null;
-    if (order.customer_id) {
-      const [customer] = await db
-        .select({
-          name: users.name,
-          whatsapp_number: users.whatsapp_number,
-        })
-        .from(users)
-        .where(eq(users.id, order.customer_id))
-        .limit(1);
-      if (customer) {
-        rawCustomerName = customer.name;
-        rawCustomerPhone = customer.whatsapp_number;
-      }
-    }
+    const rawCustomerName =
+      order.customer_name ?? order.guest_name ?? "Customer";
+    const rawCustomerPhone =
+      order.customer_whatsapp ?? order.guest_whatsapp ?? null;
 
     const items = await db
       .select({

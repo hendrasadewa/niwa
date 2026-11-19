@@ -8,7 +8,7 @@ import {
 } from "@niwa/open-po-validators";
 import { and, desc, eq, like, or, sql, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
-import { createDb, products, reviews, stores, users } from "../db";
+import { createDb, products, reviews, stores } from "../db";
 import { authMiddleware } from "../middleware/auth";
 import { checkStoreOwnership } from "../middleware/rbac";
 import type { AppEnv } from "../types";
@@ -348,13 +348,12 @@ productsRoutes.get(
         product_id: reviews.product_id,
         order_id: reviews.order_id,
         customer_id: reviews.customer_id,
-        customer_name: users.name,
+        customer_name: reviews.customer_name,
         rating: reviews.rating,
         comment: reviews.comment,
         created_at: reviews.created_at,
       })
       .from(reviews)
-      .innerJoin(users, eq(reviews.customer_id, users.id))
       .where(eq(reviews.product_id, id))
       .orderBy(desc(reviews.created_at));
 

@@ -17,7 +17,6 @@ import {
   preOrderWaves,
   products,
   stores,
-  users,
   waveProducts,
 } from "../db";
 import { authMiddleware, optionalAuthMiddleware } from "../middleware/auth";
@@ -288,12 +287,17 @@ ordersRoutes.post(
     const normalizedGuestWhatsapp = payload.guest_whatsapp
       ? normalizePhoneForStorage(payload.guest_whatsapp)
       : null;
+    const normalizedCustomerWhatsapp = user?.whatsapp_number
+      ? normalizePhoneForStorage(user.whatsapp_number)
+      : null;
 
     const newOrder: typeof orders.$inferInsert = {
       id: orderId,
       slug: orderSlug,
       wave_id: wave.id,
       customer_id: user ? user.id : null,
+      customer_name: user ? user.name : null,
+      customer_whatsapp: user ? normalizedCustomerWhatsapp : null,
       guest_name: user ? null : (payload.guest_name ?? null),
       guest_whatsapp: user ? null : normalizedGuestWhatsapp,
       shipping_address: shippingAddress,
@@ -417,9 +421,8 @@ ordersRoutes.get(
         slug: orders.slug,
         wave_id: orders.wave_id,
         customer_id: orders.customer_id,
-        customer_name: users.name,
-        customer_email: users.email,
-        customer_whatsapp: users.whatsapp_number,
+        customer_name: orders.customer_name,
+        customer_whatsapp: orders.customer_whatsapp,
         guest_name: orders.guest_name,
         guest_whatsapp: orders.guest_whatsapp,
         shipping_address: orders.shipping_address,
@@ -436,7 +439,6 @@ ordersRoutes.get(
       })
       .from(orders)
       .innerJoin(preOrderWaves, eq(orders.wave_id, preOrderWaves.id))
-      .leftJoin(users, eq(orders.customer_id, users.id))
       .orderBy(desc(orders.created_at));
 
     const orderRows =

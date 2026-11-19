@@ -5,7 +5,6 @@ import {
   preOrderWaves,
   products,
   stores,
-  users,
   waveProducts,
   type Database,
 } from "../db";
@@ -218,7 +217,7 @@ export async function lookupOrdersByPhone(
 
   const phoneMatch = or(
     inArray(orders.guest_whatsapp, variants),
-    inArray(users.whatsapp_number, variants)
+    inArray(orders.customer_whatsapp, variants)
   );
   if (phoneMatch) {
     conditions.push(phoneMatch);
@@ -250,8 +249,8 @@ export async function lookupOrdersByPhone(
       slug: orders.slug,
       wave_id: orders.wave_id,
       customer_id: orders.customer_id,
-      customer_name: users.name,
-      customer_whatsapp: users.whatsapp_number,
+      customer_name: orders.customer_name,
+      customer_whatsapp: orders.customer_whatsapp,
       guest_name: orders.guest_name,
       guest_whatsapp: orders.guest_whatsapp,
       shipping_address: orders.shipping_address,
@@ -277,7 +276,6 @@ export async function lookupOrdersByPhone(
     .from(orders)
     .innerJoin(preOrderWaves, eq(orders.wave_id, preOrderWaves.id))
     .innerJoin(stores, eq(preOrderWaves.store_id, stores.id))
-    .leftJoin(users, eq(orders.customer_id, users.id))
     .where(and(...conditions))
     .orderBy(desc(orders.created_at));
 

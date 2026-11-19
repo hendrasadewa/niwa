@@ -117,6 +117,7 @@ reviewsRoutes.post(
       product_id,
       order_id: order.id,
       customer_id: user.id,
+      customer_name: user.name,
       rating,
       comment,
       created_at: Math.floor(Date.now() / 1000),
@@ -129,7 +130,6 @@ reviewsRoutes.post(
         review: {
           ...newReview,
           order_slug: order.slug,
-          customer_name: user.name,
         },
       },
       201

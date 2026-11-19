@@ -1,57 +1,59 @@
 import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import { verify } from "hono/jwt";
-import { createDb, users } from "../db";
-import { getUserRolesAndPermissions } from "../db/rbac";
-import type { AppEnv, AuthUser, JwtUserPayload } from "../types";
+import { createDb, customerProfiles } from "../db";
+import type { AppEnv, AuthUser, NiwaJwtPayload, RoleName } from "../types";
+import { OPEN_PO_APP_ID } from "../utils/auth-client";
 
 async function resolveUserFromToken(
   token: string,
   jwtSecret: string,
   d1: D1Database
-): Promise<{ user: AuthUser; verified: JwtUserPayload } | null> {
+): Promise<{ user: AuthUser; verified: NiwaJwtPayload } | null> {
   const verified = (await verify(
     token,
     jwtSecret,
     "HS256"
-  )) as unknown as JwtUserPayload;
+  )) as unknown as NiwaJwtPayload;
 
-  if (!verified || typeof verified.sub !== "string") {
+  if (
+    !verified ||
+    typeof verified.sub !== "string" ||
+    typeof verified.email !== "string" ||
+    typeof verified.name !== "string"
+  ) {
     return null;
   }
 
   const db = createDb(d1);
-  const [userRecord] = await db
+  const [profile] = await db
     .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      whatsapp_number: users.whatsapp_number,
-      default_shipping_address: users.default_shipping_address,
+      default_shipping_address: customerProfiles.default_shipping_address,
     })
-    .from(users)
-    .where(eq(users.id, verified.sub))
+    .from(customerProfiles)
+    .where(eq(customerProfiles.user_id, verified.sub))
     .limit(1);
 
-  if (!userRecord) {
-    return null;
-  }
-
-  const { roles, permissions } = await getUserRolesAndPermissions(
-    db,
-    userRecord.id
-  );
+  const openPoRoles = Array.isArray(verified.app_roles?.[OPEN_PO_APP_ID])
+    ? (verified.app_roles[OPEN_PO_APP_ID] as RoleName[])
+    : [];
+  const openPoPermissions = Array.isArray(
+    verified.app_permissions?.[OPEN_PO_APP_ID]
+  )
+    ? verified.app_permissions[OPEN_PO_APP_ID]
+    : [];
 
   return {
     verified,
     user: {
-      id: userRecord.id,
-      name: userRecord.name,
-      email: userRecord.email,
-      whatsapp_number: userRecord.whatsapp_number,
-      default_shipping_address: userRecord.default_shipping_address,
-      roles,
-      permissions,
+      id: verified.sub,
+      name: verified.name,
+      email: verified.email,
+      whatsapp_number: verified.whatsapp_number ?? "",
+      default_shipping_address: profile?.default_shipping_address ?? null,
+      roles: openPoRoles,
+      permissions: openPoPermissions,
+      created_at: verified.created_at ?? verified.iat,
     },
   };
 }
@@ -92,6 +94,7 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
 
     c.set("jwtPayload", resolved.verified);
     c.set("user", resolved.user);
+    c.set("authToken", token);
 
     await next();
   } catch {
@@ -121,6 +124,7 @@ export const optionalAuthMiddleware = createMiddleware<AppEnv>(
           if (resolved) {
             c.set("jwtPayload", resolved.verified);
             c.set("user", resolved.user);
+            c.set("authToken", token);
           }
         } catch {
           // Ignore invalid optional token and treat as Guest

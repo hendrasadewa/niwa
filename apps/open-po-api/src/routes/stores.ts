@@ -13,14 +13,18 @@ import {
   preOrderWaves,
   products,
   stores,
-  userRoles,
   waveProducts,
   type Database,
 } from "../db";
-import { ensureRbacSeeded } from "../db/rbac";
 import { authMiddleware } from "../middleware/auth";
 import { checkStoreOwnership } from "../middleware/rbac";
-import type { AppEnv } from "../types";
+import type { AppEnv, AuthUser } from "../types";
+import {
+  OPEN_PO_APP_ID,
+  fetchAuthApi,
+  mapAuthApiUserToOpenPoUser,
+  type AuthApiResponsePayload,
+} from "../utils/auth-client";
 import { streamImageFromR2, uploadImageToR2 } from "../utils/r2";
 
 function slugifyStoreName(name: string): string {
@@ -143,10 +147,9 @@ storesRoutes.post(
   zValidator("json", createStoreSchema),
   async (c) => {
     const user = c.get("user")!;
+    const authToken = c.get("authToken")!;
     const payload = c.req.valid("json");
     const db = createDb(c.env.DB);
-
-    await ensureRbacSeeded(db);
 
     const slug =
       payload.slug ||
@@ -182,13 +185,48 @@ storesRoutes.post(
 
     await db.insert(stores).values(newStore);
 
-    // Grant the user the seller role automatically if not already assigned
-    await db
-      .insert(userRoles)
-      .values({ user_id: user.id, role_id: "role-seller" })
-      .onConflictDoNothing();
+    // Delegate granting the 'seller' role for 'open-po' to @niwa/auth-api
+    let refreshedToken: string | undefined;
+    let updatedUser: AuthUser | undefined;
+    try {
+      const grantRes = await fetchAuthApi(c.env, "/api/v1/auth/roles/grant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          app_id: OPEN_PO_APP_ID,
+          role: "seller",
+        }),
+      });
 
-    return c.json({ store: newStore }, 201);
+      if (grantRes.ok) {
+        const grantData = (await grantRes
+          .json()
+          .catch(() => null)) as AuthApiResponsePayload | null;
+        if (grantData?.token) {
+          refreshedToken = grantData.token;
+        }
+        if (grantData?.user) {
+          updatedUser = mapAuthApiUserToOpenPoUser(
+            grantData.user,
+            user.default_shipping_address
+          );
+        }
+      }
+    } catch {
+      // Store creation succeeded; role grant can be retried on next login/refresh if auth-api is unavailable
+    }
+
+    return c.json(
+      {
+        store: newStore,
+        ...(refreshedToken ? { token: refreshedToken } : {}),
+        ...(updatedUser ? { user: updatedUser } : {}),
+      },
+      201
+    );
   }
 );
 
