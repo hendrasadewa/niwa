@@ -58,20 +58,21 @@ async function resolveUserFromToken(
 
 export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const queryToken = c.req.query("token");
+
+  let token = "";
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.slice("Bearer ".length).trim();
+  } else if (queryToken) {
+    token = queryToken.trim();
+  }
+
+  if (!token) {
     return c.json(
       {
         error: "Unauthorized",
         message: "Missing or invalid Authorization header",
       },
-      401
-    );
-  }
-
-  const token = authHeader.slice("Bearer ".length).trim();
-  if (!token) {
-    return c.json(
-      { error: "Unauthorized", message: "Missing bearer token" },
       401
     );
   }
