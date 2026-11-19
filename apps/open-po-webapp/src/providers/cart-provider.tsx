@@ -58,36 +58,85 @@ const CartContext = React.createContext<CartContextValue | undefined>(
   undefined
 );
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = React.useState<WaveCartState>(() => {
-    if (typeof window === "undefined") return EMPTY_CART;
-    try {
-      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as WaveCartState;
-        if (parsed && Array.isArray(parsed.items)) {
-          return parsed;
-        }
-      }
-    } catch {
-      // ignore corrupted storage
-    }
-    return EMPTY_CART;
-  });
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+let cartListeners: Array<() => void> = [];
+let cachedCartRaw: string | null = null;
+let cachedCartSnapshot: WaveCartState = EMPTY_CART;
 
-  React.useEffect(() => {
+function subscribeToCartStorage(callback: () => void) {
+  cartListeners.push(callback);
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", callback);
+  }
+  return () => {
+    cartListeners = cartListeners.filter((l) => l !== callback);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", callback);
+    }
+  };
+}
+
+function emitCartChange() {
+  for (const listener of cartListeners) {
+    listener();
+  }
+}
+
+function getCartSnapshot(): WaveCartState {
+  if (typeof window === "undefined") return EMPTY_CART;
+  try {
+    const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+    if (raw === cachedCartRaw) {
+      return cachedCartSnapshot;
+    }
+    cachedCartRaw = raw;
+    if (raw) {
+      const parsed = JSON.parse(raw) as WaveCartState;
+      if (parsed && Array.isArray(parsed.items)) {
+        cachedCartSnapshot = parsed;
+        return cachedCartSnapshot;
+      }
+    }
+  } catch {
+    // ignore corrupted storage
+  }
+  cachedCartSnapshot = EMPTY_CART;
+  return cachedCartSnapshot;
+}
+
+function getServerCartSnapshot(): WaveCartState {
+  return EMPTY_CART;
+}
+
+function writeCartToStorage(
+  updater: WaveCartState | ((prev: WaveCartState) => WaveCartState)
+) {
+  const prev = getCartSnapshot();
+  const next = typeof updater === "function" ? updater(prev) : updater;
+  cachedCartSnapshot = next;
+  if (typeof window !== "undefined") {
     try {
-      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      const serialized = JSON.stringify(next);
+      cachedCartRaw = serialized;
+      window.localStorage.setItem(CART_STORAGE_KEY, serialized);
     } catch {
       // ignore storage errors
     }
-  }, [cart]);
+  }
+  emitCartChange();
+}
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const cart = React.useSyncExternalStore(
+    subscribeToCartStorage,
+    getCartSnapshot,
+    getServerCartSnapshot
+  );
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   const addItem = React.useCallback((payload: AddToCartPayload) => {
     const qtyToAdd = payload.item.quantity ?? 1;
 
-    setCart((prev) => {
+    writeCartToStorage((prev) => {
       // If adding from a different wave, replace cart with the new wave
       const isDifferentWave =
         prev.waveId !== null &&
@@ -169,7 +218,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const updateQuantity = React.useCallback(
     (waveProductId: string, nextQuantity: number) => {
-      setCart((prev) => {
+      writeCartToStorage((prev) => {
         if (nextQuantity <= 0) {
           const filtered = prev.items.filter(
             (i) => i.waveProductId !== waveProductId
@@ -196,7 +245,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const removeItem = React.useCallback((waveProductId: string) => {
-    setCart((prev) => {
+    writeCartToStorage((prev) => {
       const filtered = prev.items.filter(
         (i) => i.waveProductId !== waveProductId
       );
@@ -205,7 +254,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearCart = React.useCallback(() => {
-    setCart(EMPTY_CART);
+    writeCartToStorage(EMPTY_CART);
   }, []);
 
   const totalItems = React.useMemo(
