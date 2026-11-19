@@ -304,5 +304,14 @@ export function getOrderReceiptUrl(
   cacheBuster?: string | number | null
 ): string {
   const base = `${API_BASE_URL}/api/v1/orders/${encodeURIComponent(orderId)}/receipt`;
-  return cacheBuster ? `${base}?v=${encodeURIComponent(String(cacheBuster))}` : base;
+  const params = new URLSearchParams();
+  if (cacheBuster) {
+    params.set("v", String(cacheBuster));
+  }
+  const token = getAuthToken();
+  if (token) {
+    params.set("token", token);
+  }
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
 }

@@ -11,10 +11,17 @@ import {
   Copy,
   ImagePlus,
   Loader2,
+  Lock,
+  LogIn,
+  MapPin,
   MessageCircle,
   PackageCheck,
+  Phone,
+  ShieldAlert,
+  ShieldCheck,
   Store as StoreIcon,
   Truck,
+  User as UserIcon,
 } from "lucide-react";
 import {
   Card,
@@ -26,6 +33,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/providers/auth-provider";
 import { apiClient, ApiError, getOrderReceiptUrl } from "@/lib/api";
 import type { OrderTrackingDetail } from "@/types/api";
 import { toast } from "@/hooks/use-toast";
@@ -34,18 +42,20 @@ import { formatCurrencyIDR, formatUnixDateTime } from "@/lib/utils";
 export default function OrderTrackingTimelinePage() {
   const params = useParams<{ orderId: string }>();
   const slugOrId = params.orderId;
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const [isUploading, setIsUploading] = React.useState(false);
   const [receiptBust, setReceiptBust] = React.useState<number>(1);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["public-order-tracking", slugOrId],
+  const { data, error, isLoading, isError } = useQuery({
+    queryKey: ["public-order-tracking", slugOrId, user?.id ?? "guest"],
     queryFn: () =>
       apiClient.get<{ tracking: OrderTrackingDetail }>(
         `/api/v1/track/${encodeURIComponent(slugOrId)}`
       ),
     enabled: Boolean(slugOrId),
+    retry: false,
   });
 
   const confirmReceivedMutation = useMutation({
@@ -64,6 +74,16 @@ export default function OrderTrackingTimelinePage() {
         title: "Delivery confirmed!",
         description:
           "Order marked as 'Received by Customer'. You can now leave product reviews.",
+      });
+    },
+    onError: (err) => {
+      toast({
+        variant: "destructive",
+        title: "Could not confirm delivery",
+        description:
+          err instanceof ApiError
+            ? err.message
+            : "Failed to confirm order receipt.",
       });
     },
   });
@@ -109,6 +129,35 @@ export default function OrderTrackingTimelinePage() {
     );
   }
 
+  if (error instanceof ApiError && error.status === 403) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16">
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardContent className="py-10 text-center space-y-4">
+            <ShieldAlert className="mx-auto h-10 w-10 text-destructive" />
+            <div className="space-y-1.5">
+              <h1 className="text-xl font-bold text-destructive">
+                Access Restricted (403 Forbidden)
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {error.message ||
+                  "You do not have permission to view another customer's order."}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/orders">View My Order History</Link>
+              </Button>
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/track">Back to Order Lookup</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const tracking = data?.tracking;
 
   if (isError || !tracking) {
@@ -130,6 +179,7 @@ export default function OrderTrackingTimelinePage() {
   }
 
   const orderCode = tracking.order_slug || tracking.order_id;
+  const isPiiMasked = tracking.is_pii_masked ?? !user;
   const canConfirmReceived =
     tracking.status === "Delivered" || tracking.status === "On Shipping";
 
@@ -152,6 +202,17 @@ export default function OrderTrackingTimelinePage() {
               <span className="font-mono text-primary">{orderCode}</span>
             </h1>
             <Badge variant="default">{tracking.status}</Badge>
+            {isPiiMasked ? (
+              <Badge variant="outline" className="gap-1 text-xs">
+                <Lock className="h-3 w-3" />
+                PII Masked (Guest View)
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                Verified — PII Unlocked
+              </Badge>
+            )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             Ordered by{" "}
@@ -176,6 +237,81 @@ export default function OrderTrackingTimelinePage() {
           Copy Code: {orderCode}
         </Button>
       </div>
+
+      {isPiiMasked && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5 text-xs">
+            <Lock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-foreground">
+                Customer PII Masked for Privacy
+              </p>
+              <p className="text-muted-foreground">
+                Name, WhatsApp number, shipping address, and transfer receipt
+                preview are masked in public guest view. Log in as the order
+                owner to unlock full details.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 shrink-0"
+            asChild
+          >
+            <Link
+              href={`/login?redirect=${encodeURIComponent(`/track/${orderCode}`)}`}
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Log in to Unlock PII
+            </Link>
+          </Button>
+        </div>
+      )}
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">
+            Customer & Delivery Information
+          </CardTitle>
+          <CardDescription>
+            {isPiiMasked
+              ? "Masked for guest privacy protection"
+              : "Full verified customer & shipping details"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <UserIcon className="h-3.5 w-3.5" />
+                Customer Name
+              </div>
+              <p className="font-semibold text-sm">
+                {tracking.customer_display_name}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5" />
+                WhatsApp Number
+              </div>
+              <p className="font-mono font-semibold text-sm">
+                {tracking.whatsapp_number ?? "—"}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                Shipping Address
+              </div>
+              <p className="font-medium text-sm break-words">
+                {tracking.shipping_address ?? "—"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -347,17 +483,27 @@ export default function OrderTrackingTimelinePage() {
                 <Badge variant="secondary" className="text-[11px]">
                   Uploaded Transfer Receipt
                 </Badge>
-                <div className="rounded-lg border bg-muted overflow-hidden flex justify-center max-h-56">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={getOrderReceiptUrl(
-                      orderCode,
-                      `${tracking.payment_receipt_url}-${receiptBust}`
-                    )}
-                    alt="Payment Receipt"
-                    className="max-h-52 object-contain"
-                  />
-                </div>
+                {isPiiMasked ? (
+                  <div className="rounded-lg border border-dashed bg-muted/40 p-4 text-center text-xs text-muted-foreground space-y-2">
+                    <Lock className="mx-auto h-4 w-4 text-muted-foreground" />
+                    <p>
+                      Transfer receipt has been uploaded. Log in as the order
+                      owner to preview the receipt image.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border bg-muted overflow-hidden flex justify-center max-h-56">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getOrderReceiptUrl(
+                        orderCode,
+                        `${tracking.payment_receipt_url}-${receiptBust}`
+                      )}
+                      alt="Payment Receipt"
+                      className="max-h-52 object-contain"
+                    />
+                  </div>
+                )}
               </div>
             )}
 

@@ -82,9 +82,11 @@ export interface OrderRecord {
   customer_email?: string | null;
   customer_whatsapp?: string | null;
   customer_display_name?: string | null;
+  whatsapp_number?: string | null;
   guest_name: string | null;
   guest_whatsapp: string | null;
   shipping_address?: string;
+  is_pii_masked?: boolean;
   total_amount: number;
   payment_receipt_url: string | null;
   has_payment_receipt?: boolean;
@@ -128,7 +130,10 @@ export interface OrderTrackingDetail {
   total_amount: number;
   has_payment_receipt: boolean;
   payment_receipt_url: string | null;
+  is_pii_masked?: boolean;
   customer_display_name: string;
+  whatsapp_number?: string | null;
+  shipping_address?: string;
   can_review: boolean;
   created_at: number;
   wave: {
@@ -150,6 +155,7 @@ export interface OrderTrackingDetail {
 
 export interface GuestPhoneLookupResponse {
   phone: string;
+  is_pii_masked?: boolean;
   total: number;
   orders: OrderRecord[];
 }

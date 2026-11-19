@@ -27,7 +27,7 @@
   - `/stores/[slug]`: Storefront page (store header, R2 logo, active pre-order waves with locked prices & remaining quotas, master catalog, cart integration)
   - `/products/[id]`: Product detail & customer reviews page (`GET /api/v1/products/:id`, `GET /api/v1/products/:id/reviews`)
   - `/checkout`: Guest & Member wave checkout (`POST /api/v1/orders/checkout` with optional custom `slug` / Order Code), payment instructions, R2 transfer receipt upload (`PUT /api/v1/orders/:slugOrId/receipt`), and WhatsApp redirect confirmation
-  - `/track` & `/track/[orderId]`: Dual-mode public tracking (`/track` supports both **Track by Order Code (`slug`)** and **Find Orders by WhatsApp / Phone Number** via `GET /api/v1/track/lookup?phone=...`) and 6-step visual status timeline (`GET /api/v1/track/:slugOrId`, `PATCH /api/v1/track/:slugOrId/confirm-received`)
+  - `/track` & `/track/[orderId]`: Dual-mode tracking (`/track` supports both **Track by Order Code (`slug`)** and **Find Orders by WhatsApp / Phone Number** via `GET /api/v1/track/lookup?phone=...`) and 6-step visual status timeline (`GET /api/v1/track/:slugOrId`, `PATCH /api/v1/track/:slugOrId/confirm-received`). Displays masked PII (`is_pii_masked: true`) with a "Log in to Unlock PII" banner in guest view, unlocks full customer/shipping/receipt details when authenticated as the order/store owner, and renders an "Access Restricted (403 Forbidden)" card if a logged-in user attempts to view another customer's order.
 - **Auth**:
   - `/login`: Customer / Seller sign-in
   - `/register`: Customer / Seller registration
