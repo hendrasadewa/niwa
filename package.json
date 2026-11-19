@@ -11,6 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:web": "pnpm --filter @niwa/web dev",
     "dev:api": "pnpm --filter @niwa/web-api dev",
+    "dev:auth": "pnpm --filter @niwa/auth-api dev",
     "dev:pustaka": "pnpm --filter @niwa/pustaka-api dev",
     "dev:pustaka-web": "pnpm --filter @niwa/pustaka-web dev",
     "dev:open-po": "pnpm --filter @niwa/open-po-api dev",
