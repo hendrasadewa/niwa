@@ -40,8 +40,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/providers/auth-provider";
-import { apiClient, ApiError } from "@/lib/api";
-import type { OrderRecord, PreOrderWave, Product, Store } from "@/types/api";
+import { apiClient, ApiError, setAuthToken } from "@/lib/api";
+import type {
+  OrderRecord,
+  PreOrderWave,
+  Product,
+  Store,
+  User,
+} from "@/types/api";
 import { toast } from "@/hooks/use-toast";
 import { formatCurrencyIDR, formatUnixDate } from "@/lib/utils";
 
@@ -74,10 +80,14 @@ function CreateStoreOnboarding({
         ...values,
         slug: values.slug?.trim() ? values.slug.trim().toLowerCase() : undefined,
       };
-      const res = await apiClient.post<{ store: Store }>(
-        "/api/v1/stores",
-        payload
-      );
+      const res = await apiClient.post<{
+        store: Store;
+        token?: string;
+        user?: User;
+      }>("/api/v1/stores", payload);
+      if (res.token) {
+        setAuthToken(res.token);
+      }
       toast({
         title: "Store created!",
         description: `${res.store.name} is now live at /stores/${res.store.slug}.`,

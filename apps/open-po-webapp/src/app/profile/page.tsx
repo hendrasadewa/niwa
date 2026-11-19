@@ -38,7 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/providers/auth-provider";
-import { apiClient, ApiError } from "@/lib/api";
+import { apiClient, ApiError, setAuthToken } from "@/lib/api";
 import type { User } from "@/types/api";
 import { toast } from "@/hooks/use-toast";
 import { formatUnixDate } from "@/lib/utils";
@@ -69,12 +69,18 @@ export default function ProfilePage() {
   async function onSubmit(values: UpdateProfileInput) {
     setIsSaving(true);
     try {
-      await apiClient.put<{ user: User }>("/api/v1/me", {
-        ...values,
-        default_shipping_address: values.default_shipping_address?.trim()
-          ? values.default_shipping_address.trim()
-          : null,
-      });
+      const res = await apiClient.put<{ user: User; token?: string }>(
+        "/api/v1/me",
+        {
+          ...values,
+          default_shipping_address: values.default_shipping_address?.trim()
+            ? values.default_shipping_address.trim()
+            : null,
+        }
+      );
+      if (res.token) {
+        setAuthToken(res.token);
+      }
       await refreshProfile();
       toast({
         title: "Profile updated",
