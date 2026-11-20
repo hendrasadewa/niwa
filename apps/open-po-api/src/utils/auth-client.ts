@@ -18,6 +18,10 @@ export type AuthApiUser = {
 export type AuthApiResponsePayload = {
   user?: AuthApiUser;
   token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  revoked_sessions?: number;
+  code?: string;
   error?: string;
   message?: string;
 };
