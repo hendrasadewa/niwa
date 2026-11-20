@@ -9,9 +9,11 @@ import {
   apiClient,
   clearAuthToken,
   getAuthToken,
+  getRefreshToken,
   getStoredUser,
   setAuthToken,
   setOnUnauthorizedHandler,
+  setRefreshToken,
   setStoredUser,
 } from "@/lib/api";
 
@@ -40,6 +42,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = React.useState(true);
 
   const logout = React.useCallback(() => {
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      void apiClient
+        .post(
+          "/api/v1/auth/logout",
+          { refresh_token: refreshToken },
+          { skipAuthRedirect: true }
+        )
+        .catch(() => undefined);
+    }
     clearAuthToken();
     setToken(null);
     setUser(null);
@@ -144,6 +156,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         { skipAuthRedirect: true }
       );
       setAuthToken(response.token);
+      if (response.refresh_token) {
+        setRefreshToken(response.refresh_token);
+      }
       setStoredUser(response.user);
       setToken(response.token);
       setUser(response.user);
@@ -160,6 +175,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         { skipAuthRedirect: true }
       );
       setAuthToken(response.token);
+      if (response.refresh_token) {
+        setRefreshToken(response.refresh_token);
+      }
       setStoredUser(response.user);
       setToken(response.token);
       setUser(response.user);

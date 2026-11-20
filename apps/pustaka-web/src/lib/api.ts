@@ -5,6 +5,7 @@ export const API_BASE_URL =
   "http://localhost:8787";
 
 export const TOKEN_STORAGE_KEY = "pustaka_auth_token";
+export const REFRESH_TOKEN_STORAGE_KEY = "pustaka_refresh_token";
 export const USER_STORAGE_KEY = "pustaka_auth_user";
 export const TOKEN_COOKIE_NAME = "pustaka_token";
 export const ROLES_COOKIE_NAME = "pustaka_roles";
@@ -55,6 +56,24 @@ export function setAuthToken(token: string): void {
   }
 }
 
+export function getRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setRefreshToken(refreshToken: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null;
   try {
@@ -81,6 +100,7 @@ export function clearAuthToken(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
     window.localStorage.removeItem(USER_STORAGE_KEY);
     document.cookie = `${TOKEN_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
     document.cookie = `${ROLES_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
@@ -156,9 +176,71 @@ export function formatApiErrorMessage(
   return `Request failed with status ${status}`;
 }
 
+let inFlightRefreshPromise: Promise<string | null> | null = null;
+
+async function attemptTokenRefresh(): Promise<string | null> {
+  if (inFlightRefreshPromise) {
+    return inFlightRefreshPromise;
+  }
+
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    return null;
+  }
+
+  inFlightRefreshPromise = (async () => {
+    try {
+      const res = await fetch(buildUrl("/api/v1/auth/refresh"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (!res.ok) {
+        return null;
+      }
+
+      const data = (await res.json().catch(() => null)) as {
+        token?: string;
+        refresh_token?: string;
+        user?: User;
+      } | null;
+
+      if (!data?.token) {
+        return null;
+      }
+
+      setAuthToken(data.token);
+      if (data.refresh_token) {
+        setRefreshToken(data.refresh_token);
+      }
+      if (data.user) {
+        setStoredUser(data.user);
+      }
+
+      return data.token;
+    } catch {
+      return null;
+    } finally {
+      inFlightRefreshPromise = null;
+    }
+  })();
+
+  return inFlightRefreshPromise;
+}
+
+const NON_REFRESHABLE_AUTH_ENDPOINTS = [
+  "/api/v1/auth/login",
+  "/api/v1/auth/register",
+  "/api/v1/auth/refresh",
+  "/api/v1/auth/logout",
+  "/api/v1/auth/password",
+];
+
 async function request<T>(
   endpoint: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
+  hasRetried = false
 ): Promise<T> {
   const { body, params, headers: customHeaders, skipAuthRedirect, ...rest } =
     options;
@@ -186,6 +268,25 @@ async function request<T>(
     headers,
     body: serializedBody,
   });
+
+  const canAttemptRefresh =
+    response.status === 401 &&
+    !hasRetried &&
+    !NON_REFRESHABLE_AUTH_ENDPOINTS.some((p) => endpoint.startsWith(p)) &&
+    Boolean(getRefreshToken());
+
+  if (canAttemptRefresh) {
+    const newAccessToken = await attemptTokenRefresh();
+    if (newAccessToken) {
+      const retryHeaders = new Headers(customHeaders);
+      retryHeaders.set("Authorization", `Bearer ${newAccessToken}`);
+      return request<T>(
+        endpoint,
+        { ...options, headers: retryHeaders },
+        true
+      );
+    }
+  }
 
   if (response.status === 401 && !skipAuthRedirect && unauthorizedHandler) {
     unauthorizedHandler();

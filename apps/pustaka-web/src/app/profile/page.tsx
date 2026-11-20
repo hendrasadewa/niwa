@@ -3,20 +3,35 @@
 import * as React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  changePasswordSchema,
+  type ChangePasswordInput,
+} from "@niwa/pustaka-validators";
 import {
   BookCheck,
   BookOpen,
   KeyRound,
+  Loader2,
   Mail,
   ShieldCheck,
   User as UserIcon,
 } from "lucide-react";
-import type { ReadingListItem } from "@/types/api";
-import { apiClient } from "@/lib/api";
+import type { ChangePasswordResponse, ReadingListItem } from "@/types/api";
+import {
+  ApiError,
+  apiClient,
+  setAuthToken,
+  setRefreshToken,
+} from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
+import { useToast } from "@/hooks/use-toast";
 import { AppShell } from "@/components/layout/app-shell";
 import { BookCard } from "@/components/books/book-card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -24,9 +39,66 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 export default function ProfilePage() {
   const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false);
+
+  const passwordForm = useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      current_password: "",
+      new_password: "",
+      revoke_other_sessions: true,
+    },
+  });
+
+  async function onChangePassword(values: ChangePasswordInput) {
+    setIsChangingPassword(true);
+    try {
+      const res = await apiClient.put<ChangePasswordResponse>(
+        "/api/v1/auth/password",
+        values,
+        { skipAuthRedirect: true }
+      );
+      if (res.token) {
+        setAuthToken(res.token);
+      }
+      if (res.refresh_token) {
+        setRefreshToken(res.refresh_token);
+      }
+      passwordForm.reset({
+        current_password: "",
+        new_password: "",
+        revoke_other_sessions: true,
+      });
+      toast({
+        title: "Password updated",
+        description:
+          "Your Niwa account password has been updated across all apps.",
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Password change failed",
+        description:
+          err instanceof ApiError
+            ? err.message
+            : "Could not update your password.",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  }
 
   const readingListQuery = useQuery({
     queryKey: ["reading-list"],
@@ -123,34 +195,109 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="md:col-span-7">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <UserIcon className="h-5 w-5" />
-                Reading Milestones
-              </CardTitle>
-              <CardDescription>
-                Summary of books on your personal reading list.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-3 gap-4">
-              <div className="rounded-xl border bg-muted/30 p-4 text-center">
-                <BookCheck className="mx-auto mb-1.5 h-5 w-5 text-emerald-600" />
-                <p className="text-2xl font-bold">{completedItems.length}</p>
-                <p className="text-xs text-muted-foreground">Books Read</p>
-              </div>
-              <div className="rounded-xl border bg-muted/30 p-4 text-center">
-                <BookOpen className="mx-auto mb-1.5 h-5 w-5 text-primary" />
-                <p className="text-2xl font-bold">{readingItems.length}</p>
-                <p className="text-xs text-muted-foreground">Reading Now</p>
-              </div>
-              <div className="rounded-xl border bg-muted/30 p-4 text-center">
-                <BookOpen className="mx-auto mb-1.5 h-5 w-5 text-muted-foreground" />
-                <p className="text-2xl font-bold">{wantToReadItems.length}</p>
-                <p className="text-xs text-muted-foreground">Want to Read</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6 md:col-span-7">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <UserIcon className="h-5 w-5" />
+                  Reading Milestones
+                </CardTitle>
+                <CardDescription>
+                  Summary of books on your personal reading list.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-3 gap-4">
+                <div className="rounded-xl border bg-muted/30 p-4 text-center">
+                  <BookCheck className="mx-auto mb-1.5 h-5 w-5 text-emerald-600" />
+                  <p className="text-2xl font-bold">{completedItems.length}</p>
+                  <p className="text-xs text-muted-foreground">Books Read</p>
+                </div>
+                <div className="rounded-xl border bg-muted/30 p-4 text-center">
+                  <BookOpen className="mx-auto mb-1.5 h-5 w-5 text-primary" />
+                  <p className="text-2xl font-bold">{readingItems.length}</p>
+                  <p className="text-xs text-muted-foreground">Reading Now</p>
+                </div>
+                <div className="rounded-xl border bg-muted/30 p-4 text-center">
+                  <BookOpen className="mx-auto mb-1.5 h-5 w-5 text-muted-foreground" />
+                  <p className="text-2xl font-bold">{wantToReadItems.length}</p>
+                  <p className="text-xs text-muted-foreground">Want to Read</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <KeyRound className="h-4 w-4" />
+                  Change Password
+                </CardTitle>
+                <CardDescription>
+                  Update your Niwa account password and rotate active sessions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...passwordForm}>
+                  <form
+                    onSubmit={passwordForm.handleSubmit(onChangePassword)}
+                    className="grid gap-4 sm:grid-cols-2"
+                  >
+                    <FormField
+                      control={passwordForm.control}
+                      name="current_password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Current Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="••••••••"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={passwordForm.control}
+                      name="new_password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>New Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="At least 8 characters"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="sm:col-span-2">
+                      <Button
+                        type="submit"
+                        variant="secondary"
+                        size="sm"
+                        disabled={isChangingPassword}
+                        className="gap-2"
+                      >
+                        {isChangingPassword ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <KeyRound className="h-4 w-4" />
+                        )}
+                        Update Password
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <section className="space-y-4">
