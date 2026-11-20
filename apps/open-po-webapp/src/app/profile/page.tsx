@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  changePasswordSchema,
   updateProfileSchema,
+  type ChangePasswordInput,
   type UpdateProfileInput,
 } from "@niwa/open-po-validators";
 import {
   ArrowRight,
+  KeyRound,
   Loader2,
   MapPin,
   Phone,
@@ -38,14 +41,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/providers/auth-provider";
-import { apiClient, ApiError, setAuthToken } from "@/lib/api";
-import type { User } from "@/types/api";
+import { apiClient, ApiError, setAuthToken, setRefreshToken } from "@/lib/api";
+import type { ChangePasswordResponse, User } from "@/types/api";
 import { toast } from "@/hooks/use-toast";
 import { formatUnixDate } from "@/lib/utils";
 
 export default function ProfilePage() {
   const { user, ownedStores, refreshProfile, isLoading } = useAuth();
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false);
 
   const form = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
@@ -53,6 +57,15 @@ export default function ProfilePage() {
       name: "",
       whatsapp_number: "",
       default_shipping_address: "",
+    },
+  });
+
+  const passwordForm = useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      current_password: "",
+      new_password: "",
+      revoke_other_sessions: true,
     },
   });
 
@@ -96,6 +109,44 @@ export default function ProfilePage() {
       });
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function onChangePassword(values: ChangePasswordInput) {
+    setIsChangingPassword(true);
+    try {
+      const res = await apiClient.put<ChangePasswordResponse>(
+        "/api/v1/auth/password",
+        values,
+        { skipAuthRedirect: true }
+      );
+      if (res.token) {
+        setAuthToken(res.token);
+      }
+      if (res.refresh_token) {
+        setRefreshToken(res.refresh_token);
+      }
+      passwordForm.reset({
+        current_password: "",
+        new_password: "",
+        revoke_other_sessions: true,
+      });
+      toast({
+        title: "Password updated",
+        description:
+          "Your password has been changed and other sessions have been signed out.",
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Password change failed",
+        description:
+          err instanceof ApiError
+            ? err.message
+            : "Could not change your password.",
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   }
 
@@ -263,6 +314,78 @@ export default function ProfilePage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <KeyRound className="h-4 w-4" />
+                Change Password
+              </CardTitle>
+              <CardDescription>
+                Update your Niwa account password and refresh your active
+                session.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...passwordForm}>
+                <form
+                  onSubmit={passwordForm.handleSubmit(onChangePassword)}
+                  className="space-y-3"
+                >
+                  <FormField
+                    control={passwordForm.control}
+                    name="current_password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Current Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={passwordForm.control}
+                    name="new_password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>New Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="At least 8 characters"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    size="sm"
+                    disabled={isChangingPassword}
+                    className="w-full gap-2"
+                  >
+                    {isChangingPassword ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <KeyRound className="h-4 w-4" />
+                    )}
+                    Update Password
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>

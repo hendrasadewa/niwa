@@ -174,6 +174,16 @@ export interface ProductReview {
 export interface AuthResponse {
   user: User;
   token: string;
+  refresh_token?: string;
+  expires_in?: number;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+  user: User;
+  token: string;
+  refresh_token?: string;
+  expires_in?: number;
 }
 
 export interface ProfileResponse {
