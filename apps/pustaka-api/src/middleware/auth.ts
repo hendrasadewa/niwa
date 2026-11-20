@@ -1,22 +1,26 @@
-import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import { verify } from "hono/jwt";
-import { createDb, users } from "../db";
-import { getUserRolesAndPermissions } from "../db/rbac";
-import type { AppEnv, JwtUserPayload } from "../types";
+import type { AppEnv, NiwaJwtPayload, RoleName } from "../types";
+import { PUSTAKA_APP_ID } from "../utils/auth-client";
 
 export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return c.json(
-      { error: "Unauthorized", message: "Missing or invalid Authorization header" },
+      {
+        error: "Unauthorized",
+        message: "Missing or invalid Authorization header",
+      },
       401
     );
   }
 
   const token = authHeader.slice("Bearer ".length).trim();
   if (!token) {
-    return c.json({ error: "Unauthorized", message: "Missing bearer token" }, 401);
+    return c.json(
+      { error: "Unauthorized", message: "Missing bearer token" },
+      401
+    );
   }
 
   try {
@@ -24,39 +28,38 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
       token,
       c.env.JWT_SECRET,
       "HS256"
-    )) as unknown as JwtUserPayload;
+    )) as unknown as NiwaJwtPayload;
 
-    if (!verified || typeof verified.sub !== "string") {
-      return c.json({ error: "Unauthorized", message: "Invalid token payload" }, 401);
+    if (
+      !verified ||
+      typeof verified.sub !== "string" ||
+      typeof verified.email !== "string" ||
+      typeof verified.name !== "string"
+    ) {
+      return c.json(
+        { error: "Unauthorized", message: "Invalid token payload" },
+        401
+      );
     }
 
-    const db = createDb(c.env.DB);
-    const [userRecord] = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-      })
-      .from(users)
-      .where(eq(users.id, verified.sub))
-      .limit(1);
-
-    if (!userRecord) {
-      return c.json({ error: "Unauthorized", message: "User no longer exists" }, 401);
-    }
-
-    const { roles, permissions } = await getUserRolesAndPermissions(
-      db,
-      userRecord.id
-    );
+    const pustakaRoles = Array.isArray(verified.app_roles?.[PUSTAKA_APP_ID])
+      ? (verified.app_roles[PUSTAKA_APP_ID] as RoleName[])
+      : [];
+    const pustakaPermissions = Array.isArray(
+      verified.app_permissions?.[PUSTAKA_APP_ID]
+    )
+      ? verified.app_permissions[PUSTAKA_APP_ID]
+      : [];
 
     c.set("jwtPayload", verified);
+    c.set("authToken", token);
     c.set("user", {
-      id: userRecord.id,
-      username: userRecord.username,
-      email: userRecord.email,
-      roles,
-      permissions,
+      id: verified.sub,
+      username: verified.name,
+      email: verified.email,
+      roles: pustakaRoles,
+      permissions: pustakaPermissions,
+      created_at: verified.created_at ?? verified.iat,
     });
 
     await next();

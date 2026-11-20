@@ -1,12 +1,16 @@
 import { zValidator } from "@hono/zod-validator";
 import { assignRoleSchema } from "@niwa/pustaka-validators";
-import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { createDb, roles, userRoles, users } from "../db";
-import { ensureRbacSeeded, getUserRolesAndPermissions } from "../db/rbac";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { authMiddleware } from "../middleware/auth";
 import { requirePermission } from "../middleware/rbac";
 import type { AppEnv } from "../types";
+import {
+  PUSTAKA_APP_ID,
+  fetchAuthApi,
+  mapAuthApiUserToPustakaUser,
+  type AuthApiResponsePayload,
+} from "../utils/auth-client";
 
 export const usersRoutes = new Hono<AppEnv>();
 
@@ -15,58 +19,117 @@ usersRoutes.get("/profile", authMiddleware, async (c) => {
   return c.json({ user });
 });
 
+// GET /api/v1/users - List users via @niwa/auth-api ACL service (Admin / users:manage)
+usersRoutes.get(
+  "/",
+  authMiddleware,
+  requirePermission("users:manage"),
+  async (c) => {
+    const authToken = c.get("authToken");
+    const search = c.req.query("search");
+    const query = new URLSearchParams();
+    if (search) {
+      query.set("search", search);
+    }
+    const qs = query.toString();
+    const path = qs ? `/api/v1/acl/users?${qs}` : "/api/v1/acl/users";
+
+    let authRes: Response;
+    try {
+      authRes = await fetchAuthApi(c.env, path, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+    } catch {
+      return c.json(
+        {
+          error: "BadGateway",
+          message: "Unable to reach authentication service",
+        },
+        502
+      );
+    }
+
+    const authData = (await authRes
+      .json()
+      .catch(() => null)) as AuthApiResponsePayload | null;
+
+    if (!authRes.ok || !authData?.users) {
+      return c.json(
+        authData ?? {
+          error: "AuthError",
+          message: "Failed to list users from authentication service",
+        },
+        authRes.status as ContentfulStatusCode
+      );
+    }
+
+    return c.json({
+      total: authData.users.length,
+      users: authData.users.map(mapAuthApiUserToPustakaUser),
+    });
+  }
+);
+
+// POST /api/v1/users/:id/roles - Assign Pustaka role via @niwa/auth-api ACL service (Admin / users:manage)
 usersRoutes.post(
   "/:id/roles",
   authMiddleware,
   requirePermission("users:manage"),
   zValidator("json", assignRoleSchema),
   async (c) => {
+    const authToken = c.get("authToken");
     const targetUserId = c.req.param("id");
     const { role } = c.req.valid("json");
-    const db = createDb(c.env.DB);
 
-    await ensureRbacSeeded(db);
+    // Promote to ["member", "admin"] or set to ["member"] via auth-api ACL bulk-set endpoint
+    const nextRoles = role === "admin" ? ["member", "admin"] : ["member"];
 
-    const [targetUser] = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-      })
-      .from(users)
-      .where(eq(users.id, targetUserId))
-      .limit(1);
-
-    if (!targetUser) {
-      return c.json({ error: "NotFound", message: "User not found" }, 404);
+    let authRes: Response;
+    try {
+      authRes = await fetchAuthApi(
+        c.env,
+        `/api/v1/acl/users/${encodeURIComponent(targetUserId)}/roles`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            app_id: PUSTAKA_APP_ID,
+            roles: nextRoles,
+          }),
+        }
+      );
+    } catch {
+      return c.json(
+        {
+          error: "BadGateway",
+          message: "Unable to reach authentication service",
+        },
+        502
+      );
     }
 
-    const [roleRecord] = await db
-      .select({ id: roles.id })
-      .from(roles)
-      .where(eq(roles.name, role))
-      .limit(1);
+    const authData = (await authRes
+      .json()
+      .catch(() => null)) as AuthApiResponsePayload | null;
 
-    if (!roleRecord) {
-      return c.json({ error: "NotFound", message: "Role not found" }, 404);
+    if (!authRes.ok || !authData?.user) {
+      return c.json(
+        authData ?? {
+          error: "AuthError",
+          message: "Failed to update user roles in authentication service",
+        },
+        authRes.status as ContentfulStatusCode
+      );
     }
-
-    await db
-      .insert(userRoles)
-      .values({
-        user_id: targetUserId,
-        role_id: roleRecord.id,
-      })
-      .onConflictDoNothing();
-
-    const resolved = await getUserRolesAndPermissions(db, targetUserId);
 
     return c.json({
-      user: {
-        ...targetUser,
-        roles: resolved.roles,
-        permissions: resolved.permissions,
-      },
+      user: mapAuthApiUserToPustakaUser(authData.user),
     });
   }
 );

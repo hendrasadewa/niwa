@@ -9,7 +9,7 @@ import {
 } from "@niwa/pustaka-validators";
 import { and, eq, like, or, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
-import { bookReviews, books, bookshelves, createDb, users } from "../db";
+import { bookReviews, books, bookshelves, createDb } from "../db";
 import { authMiddleware } from "../middleware/auth";
 import { requirePermission, requireRole } from "../middleware/rbac";
 import type { AppEnv } from "../types";
@@ -494,13 +494,12 @@ booksRoutes.get(
       .select({
         id: bookReviews.id,
         user_id: bookReviews.user_id,
-        username: users.username,
+        username: bookReviews.username,
         book_id: bookReviews.book_id,
         rating: bookReviews.rating,
         review_text: bookReviews.review_text,
       })
       .from(bookReviews)
-      .innerJoin(users, eq(bookReviews.user_id, users.id))
       .where(eq(bookReviews.book_id, id));
 
     return c.json({ reviews });
@@ -533,6 +532,7 @@ booksRoutes.post(
     const newReview = {
       id: crypto.randomUUID(),
       user_id: user.id,
+      username: user.username,
       book_id: id,
       rating,
       review_text,
@@ -542,10 +542,7 @@ booksRoutes.post(
 
     return c.json(
       {
-        review: {
-          ...newReview,
-          username: user.username,
-        },
+        review: newReview,
       },
       201
     );

@@ -1,4 +1,5 @@
-# Local development secrets for Cloudflare Workers (wrangler dev)
+# Local development secrets for @niwa/pustaka-api (wrangler dev --port 8787)
 # Copy this file to .dev.vars and customize your values.
-JWT_SECRET="replace-with-a-secure-random-32-byte-secret"
-ADMIN_EMAIL="admin@example.com"
+# JWT_SECRET must match @niwa/auth-api
+JWT_SECRET="open-po-local-dev-jwt-secret-key"
+AUTH_API_URL="http://127.0.0.1:8788"
