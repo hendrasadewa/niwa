@@ -1,56 +1,9 @@
 import {
   integer,
-  primaryKey,
   sqliteTable,
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
-
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey(),
-  username: text("username").notNull(),
-  email: text("email").notNull().unique(),
-  password_hash: text("password_hash").notNull(),
-  created_at: integer("created_at").notNull(),
-});
-
-export const roles = sqliteTable("roles", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description").notNull(),
-});
-
-export const userRoles = sqliteTable(
-  "user_roles",
-  {
-    user_id: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role_id: text("role_id")
-      .notNull()
-      .references(() => roles.id, { onDelete: "cascade" }),
-  },
-  (table) => [primaryKey({ columns: [table.user_id, table.role_id] })]
-);
-
-export const permissions = sqliteTable("permissions", {
-  id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  description: text("description").notNull(),
-});
-
-export const rolePermissions = sqliteTable(
-  "role_permissions",
-  {
-    role_id: text("role_id")
-      .notNull()
-      .references(() => roles.id, { onDelete: "cascade" }),
-    permission_id: text("permission_id")
-      .notNull()
-      .references(() => permissions.id, { onDelete: "cascade" }),
-  },
-  (table) => [primaryKey({ columns: [table.role_id, table.permission_id] })]
-);
 
 export const bookshelves = sqliteTable("bookshelves", {
   id: text("id").primaryKey(),
@@ -74,9 +27,7 @@ export const readingLists = sqliteTable(
   "reading_lists",
   {
     id: text("id").primaryKey(),
-    user_id: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    user_id: text("user_id").notNull(),
     book_id: text("book_id")
       .notNull()
       .references(() => books.id, { onDelete: "cascade" }),
@@ -95,9 +46,7 @@ export const readingProgress = sqliteTable(
   "reading_progress",
   {
     id: text("id").primaryKey(),
-    user_id: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    user_id: text("user_id").notNull(),
     book_id: text("book_id")
       .notNull()
       .references(() => books.id, { onDelete: "cascade" }),
@@ -114,9 +63,8 @@ export const readingProgress = sqliteTable(
 
 export const bookReviews = sqliteTable("book_reviews", {
   id: text("id").primaryKey(),
-  user_id: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+  user_id: text("user_id").notNull(),
+  username: text("username").notNull(),
   book_id: text("book_id")
     .notNull()
     .references(() => books.id, { onDelete: "cascade" }),
