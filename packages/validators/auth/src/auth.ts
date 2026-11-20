@@ -14,8 +14,11 @@ export const registerSchema = z.object({
   whatsapp_number: z
     .string()
     .trim()
-    .min(8, "WhatsApp number must be at least 8 digits")
-    .max(25, "WhatsApp number must be at most 25 characters"),
+    .max(25, "WhatsApp number must be at most 25 characters")
+    .refine((v) => v === "" || v.length >= 8, {
+      message: "WhatsApp number must be at least 8 digits",
+    })
+    .optional(),
   app_id: z
     .string()
     .trim()

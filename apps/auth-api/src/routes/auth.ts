@@ -45,6 +45,7 @@ authRoutes.post(
     const { email, password, name, whatsapp_number, app_id, role } =
       c.req.valid("json");
     const normalizedEmail = email.toLowerCase();
+    const normalizedWhatsapp = whatsapp_number ?? "";
     const targetAppId = app_id || "open-po";
     const db = createDb(c.env.DB);
 
@@ -78,7 +79,7 @@ authRoutes.post(
       email: normalizedEmail,
       password_hash: passwordHash,
       name,
-      whatsapp_number,
+      whatsapp_number: normalizedWhatsapp,
       is_active: true,
       created_at: now,
       updated_at: now,
@@ -145,7 +146,7 @@ authRoutes.post(
       id: userId,
       email: normalizedEmail,
       name,
-      whatsapp_number,
+      whatsapp_number: normalizedWhatsapp,
       is_active: true,
       app_roles,
       app_permissions,
