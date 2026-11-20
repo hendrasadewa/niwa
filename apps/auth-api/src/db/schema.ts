@@ -1,4 +1,5 @@
 import {
+  index,
   integer,
   primaryKey,
   sqliteTable,
@@ -82,4 +83,25 @@ export const rolePermissions = sqliteTable(
       .references(() => permissions.id, { onDelete: "cascade" }),
   },
   (table) => [primaryKey({ columns: [table.role_id, table.permission_id] })]
+);
+
+export const refreshTokens = sqliteTable(
+  "refresh_tokens",
+  {
+    id: text("id").primaryKey(),
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    family_id: text("family_id").notNull(),
+    token_hash: text("token_hash").notNull().unique(),
+    expires_at: integer("expires_at").notNull(),
+    revoked_at: integer("revoked_at"),
+    replaced_by_id: text("replaced_by_id"),
+    user_agent: text("user_agent"),
+    created_at: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("refresh_tokens_user_id_idx").on(table.user_id),
+    index("refresh_tokens_family_id_idx").on(table.family_id),
+  ]
 );

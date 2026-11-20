@@ -1,0 +1,5 @@
+# Local development secrets for @niwa/auth-api (wrangler dev --port 8788)
+# Copy this file to .dev.vars and customize your values.
+# Must share the same JWT_SECRET with downstream services (e.g. @niwa/open-po-api)
+JWT_SECRET="open-po-local-dev-jwt-secret-key"
+ADMIN_EMAIL="admin@example.com"

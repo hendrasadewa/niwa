@@ -45,6 +45,32 @@ export const updateUserSchema = z.object({
     .optional(),
 });
 
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, "Current password is required"),
+    new_password: z
+      .string()
+      .min(8, "New password must be at least 8 characters")
+      .max(128, "New password must be at most 128 characters"),
+    revoke_other_sessions: z.boolean().optional(),
+  })
+  .refine((data) => data.new_password !== data.current_password, {
+    message: "New password must be different from current password",
+    path: ["new_password"],
+  });
+
+export const refreshTokenSchema = z.object({
+  refresh_token: z
+    .string()
+    .trim()
+    .min(1, "Refresh token is required")
+    .max(512, "Invalid refresh token"),
+});
+
+export const logoutSchema = z.object({
+  refresh_token: z.string().trim().min(1).max(512).optional(),
+});
+
 export const grantAppRoleSchema = z.object({
   app_id: z
     .string()
@@ -59,7 +85,25 @@ export const grantAppRoleSchema = z.object({
   user_id: z.string().trim().min(1).max(128).optional(),
 });
 
+export const revokeAppRoleSchema = z.object({
+  app_id: z
+    .string()
+    .trim()
+    .min(1, "App ID is required")
+    .max(64, "App ID must be at most 64 characters"),
+  role: z
+    .string()
+    .trim()
+    .min(1, "Role name is required")
+    .max(64, "Role name must be at most 64 characters"),
+  user_id: z.string().trim().min(1, "User ID is required").max(128),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+export type LogoutInput = z.infer<typeof logoutSchema>;
 export type GrantAppRoleInput = z.infer<typeof grantAppRoleSchema>;
+export type RevokeAppRoleInput = z.infer<typeof revokeAppRoleSchema>;

@@ -1,7 +1,16 @@
 import { sign } from "hono/jwt";
 import type { AuthUserResponse, NiwaJwtPayload } from "../types";
 
-export const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
+export const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 15; // 15 minutes
+
+export function resolveAccessTokenTtl(envValue?: string): number {
+  if (!envValue) return DEFAULT_ACCESS_TOKEN_TTL_SECONDS;
+  const parsed = Number.parseInt(envValue, 10);
+  if (!Number.isFinite(parsed) || parsed < 60) {
+    return DEFAULT_ACCESS_TOKEN_TTL_SECONDS;
+  }
+  return parsed;
+}
 
 export async function signNiwaToken(
   user: Pick<
@@ -14,7 +23,8 @@ export async function signNiwaToken(
     | "app_permissions"
     | "created_at"
   >,
-  jwtSecret: string
+  jwtSecret: string,
+  ttlSeconds = DEFAULT_ACCESS_TOKEN_TTL_SECONDS
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const payload: NiwaJwtPayload = {
@@ -26,7 +36,7 @@ export async function signNiwaToken(
     app_permissions: user.app_permissions,
     created_at: user.created_at,
     iat: now,
-    exp: now + TOKEN_TTL_SECONDS,
+    exp: now + ttlSeconds,
   };
 
   return sign(payload, jwtSecret, "HS256");

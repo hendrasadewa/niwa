@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { aclRoutes } from "./routes/acl";
 import { authRoutes } from "./routes/auth";
 import type { AppEnv } from "./types";
 
@@ -15,5 +16,6 @@ app.get("/", (c) =>
 );
 
 app.route("/api/v1/auth", authRoutes);
+app.route("/api/v1/acl", aclRoutes);
 
 export default app;
