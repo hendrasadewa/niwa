@@ -92,12 +92,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = React.useCallback(() => {
     clearRefreshTimer();
-    clearAuthToken();
-    setToken(null);
-    setUser(null);
-    queryClient.clear();
+    setIsLoading(true);
 
     void logoutSso().finally(() => {
+      clearAuthToken();
+      setToken(null);
+      setUser(null);
+      queryClient.clear();
       if (typeof window !== "undefined") {
         window.location.replace(
           buildAuthPortalUrl("login", `${window.location.origin}/`)
