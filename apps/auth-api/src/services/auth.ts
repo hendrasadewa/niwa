@@ -7,12 +7,12 @@ import type {
   AuthTokenResponse,
   AuthUserResponse,
 } from "../types/auth";
-import { signNiwaToken } from "../utils/jwt";
+import { signNiwaToken, type JwtSigningConfig } from "../utils/jwt";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { generateRawRefreshToken, hashRefreshToken } from "../utils/token";
 
 export type AuthServiceConfig = {
-  jwtSecret: string;
+  jwtSigning: JwtSigningConfig;
   adminEmail?: string;
   accessTokenTtl: number;
   refreshTokenTtl: number;
@@ -168,11 +168,9 @@ export function createAuthService({
         app_roles,
         app_permissions
       );
-      const token = await signNiwaToken(
-        userResponse,
-        config.jwtSecret,
-        config.accessTokenTtl
-      );
+      const token = await signNiwaToken(userResponse, config.jwtSigning, {
+        ttlSeconds: config.accessTokenTtl,
+      });
       const issuedRefresh = await issueRefreshSession({
         userId,
         userAgent: input.userAgent,
@@ -216,11 +214,9 @@ export function createAuthService({
         app_roles,
         app_permissions
       );
-      const token = await signNiwaToken(
-        userResponse,
-        config.jwtSecret,
-        config.accessTokenTtl
-      );
+      const token = await signNiwaToken(userResponse, config.jwtSigning, {
+        ttlSeconds: config.accessTokenTtl,
+      });
       const issuedRefresh = await issueRefreshSession({
         userId: userRecord.id,
         userAgent: input.userAgent,
@@ -295,11 +291,9 @@ export function createAuthService({
         app_roles,
         app_permissions
       );
-      const token = await signNiwaToken(
-        userResponse,
-        config.jwtSecret,
-        config.accessTokenTtl
-      );
+      const token = await signNiwaToken(userResponse, config.jwtSigning, {
+        ttlSeconds: config.accessTokenTtl,
+      });
 
       return {
         user: userResponse,
@@ -371,11 +365,9 @@ export function createAuthService({
         updated_at: now,
       };
 
-      const token = await signNiwaToken(
-        updatedUser,
-        config.jwtSecret,
-        config.accessTokenTtl
-      );
+      const token = await signNiwaToken(updatedUser, config.jwtSigning, {
+        ttlSeconds: config.accessTokenTtl,
+      });
       const issuedRefresh = await issueRefreshSession({
         userId: input.currentUser.id,
         userAgent: input.userAgent,

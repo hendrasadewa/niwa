@@ -1,5 +1,10 @@
 # Local development secrets for @niwa/auth-api (wrangler dev --port 8788)
 # Copy this file to .dev.vars and customize your values.
-# Must share the same JWT_SECRET with downstream services (e.g. @niwa/open-po-api)
-JWT_SECRET="open-po-local-dev-jwt-secret-key"
+# Always use http://localhost:<port> (never 127.0.0.1) so SameSite=Lax cookies work consistently.
+JWT_ISSUER="https://auth.api.hendrasadewa.com"
+JWT_ACTIVE_KID="niwa-es256-dev"
+JWT_PRIVATE_KEY_JWK='{"kty":"EC","crv":"P-256","x":"_EtheeAKWhaNvgzpHTMJ0y_f-2zDaQf6DGA7itbjk9I","y":"p6HQCL2SpdUNNjiyyoifPJfmUoGj8kmfd7CQL8aNXYI","d":"Ueh6PUmWn0tzhbZpXnI-A9KtE3ysh_D3SeINlKlEtc8","kid":"niwa-es256-dev","alg":"ES256","use":"sig"}'
+# Optional JSON array of previous public JWKs kept during a key rotation grace window:
+# JWT_PUBLIC_JWKS_EXTRA="[]"
+AUTH_WEB_URL="http://localhost:3003"
 ADMIN_EMAIL="admin@example.com"

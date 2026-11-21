@@ -24,7 +24,12 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
 
   let verified: NiwaJwtPayload;
   try {
-    verified = await verifyNiwaToken(token, c.env.JWT_SECRET);
+    verified = await verifyNiwaToken(token, {
+      activeKid: c.env.JWT_ACTIVE_KID,
+      privateKeyJwk: c.env.JWT_PRIVATE_KEY_JWK,
+      extraPublicJwks: c.env.JWT_PUBLIC_JWKS_EXTRA,
+      issuer: c.env.JWT_ISSUER,
+    });
   } catch (err) {
     if (err instanceof AppError) throw err;
     throw AuthErrors.invalidOrExpiredJwt();

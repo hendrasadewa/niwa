@@ -12,10 +12,18 @@ export type AuthUser = {
 };
 
 export type NiwaJwtPayload = {
+  iss?: string;
   sub: string;
+  aud?: string | string[];
+  sid?: string;
+  jti?: string;
   email: string;
+  email_verified?: boolean;
   name: string;
   whatsapp_number: string;
+  amr?: string[];
+  roles?: string[];
+  permissions?: string[];
   app_roles: Record<string, string[]>;
   app_permissions: Record<string, string[]>;
   created_at?: number;

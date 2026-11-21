@@ -1,11 +1,23 @@
 export const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+export const DEFAULT_IDP_SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+
 const REFRESH_TOKEN_PREFIX = "niwa_rt_";
+const IDP_SESSION_PREFIX = "niwa_sid_";
 
 export function resolveRefreshTokenTtl(envValue?: string): number {
   if (!envValue) return DEFAULT_REFRESH_TOKEN_TTL_SECONDS;
   const parsed = Number.parseInt(envValue, 10);
   if (!Number.isFinite(parsed) || parsed < 300) {
     return DEFAULT_REFRESH_TOKEN_TTL_SECONDS;
+  }
+  return parsed;
+}
+
+export function resolveIdpSessionTtl(envValue?: string): number {
+  if (!envValue) return DEFAULT_IDP_SESSION_TTL_SECONDS;
+  const parsed = Number.parseInt(envValue, 10);
+  if (!Number.isFinite(parsed) || parsed < 300) {
+    return DEFAULT_IDP_SESSION_TTL_SECONDS;
   }
   return parsed;
 }
@@ -29,8 +41,17 @@ export function generateRawRefreshToken(): string {
   return `${REFRESH_TOKEN_PREFIX}${bytesToBase64Url(randomBytes)}`;
 }
 
-export async function hashRefreshToken(rawToken: string): Promise<string> {
+export function generateRawSessionToken(): string {
+  const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+  return `${IDP_SESSION_PREFIX}${bytesToBase64Url(randomBytes)}`;
+}
+
+export async function hashToken(rawToken: string): Promise<string> {
   const encoded = new TextEncoder().encode(rawToken);
   const digest = await crypto.subtle.digest("SHA-256", encoded);
   return bytesToHex(new Uint8Array(digest));
+}
+
+export async function hashRefreshToken(rawToken: string): Promise<string> {
+  return hashToken(rawToken);
 }

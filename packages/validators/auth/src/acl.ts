@@ -27,6 +27,31 @@ export const createAppSchema = z.object({
     .trim()
     .min(1, "Description is required")
     .max(500, "Description must be at most 500 characters"),
+  allowed_origins: z.array(z.string().trim().url()).max(50).optional(),
+  allowed_redirect_uris: z.array(z.string().trim().url()).max(50).optional(),
+  default_role_name: z.string().trim().min(1).max(64).nullable().optional(),
+  require_consent: z.boolean().optional(),
+  icon_url: z.string().trim().url().max(500).nullable().optional(),
+});
+
+export const updateAppSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "App name must be at least 2 characters")
+    .max(100, "App name must be at most 100 characters")
+    .optional(),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required")
+    .max(500, "Description must be at most 500 characters")
+    .optional(),
+  allowed_origins: z.array(z.string().trim().url()).max(50).optional(),
+  allowed_redirect_uris: z.array(z.string().trim().url()).max(50).optional(),
+  default_role_name: z.string().trim().min(1).max(64).nullable().optional(),
+  require_consent: z.boolean().optional(),
+  icon_url: z.string().trim().url().max(500).nullable().optional(),
 });
 
 export const createRoleSchema = z.object({
@@ -113,6 +138,7 @@ export const userIdParamSchema = z.object({
 });
 
 export type CreateAppInput = z.infer<typeof createAppSchema>;
+export type UpdateAppInput = z.infer<typeof updateAppSchema>;
 export type CreateRoleInput = z.infer<typeof createRoleSchema>;
 export type UpdateRolePermissionsInput = z.infer<
   typeof updateRolePermissionsSchema

@@ -22,6 +22,13 @@ export const apps = sqliteTable("apps", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
+  allowed_origins: text("allowed_origins").notNull().default("[]"),
+  allowed_redirect_uris: text("allowed_redirect_uris").notNull().default("[]"),
+  default_role_name: text("default_role_name"),
+  require_consent: integer("require_consent", { mode: "boolean" })
+    .notNull()
+    .default(true),
+  icon_url: text("icon_url"),
 });
 
 export const roles = sqliteTable(
@@ -104,4 +111,44 @@ export const refreshTokens = sqliteTable(
     index("refresh_tokens_user_id_idx").on(table.user_id),
     index("refresh_tokens_family_id_idx").on(table.family_id),
   ]
+);
+
+export const idpSessions = sqliteTable(
+  "idp_sessions",
+  {
+    id: text("id").primaryKey(),
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    session_hash: text("session_hash").notNull().unique(),
+    amr: text("amr").notNull().default('["pwd"]'),
+    ip_address: text("ip_address"),
+    user_agent: text("user_agent"),
+    last_seen_at: integer("last_seen_at").notNull(),
+    expires_at: integer("expires_at").notNull(),
+    revoked_at: integer("revoked_at"),
+    created_at: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("idp_sessions_user_id_idx").on(table.user_id),
+    index("idp_sessions_expires_at_idx").on(table.expires_at),
+  ]
+);
+
+export const userAppConsents = sqliteTable(
+  "user_app_consents",
+  {
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    app_id: text("app_id")
+      .notNull()
+      .references(() => apps.id, { onDelete: "cascade" }),
+    granted_scopes: text("granted_scopes")
+      .notNull()
+      .default('["profile","email","roles"]'),
+    consented_at: integer("consented_at").notNull(),
+    revoked_at: integer("revoked_at"),
+  },
+  (table) => [primaryKey({ columns: [table.user_id, table.app_id] })]
 );

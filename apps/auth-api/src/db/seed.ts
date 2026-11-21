@@ -5,16 +5,75 @@ export const DEFAULT_APPS: ReadonlyArray<{
   id: string;
   name: string;
   description: string;
+  allowed_origins: string[];
+  allowed_redirect_uris: string[];
+  default_role_name: string | null;
+  require_consent: boolean;
+  icon_url: string | null;
 }> = [
+  {
+    id: "auth-web",
+    name: "Niwa Account",
+    description: "Central Identity, Security & Access Management Portal",
+    allowed_origins: [
+      "https://auth.hendrasadewa.com",
+      "http://localhost:3003",
+    ],
+    allowed_redirect_uris: [
+      "https://auth.hendrasadewa.com",
+      "http://localhost:3003",
+    ],
+    default_role_name: null,
+    require_consent: false,
+    icon_url: null,
+  },
   {
     id: "open-po",
     name: "Open-PO",
     description: "UMKM Pre-Order Management & Micro-Ecommerce Platform",
+    allowed_origins: [
+      "https://preorder.hendrasadewa.com",
+      "http://localhost:3002",
+    ],
+    allowed_redirect_uris: [
+      "https://preorder.hendrasadewa.com",
+      "http://localhost:3002",
+    ],
+    default_role_name: "member",
+    require_consent: true,
+    icon_url: null,
   },
   {
     id: "pustaka",
     name: "Pustaka",
     description: "Personal Library, Bookshelf Inventory & Reading Tracker",
+    allowed_origins: [
+      "https://pustaka.hendrasadewa.com",
+      "http://localhost:3001",
+    ],
+    allowed_redirect_uris: [
+      "https://pustaka.hendrasadewa.com",
+      "http://localhost:3001",
+    ],
+    default_role_name: "member",
+    require_consent: true,
+    icon_url: null,
+  },
+  {
+    id: "labs",
+    name: "Niwa Labs",
+    description: "Interactive Experiments, Demos, and Prototypes",
+    allowed_origins: [
+      "https://labs.hendrasadewa.com",
+      "http://localhost:5173",
+    ],
+    allowed_redirect_uris: [
+      "https://labs.hendrasadewa.com",
+      "http://localhost:5173",
+    ],
+    default_role_name: "member",
+    require_consent: true,
+    icon_url: null,
   },
 ];
 
@@ -60,6 +119,19 @@ export const DEFAULT_ROLES: ReadonlyArray<{
     name: "member",
     description:
       "View inventory, manage personal reading lists, update reading progress, and add book reviews.",
+  },
+  // Labs roles
+  {
+    id: "labs:role-admin",
+    app_id: "labs",
+    name: "admin",
+    description: "Administrator privileges for Niwa Labs experiments.",
+  },
+  {
+    id: "labs:role-member",
+    app_id: "labs",
+    name: "member",
+    description: "Default member role for Niwa Labs experiments.",
   },
 ];
 
@@ -187,6 +259,11 @@ async function runRbacSeed(db: Database): Promise<void> {
           id: a.id,
           name: a.name,
           description: a.description,
+          allowed_origins: JSON.stringify(a.allowed_origins),
+          allowed_redirect_uris: JSON.stringify(a.allowed_redirect_uris),
+          default_role_name: a.default_role_name,
+          require_consent: a.require_consent,
+          icon_url: a.icon_url,
         }))
       )
       .onConflictDoNothing(),

@@ -6,7 +6,12 @@ import { createRoleRepo } from "../../repositories/roles";
 import { createAppService } from "../../services/apps";
 import type { AppEnv } from "../../types/env";
 import { validate } from "../../validators";
-import { appFilterQuerySchema, createAppSchema } from "../../validators/acl";
+import {
+  appFilterQuerySchema,
+  appIdParamSchema,
+  createAppSchema,
+  updateAppSchema,
+} from "../../validators/acl";
 
 function getAppService(c: Context<AppEnv>) {
   const db = c.get("db");
@@ -33,3 +38,16 @@ aclAppsRoutes.post("/", validate("json", createAppSchema), async (c) => {
   const app = await getAppService(c).createApp(body);
   return c.json({ app }, 201);
 });
+
+// PUT /api/v1/acl/apps/:appId
+aclAppsRoutes.put(
+  "/:appId",
+  validate("param", appIdParamSchema),
+  validate("json", updateAppSchema),
+  async (c) => {
+    const { appId } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const app = await getAppService(c).updateApp(appId, body);
+    return c.json({ app });
+  }
+);

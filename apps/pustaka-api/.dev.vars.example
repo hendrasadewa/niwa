@@ -1,5 +1,5 @@
 # Local development secrets for @niwa/pustaka-api (wrangler dev --port 8787)
 # Copy this file to .dev.vars and customize your values.
-# JWT_SECRET must match @niwa/auth-api
-JWT_SECRET="open-po-local-dev-jwt-secret-key"
-AUTH_API_URL="http://127.0.0.1:8788"
+# Uses JWKS from @niwa/auth-api (/.well-known/jwks.json) for ES256 JWT verification.
+AUTH_API_URL="http://localhost:8788"
+JWT_ISSUER="https://auth.api.hendrasadewa.com"

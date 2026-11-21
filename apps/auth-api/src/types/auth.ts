@@ -18,10 +18,18 @@ export type UserWithSessionCount = AuthUserResponse & {
 };
 
 export type NiwaJwtPayload = {
+  iss: string;
   sub: string;
+  aud: string | string[];
+  sid?: string;
+  jti: string;
   email: string;
+  email_verified: boolean;
   name: string;
   whatsapp_number: string;
+  amr?: string[];
+  roles?: string[];
+  permissions?: string[];
   app_roles: AppRoleMap;
   app_permissions: AppPermissionMap;
   created_at?: number;

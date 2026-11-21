@@ -19,7 +19,11 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
 
   let verified: NiwaJwtPayload;
   try {
-    verified = await verifyNiwaToken(token, c.env.JWT_SECRET);
+    verified = await verifyNiwaToken(token, {
+      authApi: c.env.AUTH_API,
+      authApiUrl: c.env.AUTH_API_URL,
+      issuer: c.env.JWT_ISSUER,
+    });
   } catch (err) {
     if (err instanceof AppError) throw err;
     throw AuthErrors.invalidOrExpiredJwt();
@@ -34,14 +38,16 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
     throw AuthErrors.invalidTokenPayload();
   }
 
-  const pustakaRoles = Array.isArray(verified.app_roles?.[PUSTAKA_APP_ID])
-    ? (verified.app_roles[PUSTAKA_APP_ID] as RoleName[])
-    : [];
-  const pustakaPermissions = Array.isArray(
-    verified.app_permissions?.[PUSTAKA_APP_ID]
-  )
-    ? verified.app_permissions[PUSTAKA_APP_ID]
-    : [];
+  const pustakaRoles = Array.isArray(verified.roles)
+    ? (verified.roles as RoleName[])
+    : Array.isArray(verified.app_roles?.[PUSTAKA_APP_ID])
+      ? (verified.app_roles[PUSTAKA_APP_ID] as RoleName[])
+      : [];
+  const pustakaPermissions = Array.isArray(verified.permissions)
+    ? verified.permissions
+    : Array.isArray(verified.app_permissions?.[PUSTAKA_APP_ID])
+      ? verified.app_permissions[PUSTAKA_APP_ID]
+      : [];
 
   c.set("jwtPayload", verified);
   c.set("authToken", token);

@@ -7,7 +7,11 @@ compatibility_flags = ["nodejs_compat"]
 port = 8788
 
 [vars]
-JWT_SECRET = "open-po-local-dev-jwt-secret-key"
+JWT_ISSUER = "https://auth.api.hendrasadewa.com"
+JWT_ACTIVE_KID = "niwa-es256-dev"
+# Local-dev-only EC P-256 private JWK. Override in production with `wrangler secret put JWT_PRIVATE_KEY_JWK`.
+JWT_PRIVATE_KEY_JWK = '{"kty":"EC","crv":"P-256","x":"_EtheeAKWhaNvgzpHTMJ0y_f-2zDaQf6DGA7itbjk9I","y":"p6HQCL2SpdUNNjiyyoifPJfmUoGj8kmfd7CQL8aNXYI","d":"Ueh6PUmWn0tzhbZpXnI-A9KtE3ysh_D3SeINlKlEtc8","kid":"niwa-es256-dev","alg":"ES256","use":"sig"}'
+AUTH_WEB_URL = "http://localhost:3003"
 
 [[d1_databases]]
 binding = "DB"

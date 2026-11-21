@@ -2,7 +2,12 @@
   "name": "@niwa/pustaka-api",
   "version": "0.0.0",
   "description": "Pustaka personal mini-library and reading progress API",
-  "keywords": ["pustaka", "library", "hono", "cloudflare-workers"],
+  "keywords": [
+    "pustaka",
+    "library",
+    "hono",
+    "cloudflare-workers"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "main": "src/index.ts",
@@ -20,6 +25,7 @@
     "@niwa/pustaka-validators": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.3",
+    "jose": "^6.2.18",
     "zod": "^4.0.0"
   },
   "devDependencies": {

@@ -2,7 +2,13 @@
   "name": "@niwa/open-po-api",
   "version": "0.0.0",
   "description": "UMKM Pre-Order Management System API",
-  "keywords": ["open-po", "pre-order", "umkm", "hono", "cloudflare-workers"],
+  "keywords": [
+    "open-po",
+    "pre-order",
+    "umkm",
+    "hono",
+    "cloudflare-workers"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "main": "src/index.ts",
@@ -20,6 +26,7 @@
     "@niwa/open-po-validators": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.3",
+    "jose": "^6.2.18",
     "zod": "^4.0.0"
   },
   "devDependencies": {

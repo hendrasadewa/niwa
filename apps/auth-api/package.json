@@ -2,7 +2,14 @@
   "name": "@niwa/auth-api",
   "version": "0.0.0",
   "description": "Standalone User Management, Identity & Multi-App RBAC Service",
-  "keywords": ["niwa", "auth", "identity", "rbac", "hono", "cloudflare-workers"],
+  "keywords": [
+    "niwa",
+    "auth",
+    "identity",
+    "rbac",
+    "hono",
+    "cloudflare-workers"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "main": "src/index.ts",
@@ -20,6 +27,7 @@
     "@niwa/auth-validators": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.3",
+    "jose": "^6.2.18",
     "zod": "^4.0.0"
   },
   "devDependencies": {

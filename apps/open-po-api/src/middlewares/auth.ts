@@ -6,14 +6,14 @@ import { createCustomerProfileRepo } from "../repositories/customer-profiles";
 import type { AuthUser, NiwaJwtPayload, RoleName } from "../types/auth";
 import type { AppEnv } from "../types/env";
 import { OPEN_PO_APP_ID } from "../utils/auth";
-import { verifyNiwaToken } from "../utils/jwt";
+import { verifyNiwaToken, type VerifyNiwaTokenOptions } from "../utils/jwt";
 
 async function resolveUserFromToken(
   token: string,
-  jwtSecret: string,
+  verifyOptions: VerifyNiwaTokenOptions,
   db: Database
 ): Promise<{ user: AuthUser; verified: NiwaJwtPayload } | null> {
-  const verified = await verifyNiwaToken(token, jwtSecret);
+  const verified = await verifyNiwaToken(token, verifyOptions);
 
   if (
     !verified ||
@@ -29,14 +29,16 @@ async function resolveUserFromToken(
     verified.sub
   );
 
-  const openPoRoles = Array.isArray(verified.app_roles?.[OPEN_PO_APP_ID])
-    ? (verified.app_roles[OPEN_PO_APP_ID] as RoleName[])
-    : [];
-  const openPoPermissions = Array.isArray(
-    verified.app_permissions?.[OPEN_PO_APP_ID]
-  )
-    ? verified.app_permissions[OPEN_PO_APP_ID]
-    : [];
+  const openPoRoles = Array.isArray(verified.roles)
+    ? (verified.roles as RoleName[])
+    : Array.isArray(verified.app_roles?.[OPEN_PO_APP_ID])
+      ? (verified.app_roles[OPEN_PO_APP_ID] as RoleName[])
+      : [];
+  const openPoPermissions = Array.isArray(verified.permissions)
+    ? verified.permissions
+    : Array.isArray(verified.app_permissions?.[OPEN_PO_APP_ID])
+      ? verified.app_permissions[OPEN_PO_APP_ID]
+      : [];
 
   return {
     verified,
@@ -72,7 +74,11 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   try {
     resolved = await resolveUserFromToken(
       token,
-      c.env.JWT_SECRET,
+      {
+        authApi: c.env.AUTH_API,
+        authApiUrl: c.env.AUTH_API_URL,
+        issuer: c.env.JWT_ISSUER,
+      },
       c.get("db")
     );
   } catch (err) {
@@ -104,7 +110,11 @@ export const optionalAuthMiddleware = createMiddleware<AppEnv>(
         try {
           const resolved = await resolveUserFromToken(
             token,
-            c.env.JWT_SECRET,
+            {
+              authApi: c.env.AUTH_API,
+              authApiUrl: c.env.AUTH_API_URL,
+              issuer: c.env.JWT_ISSUER,
+            },
             c.get("db")
           );
           if (resolved) {

@@ -20,7 +20,12 @@ function getProfileService(c: Context<AppEnv>) {
     roleRepo: createRoleRepo(db),
     ensureSeeded: () => ensureRbacSeeded(db),
     config: {
-      jwtSecret: c.env.JWT_SECRET,
+      jwtSigning: {
+        activeKid: c.env.JWT_ACTIVE_KID,
+        privateKeyJwk: c.env.JWT_PRIVATE_KEY_JWK,
+        extraPublicJwks: c.env.JWT_PUBLIC_JWKS_EXTRA,
+        issuer: c.env.JWT_ISSUER,
+      },
       accessTokenTtl: resolveAccessTokenTtl(c.env.ACCESS_TOKEN_TTL_SECONDS),
     },
   });

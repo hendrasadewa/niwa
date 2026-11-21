@@ -2,11 +2,11 @@ import { AuthErrors } from "../errors/auth";
 import type { RoleRepo } from "../repositories/roles";
 import type { UserRepo } from "../repositories/users";
 import type { AuthUserResponse } from "../types/auth";
-import { signNiwaToken } from "../utils/jwt";
+import { signNiwaToken, type JwtSigningConfig } from "../utils/jwt";
 import { isUserAdmin } from "../utils/rbac";
 
 export type ProfileServiceConfig = {
-  jwtSecret: string;
+  jwtSigning: JwtSigningConfig;
   accessTokenTtl: number;
 };
 
@@ -52,11 +52,9 @@ export function createProfileService({
         updated_at: now,
       };
 
-      const token = await signNiwaToken(
-        updatedUser,
-        config.jwtSecret,
-        config.accessTokenTtl
-      );
+      const token = await signNiwaToken(updatedUser, config.jwtSigning, {
+        ttlSeconds: config.accessTokenTtl,
+      });
 
       return {
         user: updatedUser,
@@ -119,11 +117,9 @@ export function createProfileService({
         updated_at: targetUser.updated_at,
       };
 
-      const token = await signNiwaToken(
-        updatedUser,
-        config.jwtSecret,
-        config.accessTokenTtl
-      );
+      const token = await signNiwaToken(updatedUser, config.jwtSigning, {
+        ttlSeconds: config.accessTokenTtl,
+      });
 
       return {
         user: updatedUser,
