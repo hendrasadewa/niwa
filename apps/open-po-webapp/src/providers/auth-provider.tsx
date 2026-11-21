@@ -19,6 +19,7 @@ import {
   buildAuthPortalUrl,
   exchangeSsoToken,
   logoutSso,
+  resolveSafeRedirectUri,
   type SsoUserPayload,
 } from "@/lib/sso";
 
@@ -50,6 +51,16 @@ function isProtectedPath(pathname: string | null): boolean {
   if (!pathname) return false;
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+function isAuthRedirectPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return (
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/register" ||
+    pathname.startsWith("/register/")
   );
 }
 
@@ -191,9 +202,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (options?: {
       silent?: boolean;
       redirectOnConsent?: boolean;
-    }): Promise<ProfileResponse | null> => {
+    }): Promise<{ profile: ProfileResponse | null; redirecting: boolean }> => {
       const redirectUri =
-        typeof window !== "undefined" ? window.location.href : undefined;
+        typeof window !== "undefined" ? resolveSafeRedirectUri() : undefined;
 
       try {
         const result = await exchangeSsoToken(redirectUri);
@@ -212,10 +223,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             void syncSsoSession({ silent: true, redirectOnConsent: true });
           }, refreshDelayMs);
 
-          return hydrateOpenPoProfile(
+          const profile = await hydrateOpenPoProfile(
             result.token,
             mapSsoUserFallback(result.user)
           );
+          return { profile, redirecting: false };
         }
 
         if (result.status === "consent_required") {
@@ -230,8 +242,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             typeof window !== "undefined"
           ) {
             window.location.replace(result.consent_url);
+            return { profile: null, redirecting: true };
           }
-          return null;
+          return { profile: null, redirecting: false };
         }
 
         clearRefreshTimer();
@@ -240,7 +253,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setOwnedStores([]);
         setActiveStoreIdState(null);
-        return null;
+        return { profile: null, redirecting: false };
       } catch {
         if (!options?.silent) {
           clearRefreshTimer();
@@ -250,7 +263,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setOwnedStores([]);
           setActiveStoreIdState(null);
         }
-        return null;
+        return { profile: null, redirecting: false };
       }
     },
     [clearRefreshTimer, hydrateOpenPoProfile]
@@ -265,9 +278,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setOwnedStores([]);
       setActiveStoreIdState(null);
       queryClient.clear();
-      if (typeof window !== "undefined") {
-        window.location.replace(buildAuthPortalUrl("login"));
-      }
     });
 
     return () => {
@@ -276,11 +286,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clearRefreshTimer, queryClient]);
 
   React.useEffect(() => {
+    if (isAuthRedirectPath(pathname)) {
+      setIsLoading(false);
+      return;
+    }
+
     let active = true;
 
     async function hydrate() {
-      await syncSsoSession({ redirectOnConsent: true });
-      if (active) {
+      const { redirecting } = await syncSsoSession({ redirectOnConsent: true });
+      if (active && !redirecting) {
         setIsLoading(false);
       }
     }
@@ -291,7 +306,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       active = false;
       clearRefreshTimer();
     };
-  }, [syncSsoSession, clearRefreshTimer]);
+  }, [pathname, syncSsoSession, clearRefreshTimer]);
 
   // Enforce login on protected routes (/profile, /orders, /seller)
   React.useEffect(() => {
@@ -305,6 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState !== "visible") return;
+      if (isAuthRedirectPath(pathname)) return;
       if (Date.now() - lastSyncAtRef.current < VISIBILITY_RECHECK_MIN_MS) {
         return;
       }
@@ -315,17 +331,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [syncSsoSession]);
+  }, [pathname, syncSsoSession]);
 
   const refreshProfile =
     React.useCallback(async (): Promise<ProfileResponse | null> => {
       const activeToken = getAuthToken();
       if (!activeToken) {
-        return syncSsoSession({ redirectOnConsent: true });
+        const { profile } = await syncSsoSession({ redirectOnConsent: true });
+        return profile;
       }
       const profile = await hydrateOpenPoProfile(activeToken);
       if (!profile) {
-        return syncSsoSession({ redirectOnConsent: true });
+        const synced = await syncSsoSession({ redirectOnConsent: true });
+        return synced.profile;
       }
       return profile;
     }, [hydrateOpenPoProfile, syncSsoSession]);

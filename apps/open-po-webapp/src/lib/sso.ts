@@ -47,21 +47,32 @@ export type SsoTokenExchangeResponse =
 export function resolveSafeRedirectUri(redirectPath?: string | null): string {
   if (typeof window === "undefined") return "";
   const origin = window.location.origin;
+  const fallback = `${origin}/`;
+
+  const isAuthLoopPath = (pathname: string) =>
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/register" ||
+    pathname.startsWith("/register/");
+
   if (!redirectPath) {
-    return window.location.href;
+    return isAuthLoopPath(window.location.pathname)
+      ? fallback
+      : window.location.href;
   }
   if (redirectPath.startsWith("/") && !redirectPath.startsWith("//")) {
-    return `${origin}${redirectPath}`;
+    const cleanPath = redirectPath.split("?")[0] ?? "/";
+    return isAuthLoopPath(cleanPath) ? fallback : `${origin}${redirectPath}`;
   }
   try {
     const parsed = new URL(redirectPath);
-    if (parsed.origin === origin) {
+    if (parsed.origin === origin && !isAuthLoopPath(parsed.pathname)) {
       return parsed.toString();
     }
   } catch {
     // fall through
   }
-  return `${origin}/`;
+  return fallback;
 }
 
 export function buildAuthPortalUrl(

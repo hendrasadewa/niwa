@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ProfileResponse, User } from "@/types/api";
 import {
@@ -16,6 +17,7 @@ import {
   buildAuthPortalUrl,
   exchangeSsoToken,
   logoutSso,
+  resolveSafeRedirectUri,
   type SsoUserPayload,
 } from "@/lib/sso";
 
@@ -49,7 +51,18 @@ function mapSsoUser(ssoUser: SsoUserPayload): User {
 
 const VISIBILITY_RECHECK_MIN_MS = 30_000;
 
+function isAuthRedirectPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return (
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/register" ||
+    pathname.startsWith("/register/")
+  );
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const queryClient = useQueryClient();
   const [token, setToken] = React.useState<string | null>(null);
   const [user, setUser] = React.useState<User | null>(null);
@@ -97,9 +110,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (options?: {
       silent?: boolean;
       redirectOnConsent?: boolean;
-    }): Promise<User | null> => {
+    }): Promise<{ user: User | null; redirecting: boolean }> => {
       const redirectUri =
-        typeof window !== "undefined" ? window.location.href : undefined;
+        typeof window !== "undefined" ? resolveSafeRedirectUri() : undefined;
 
       try {
         const result = await exchangeSsoToken(redirectUri);
@@ -123,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             void syncSsoSession({ silent: true, redirectOnConsent: true });
           }, refreshDelayMs);
 
-          return mappedUser;
+          return { user: mappedUser, redirecting: false };
         }
 
         if (result.status === "consent_required") {
@@ -136,8 +149,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             typeof window !== "undefined"
           ) {
             window.location.replace(result.consent_url);
+            return { user: null, redirecting: true };
           }
-          return null;
+          return { user: null, redirecting: false };
         }
 
         // Unauthenticated
@@ -145,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuthToken();
         setToken(null);
         setUser(null);
-        return null;
+        return { user: null, redirecting: false };
       } catch {
         if (!options?.silent) {
           clearRefreshTimer();
@@ -153,7 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setToken(null);
           setUser(null);
         }
-        return null;
+        return { user: null, redirecting: false };
       }
     },
     [clearRefreshTimer]
@@ -166,9 +180,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(null);
       setUser(null);
       queryClient.clear();
-      if (typeof window !== "undefined") {
-        window.location.replace(buildAuthPortalUrl("login"));
-      }
     });
 
     return () => {
@@ -177,17 +188,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clearRefreshTimer, queryClient]);
 
   React.useEffect(() => {
+    if (isAuthRedirectPath(pathname)) {
+      setIsLoading(false);
+      return;
+    }
+
     let active = true;
 
     async function hydrate() {
-      const result = await syncSsoSession({ redirectOnConsent: true });
-      if (active) {
-        // Keep loading true if consent redirect is in progress
-        if (result !== null || typeof window === "undefined") {
-          setIsLoading(false);
-        } else {
-          setIsLoading(false);
-        }
+      const { redirecting } = await syncSsoSession({ redirectOnConsent: true });
+      if (active && !redirecting) {
+        setIsLoading(false);
       }
     }
 
@@ -197,12 +208,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       active = false;
       clearRefreshTimer();
     };
-  }, [syncSsoSession, clearRefreshTimer]);
+  }, [pathname, syncSsoSession, clearRefreshTimer]);
 
   // Re-verify session on tab focus to propagate Global Single Logout promptly
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState !== "visible") return;
+      if (isAuthRedirectPath(pathname)) return;
       if (Date.now() - lastSyncAtRef.current < VISIBILITY_RECHECK_MIN_MS) {
         return;
       }
@@ -213,12 +225,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [syncSsoSession]);
+  }, [pathname, syncSsoSession]);
 
   const refreshProfile = React.useCallback(async (): Promise<User | null> => {
     const activeToken = getAuthToken();
     if (!activeToken) {
-      return syncSsoSession({ redirectOnConsent: true });
+      const { user: syncedUser } = await syncSsoSession({
+        redirectOnConsent: true,
+      });
+      return syncedUser;
     }
 
     try {
@@ -231,7 +246,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setStoredUser(response.user);
       return response.user;
     } catch {
-      return syncSsoSession({ redirectOnConsent: true });
+      const { user: syncedUser } = await syncSsoSession({
+        redirectOnConsent: true,
+      });
+      return syncedUser;
     }
   }, [syncSsoSession]);
 
