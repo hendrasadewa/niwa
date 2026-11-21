@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { errorHandler, notFoundHandler } from "./errors/handler";
+import { dbMiddleware } from "./middlewares/db";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
 import { ordersRoutes } from "./routes/orders";
@@ -8,11 +10,15 @@ import { reviewsRoutes } from "./routes/reviews";
 import { storesRoutes } from "./routes/stores";
 import { trackRoutes } from "./routes/track";
 import { wavesRoutes } from "./routes/waves";
-import type { AppEnv } from "./types";
+import type { AppEnv } from "./types/env";
 
 const app = new Hono<AppEnv>();
 
 app.use("*", cors());
+app.use("/api/*", dbMiddleware);
+
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 app.get("/", (c) =>
   c.json({

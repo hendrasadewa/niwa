@@ -1,14 +1,4 @@
-import { and, desc, eq, inArray, or, type SQL } from "drizzle-orm";
-import {
-  orderItems,
-  orders,
-  preOrderWaves,
-  products,
-  stores,
-  waveProducts,
-  type Database,
-} from "../db";
-import type { AuthUser } from "../types";
+import type { AuthUser } from "../types/auth";
 
 const UNAMBIGUOUS_ALPHANUM = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
@@ -38,31 +28,6 @@ export function generateOrderSlug(prefix = "PO"): string {
 }
 
 /**
- * Resolves a single order record by either its UUID (`id`) or human-readable `slug` (case-insensitive).
- */
-export async function findOrderByIdOrSlug(
-  db: Database,
-  idOrSlug: string
-): Promise<typeof orders.$inferSelect | undefined> {
-  const trimmed = idOrSlug.trim();
-  const upper = trimmed.toUpperCase();
-
-  const [order] = await db
-    .select()
-    .from(orders)
-    .where(
-      or(
-        eq(orders.id, trimmed),
-        eq(orders.slug, upper),
-        eq(orders.slug, trimmed)
-      )
-    )
-    .limit(1);
-
-  return order;
-}
-
-/**
  * Normalizes a phone/WhatsApp number to digits (converting `628...` to `08...` for consistent storage).
  */
 export function normalizePhoneForStorage(phone: string): string {
@@ -71,6 +36,14 @@ export function normalizePhoneForStorage(phone: string): string {
     return `0${digits.slice(2)}`;
   }
   return digits || phone.trim();
+}
+
+export function formatWhatsAppPhone(phone: string): string {
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (digits.startsWith("08")) {
+    return `62${digits.slice(1)}`;
+  }
+  return digits;
 }
 
 /**
@@ -103,7 +76,16 @@ export function getPhoneLookupVariants(input: string): string[] {
 }
 
 /**
- * Masks a customer/guest name for unauthenticated guest views (e.g., "Andi Pratama" -> "A*** P******").
+ * Checks whether two phone numbers represent the same normalized phone number.
+ */
+export function isSamePhoneNumber(phoneA: string, phoneB: string): boolean {
+  const variantsA = getPhoneLookupVariants(phoneA);
+  const normalizedB = normalizePhoneForStorage(phoneB);
+  return variantsA.includes(normalizedB) || variantsA.includes(phoneB.trim());
+}
+
+/**
+ * Masks a customer/guest name for unauthenticated guest views.
  */
 export function maskName(name: string | null | undefined): string {
   if (!name) return "C*******";
@@ -118,7 +100,7 @@ export function maskName(name: string | null | undefined): string {
 }
 
 /**
- * Masks a phone/WhatsApp number for unauthenticated guest views (e.g., "081234567890" -> "0812****7890").
+ * Masks a phone/WhatsApp number for unauthenticated guest views.
  */
 export function maskPhone(phone: string | null | undefined): string | null {
   if (!phone) return null;
@@ -133,7 +115,7 @@ export function maskPhone(phone: string | null | undefined): string | null {
 }
 
 /**
- * Masks a shipping address for unauthenticated guest views (e.g., "Jl. Merdeka No. 10, Bandung" -> "Jl. M****** N*. **, B******").
+ * Masks a shipping address for unauthenticated guest views.
  */
 export function maskAddress(address: string | null | undefined): string {
   if (!address) return "***";
@@ -159,11 +141,6 @@ export function maskAddress(address: string | null | undefined): string {
 
 /**
  * Determines whether an authenticated user is authorized to view/access an order's unmasked details.
- * Returns true if the user is:
- * 1. Global Admin
- * 2. Owner of the Store that manages the order's wave
- * 3. The customer who placed the order (`order.customer_id === user.id`)
- * 4. A guest who later logged in with the same WhatsApp number (`order.customer_id === null` & phone matches)
  */
 export function canUserAccessOrder(
   user: AuthUser,
@@ -189,167 +166,4 @@ export function canUserAccessOrder(
     }
   }
   return false;
-}
-
-/**
- * Checks whether two phone numbers represent the same normalized phone number.
- */
-export function isSamePhoneNumber(phoneA: string, phoneB: string): boolean {
-  const variantsA = getPhoneLookupVariants(phoneA);
-  const normalizedB = normalizePhoneForStorage(phoneB);
-  return variantsA.includes(normalizedB) || variantsA.includes(phoneB.trim());
-}
-
-/**
- * Looks up order history by guest/customer phone number (with optional store filter)
- * and applies PII masking when viewed by an unauthenticated guest.
- */
-export async function lookupOrdersByPhone(
-  db: Database,
-  rawPhone: string,
-  options?: {
-    storeIdOrSlug?: string;
-    viewer?: AuthUser;
-  }
-) {
-  const variants = getPhoneLookupVariants(rawPhone);
-  const conditions: SQL[] = [];
-
-  const phoneMatch = or(
-    inArray(orders.guest_whatsapp, variants),
-    inArray(orders.customer_whatsapp, variants)
-  );
-  if (phoneMatch) {
-    conditions.push(phoneMatch);
-  }
-
-  if (options?.storeIdOrSlug) {
-    const [resolvedStore] = await db
-      .select({ id: stores.id })
-      .from(stores)
-      .where(
-        or(
-          eq(stores.id, options.storeIdOrSlug),
-          eq(stores.slug, options.storeIdOrSlug)
-        )
-      )
-      .limit(1);
-
-    conditions.push(
-      eq(
-        preOrderWaves.store_id,
-        resolvedStore ? resolvedStore.id : options.storeIdOrSlug
-      )
-    );
-  }
-
-  const matchedOrders = await db
-    .select({
-      id: orders.id,
-      slug: orders.slug,
-      wave_id: orders.wave_id,
-      customer_id: orders.customer_id,
-      customer_name: orders.customer_name,
-      customer_whatsapp: orders.customer_whatsapp,
-      guest_name: orders.guest_name,
-      guest_whatsapp: orders.guest_whatsapp,
-      shipping_address: orders.shipping_address,
-      total_amount: orders.total_amount,
-      payment_receipt_url: orders.payment_receipt_url,
-      status: orders.status,
-      tracking_number: orders.tracking_number,
-      created_at: orders.created_at,
-      wave: {
-        id: preOrderWaves.id,
-        name: preOrderWaves.name,
-        status: preOrderWaves.status,
-        store_id: preOrderWaves.store_id,
-      },
-      store: {
-        id: stores.id,
-        owner_id: stores.owner_id,
-        slug: stores.slug,
-        name: stores.name,
-        whatsapp_contact: stores.whatsapp_contact,
-      },
-    })
-    .from(orders)
-    .innerJoin(preOrderWaves, eq(orders.wave_id, preOrderWaves.id))
-    .innerJoin(stores, eq(preOrderWaves.store_id, stores.id))
-    .where(and(...conditions))
-    .orderBy(desc(orders.created_at));
-
-  const viewer = options?.viewer;
-  // If viewer is logged in, filter out any orders they are not authorized to access
-  const visibleOrders = viewer
-    ? matchedOrders.filter((o) =>
-        canUserAccessOrder(viewer, o, o.store.owner_id)
-      )
-    : matchedOrders;
-
-  if (visibleOrders.length === 0) {
-    return [];
-  }
-
-  const orderIds = visibleOrders.map((o) => o.id);
-  const itemRows = await db
-    .select({
-      id: orderItems.id,
-      order_id: orderItems.order_id,
-      wave_product_id: orderItems.wave_product_id,
-      quantity: orderItems.quantity,
-      subtotal: orderItems.subtotal,
-      locked_price: waveProducts.locked_price,
-      product_id: products.id,
-      product_name: products.name,
-      product_image_url: products.image_url,
-    })
-    .from(orderItems)
-    .innerJoin(waveProducts, eq(orderItems.wave_product_id, waveProducts.id))
-    .innerJoin(products, eq(waveProducts.product_id, products.id))
-    .where(inArray(orderItems.order_id, orderIds));
-
-  const itemsByOrder = new Map<string, typeof itemRows>();
-  for (const item of itemRows) {
-    const list = itemsByOrder.get(item.order_id) ?? [];
-    list.push(item);
-    itemsByOrder.set(item.order_id, list);
-  }
-
-  return visibleOrders.map((order) => {
-    const isUnlocked = viewer
-      ? canUserAccessOrder(viewer, order, order.store.owner_id)
-      : false;
-    const rawName = order.customer_name ?? order.guest_name ?? "Customer";
-    const rawPhoneNum =
-      order.guest_whatsapp ?? order.customer_whatsapp ?? null;
-
-    return {
-      id: order.id,
-      slug: order.slug,
-      wave_id: order.wave_id,
-      customer_id: order.customer_id,
-      is_pii_masked: !isUnlocked,
-      customer_display_name: isUnlocked ? rawName : maskName(rawName),
-      whatsapp_number: isUnlocked ? rawPhoneNum : maskPhone(rawPhoneNum),
-      shipping_address: isUnlocked
-        ? order.shipping_address
-        : maskAddress(order.shipping_address),
-      total_amount: order.total_amount,
-      has_payment_receipt: Boolean(order.payment_receipt_url),
-      payment_receipt_url: isUnlocked ? order.payment_receipt_url : null,
-      status: order.status,
-      tracking_number: order.tracking_number,
-      created_at: order.created_at,
-      tracking_url: `/api/v1/track/${order.slug}`,
-      wave: order.wave,
-      store: {
-        id: order.store.id,
-        slug: order.store.slug,
-        name: order.store.name,
-        whatsapp_contact: order.store.whatsapp_contact,
-      },
-      items: itemsByOrder.get(order.id) ?? [],
-    };
-  });
 }

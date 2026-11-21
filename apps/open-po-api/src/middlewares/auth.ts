@@ -1,20 +1,19 @@
-import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
-import { verify } from "hono/jwt";
-import { createDb, customerProfiles } from "../db";
-import type { AppEnv, AuthUser, NiwaJwtPayload, RoleName } from "../types";
-import { OPEN_PO_APP_ID } from "../utils/auth-client";
+import type { Database } from "../db";
+import { AppError } from "../errors/app-error";
+import { AuthErrors } from "../errors/auth";
+import { createCustomerProfileRepo } from "../repositories/customer-profiles";
+import type { AuthUser, NiwaJwtPayload, RoleName } from "../types/auth";
+import type { AppEnv } from "../types/env";
+import { OPEN_PO_APP_ID } from "../utils/auth";
+import { verifyNiwaToken } from "../utils/jwt";
 
 async function resolveUserFromToken(
   token: string,
   jwtSecret: string,
-  d1: D1Database
+  db: Database
 ): Promise<{ user: AuthUser; verified: NiwaJwtPayload } | null> {
-  const verified = (await verify(
-    token,
-    jwtSecret,
-    "HS256"
-  )) as unknown as NiwaJwtPayload;
+  const verified = await verifyNiwaToken(token, jwtSecret);
 
   if (
     !verified ||
@@ -25,14 +24,10 @@ async function resolveUserFromToken(
     return null;
   }
 
-  const db = createDb(d1);
-  const [profile] = await db
-    .select({
-      default_shipping_address: customerProfiles.default_shipping_address,
-    })
-    .from(customerProfiles)
-    .where(eq(customerProfiles.user_id, verified.sub))
-    .limit(1);
+  const profileRepo = createCustomerProfileRepo(db);
+  const defaultShippingAddress = await profileRepo.findShippingAddress(
+    verified.sub
+  );
 
   const openPoRoles = Array.isArray(verified.app_roles?.[OPEN_PO_APP_ID])
     ? (verified.app_roles[OPEN_PO_APP_ID] as RoleName[])
@@ -50,7 +45,7 @@ async function resolveUserFromToken(
       name: verified.name,
       email: verified.email,
       whatsapp_number: verified.whatsapp_number ?? "",
-      default_shipping_address: profile?.default_shipping_address ?? null,
+      default_shipping_address: defaultShippingAddress,
       roles: openPoRoles,
       permissions: openPoPermissions,
       created_at: verified.created_at ?? verified.iat,
@@ -70,39 +65,30 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   }
 
   if (!token) {
-    return c.json(
-      {
-        error: "Unauthorized",
-        message: "Missing or invalid Authorization header",
-      },
-      401
-    );
+    throw AuthErrors.missingAuthHeader();
   }
 
+  let resolved: { user: AuthUser; verified: NiwaJwtPayload } | null;
   try {
-    const resolved = await resolveUserFromToken(
+    resolved = await resolveUserFromToken(
       token,
       c.env.JWT_SECRET,
-      c.env.DB
+      c.get("db")
     );
-    if (!resolved) {
-      return c.json(
-        { error: "Unauthorized", message: "Invalid token or user not found" },
-        401
-      );
-    }
-
-    c.set("jwtPayload", resolved.verified);
-    c.set("user", resolved.user);
-    c.set("authToken", token);
-
-    await next();
-  } catch {
-    return c.json(
-      { error: "Unauthorized", message: "Invalid or expired JWT token" },
-      401
-    );
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    throw AuthErrors.invalidOrExpiredJwt();
   }
+
+  if (!resolved) {
+    throw AuthErrors.invalidTokenOrUser();
+  }
+
+  c.set("jwtPayload", resolved.verified);
+  c.set("user", resolved.user);
+  c.set("authToken", token);
+
+  await next();
 });
 
 /**
@@ -119,7 +105,7 @@ export const optionalAuthMiddleware = createMiddleware<AppEnv>(
           const resolved = await resolveUserFromToken(
             token,
             c.env.JWT_SECRET,
-            c.env.DB
+            c.get("db")
           );
           if (resolved) {
             c.set("jwtPayload", resolved.verified);
