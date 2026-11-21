@@ -21,7 +21,7 @@ service = "niwa-auth-api"
 [[d1_databases]]
 binding = "DB"
 database_name = "pustaka-db"
-database_id = "d53b5897-7d8e-4259-aa41-3328afabd98a"
+database_id = "87913a41-c2bf-48d5-96b5-a89976d26a29"
 migrations_dir = "drizzle"
 
 [[r2_buckets]]
