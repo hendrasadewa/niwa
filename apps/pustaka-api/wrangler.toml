@@ -3,22 +3,25 @@ main = "src/index.ts"
 compatibility_date = "2026-08-22"
 compatibility_flags = ["nodejs_compat"]
 
+routes = [
+  { pattern = "pustaka.api.hendrasadewa.com", custom_domain = true }
+]
+
 [dev]
 port = 8787
 
 [vars]
-AUTH_API_URL = "http://localhost:8788"
+AUTH_API_URL = "https://auth.api.hendrasadewa.com"
 JWT_ISSUER = "https://auth.api.hendrasadewa.com"
 
-# Production Cloudflare Service Binding (enable once niwa-auth-api is deployed):
-# [[services]]
-# binding = "AUTH_API"
-# service = "niwa-auth-api"
+[[services]]
+binding = "AUTH_API"
+service = "niwa-auth-api"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "pustaka-db"
-database_id = "00000000-0000-0000-0000-000000000001"
+database_id = "d53b5897-7d8e-4259-aa41-3328afabd98a"
 migrations_dir = "drizzle"
 
 [[r2_buckets]]

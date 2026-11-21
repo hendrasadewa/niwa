@@ -1,0 +1,231 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "App to deploy"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - auth-api
+          - open-po-api
+          - pustaka-api
+          - web-api
+          - auth-web
+          - open-po-webapp
+          - pustaka-web
+          - labs
+          - web
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      auth_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'auth-api')) || steps.filter.outputs.auth_api == 'true' }}
+      open_po_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'open-po-api')) || steps.filter.outputs.open_po_api == 'true' }}
+      pustaka_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'pustaka-api')) || steps.filter.outputs.pustaka_api == 'true' }}
+      web_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'web-api')) || steps.filter.outputs.web_api == 'true' }}
+      auth_web: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'auth-web')) || steps.filter.outputs.auth_web == 'true' }}
+      open_po_webapp: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'open-po-webapp')) || steps.filter.outputs.open_po_webapp == 'true' }}
+      pustaka_web: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'pustaka-web')) || steps.filter.outputs.pustaka_web == 'true' }}
+      labs: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'labs')) || steps.filter.outputs.labs == 'true' }}
+      web: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'web')) || steps.filter.outputs.web == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: github.event_name == 'push'
+      - uses: dorny/paths-filter@v3
+        if: github.event_name == 'push'
+        id: filter
+        with:
+          filters: |
+            auth_api:
+              - 'apps/auth-api/**'
+              - 'packages/validators/auth/**'
+            open_po_api:
+              - 'apps/open-po-api/**'
+              - 'packages/validators/open-po/**'
+            pustaka_api:
+              - 'apps/pustaka-api/**'
+              - 'packages/validators/pustaka/**'
+            web_api:
+              - 'apps/web-api/**'
+            auth_web:
+              - 'apps/auth-web/**'
+              - 'packages/ui/**'
+              - 'packages/validators/auth/**'
+            open_po_webapp:
+              - 'apps/open-po-webapp/**'
+              - 'packages/ui/**'
+              - 'packages/validators/open-po/**'
+            pustaka_web:
+              - 'apps/pustaka-web/**'
+              - 'packages/ui/**'
+              - 'packages/validators/pustaka/**'
+            labs:
+              - 'apps/labs/**'
+              - 'packages/ui/**'
+            web:
+              - 'apps/web/**'
+              - 'packages/ui/**'
+
+  deploy-auth-api:
+    needs: changes
+    if: needs.changes.outputs.auth_api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/auth-api typecheck
+      - run: pnpm --filter @niwa/auth-api db:migrate:remote
+      - run: pnpm --filter @niwa/auth-api deploy
+
+  deploy-open-po-api:
+    needs: [changes, deploy-auth-api]
+    if: ${{ always() && needs.deploy-auth-api.result != 'failure' && needs.deploy-auth-api.result != 'cancelled' && needs.changes.outputs.open_po_api == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/open-po-api typecheck
+      - run: pnpm --filter @niwa/open-po-api db:migrate:remote
+      - run: pnpm --filter @niwa/open-po-api deploy
+
+  deploy-pustaka-api:
+    needs: [changes, deploy-auth-api]
+    if: ${{ always() && needs.deploy-auth-api.result != 'failure' && needs.deploy-auth-api.result != 'cancelled' && needs.changes.outputs.pustaka_api == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/pustaka-api typecheck
+      - run: pnpm --filter @niwa/pustaka-api db:migrate:remote
+      - run: pnpm --filter @niwa/pustaka-api deploy
+
+  deploy-web-api:
+    needs: [changes, deploy-auth-api]
+    if: ${{ always() && needs.deploy-auth-api.result != 'failure' && needs.deploy-auth-api.result != 'cancelled' && needs.changes.outputs.web_api == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/web-api deploy
+
+  deploy-auth-web:
+    needs: [changes, deploy-auth-api]
+    if: ${{ always() && needs.deploy-auth-api.result != 'failure' && needs.deploy-auth-api.result != 'cancelled' && needs.changes.outputs.auth_web == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      VITE_AUTH_API_URL: https://auth.api.hendrasadewa.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/auth-web typecheck
+      - run: pnpm --filter @niwa/auth-web deploy
+
+  deploy-open-po-webapp:
+    needs: [changes, deploy-open-po-api]
+    if: ${{ always() && needs.deploy-open-po-api.result != 'failure' && needs.deploy-open-po-api.result != 'cancelled' && needs.changes.outputs.open_po_webapp == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: https://preorder.api.hendrasadewa.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/open-po-webapp typecheck
+      - run: pnpm --filter @niwa/open-po-webapp deploy
+
+  deploy-pustaka-web:
+    needs: [changes, deploy-pustaka-api]
+    if: ${{ always() && needs.deploy-pustaka-api.result != 'failure' && needs.deploy-pustaka-api.result != 'cancelled' && needs.changes.outputs.pustaka_web == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: https://pustaka.api.hendrasadewa.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/pustaka-web typecheck
+      - run: pnpm --filter @niwa/pustaka-web deploy
+
+  deploy-labs:
+    needs: [changes, deploy-auth-api, deploy-open-po-api, deploy-pustaka-api, deploy-web-api]
+    if: ${{ always() && needs.deploy-auth-api.result != 'failure' && needs.deploy-open-po-api.result != 'failure' && needs.deploy-pustaka-api.result != 'failure' && needs.deploy-web-api.result != 'failure' && needs.changes.outputs.labs == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_URL: https://api.hendrasadewa.com
+      VITE_AUTH_API_URL: https://auth.api.hendrasadewa.com
+      VITE_PUSTAKA_API_URL: https://pustaka.api.hendrasadewa.com
+      VITE_OPEN_PO_API_URL: https://preorder.api.hendrasadewa.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/labs deploy
+
+  deploy-web:
+    needs: [changes, deploy-web-api]
+    if: ${{ always() && needs.deploy-web-api.result != 'failure' && needs.deploy-web-api.result != 'cancelled' && needs.changes.outputs.web == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: https://api.hendrasadewa.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/web deploy

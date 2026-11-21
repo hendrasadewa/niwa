@@ -3,10 +3,16 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "pustaka.hendrasadewa.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": ".open-next/assets"
   },
   "vars": {
-    "NEXT_PUBLIC_API_URL": "http://localhost:8787"
+    "NEXT_PUBLIC_API_URL": "https://pustaka.api.hendrasadewa.com"
   }
 }

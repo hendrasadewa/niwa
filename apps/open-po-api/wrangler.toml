@@ -3,22 +3,25 @@ main = "src/index.ts"
 compatibility_date = "2026-08-22"
 compatibility_flags = ["nodejs_compat"]
 
+routes = [
+  { pattern = "preorder.api.hendrasadewa.com", custom_domain = true }
+]
+
 [dev]
 port = 8789
 
 [vars]
-AUTH_API_URL = "http://localhost:8788"
+AUTH_API_URL = "https://auth.api.hendrasadewa.com"
 JWT_ISSUER = "https://auth.api.hendrasadewa.com"
 
-# Production Cloudflare Service Binding (enable once niwa-auth-api is deployed):
-# [[services]]
-# binding = "AUTH_API"
-# service = "niwa-auth-api"
+[[services]]
+binding = "AUTH_API"
+service = "niwa-auth-api"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "open-po-db"
-database_id = "00000000-0000-0000-0000-000000000002"
+database_id = "e6add6f1-436c-47d6-8ff8-47573fca8064"
 migrations_dir = "drizzle"
 
 [[r2_buckets]]

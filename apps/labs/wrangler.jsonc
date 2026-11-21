@@ -1,6 +1,12 @@
 {
   "name": "niwa-labs",
   "compatibility_date": "2026-08-22",
+  "routes": [
+    {
+      "pattern": "labs.hendrasadewa.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": "dist",
     "not_found_handling": "single-page-application"

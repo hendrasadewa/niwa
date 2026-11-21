@@ -3,10 +3,16 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "preorder.hendrasadewa.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": ".open-next/assets"
   },
   "vars": {
-    "NEXT_PUBLIC_API_URL": "http://localhost:8789"
+    "NEXT_PUBLIC_API_URL": "https://preorder.api.hendrasadewa.com"
   }
 }

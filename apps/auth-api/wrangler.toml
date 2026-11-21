@@ -3,18 +3,22 @@ main = "src/index.ts"
 compatibility_date = "2026-08-22"
 compatibility_flags = ["nodejs_compat"]
 
+routes = [
+  { pattern = "auth.api.hendrasadewa.com", custom_domain = true }
+]
+
 [dev]
 port = 8788
 
 [vars]
 JWT_ISSUER = "https://auth.api.hendrasadewa.com"
-JWT_ACTIVE_KID = "niwa-es256-dev"
-# Local-dev-only EC P-256 private JWK. Override in production with `wrangler secret put JWT_PRIVATE_KEY_JWK`.
-JWT_PRIVATE_KEY_JWK = '{"kty":"EC","crv":"P-256","x":"_EtheeAKWhaNvgzpHTMJ0y_f-2zDaQf6DGA7itbjk9I","y":"p6HQCL2SpdUNNjiyyoifPJfmUoGj8kmfd7CQL8aNXYI","d":"Ueh6PUmWn0tzhbZpXnI-A9KtE3ysh_D3SeINlKlEtc8","kid":"niwa-es256-dev","alg":"ES256","use":"sig"}'
-AUTH_WEB_URL = "http://localhost:3003"
+JWT_ACTIVE_KID = "niwa-es256-2026-11"
+AUTH_WEB_URL = "https://auth.hendrasadewa.com"
+# Set JWT_PRIVATE_KEY_JWK and ADMIN_EMAIL via `wrangler secret put` in production
+# (and keep local-dev values in apps/auth-api/.dev.vars — see .dev.vars.example).
 
 [[d1_databases]]
 binding = "DB"
 database_name = "niwa-auth-db"
-database_id = "00000000-0000-0000-0000-000000000003"
+database_id = "c7018b8f-97d9-4b04-b841-bb429952573e"
 migrations_dir = "drizzle"
