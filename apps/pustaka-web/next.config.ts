@@ -2,7 +2,12 @@ import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@niwa/ui", "@niwa/auth", "@niwa/pustaka-validators"],
+  transpilePackages: [
+    "@niwa/ui",
+    "@niwa/auth",
+    "@niwa/api-client",
+    "@niwa/pustaka-validators",
+  ],
 };
 
 initOpenNextCloudflareForDev();

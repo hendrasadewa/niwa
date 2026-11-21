@@ -71,11 +71,13 @@ jobs:
               - 'packages/validators/auth/**'
             open_po_webapp:
               - 'apps/open-po-webapp/**'
+              - 'packages/api-client/**'
               - 'packages/auth/**'
               - 'packages/ui/**'
               - 'packages/validators/open-po/**'
             pustaka_web:
               - 'apps/pustaka-web/**'
+              - 'packages/api-client/**'
               - 'packages/auth/**'
               - 'packages/ui/**'
               - 'packages/validators/pustaka/**'

@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
+    "@niwa/api-client": "workspace:*",
     "@niwa/auth": "workspace:*",
     "@niwa/open-po-validators": "workspace:*",
     "@niwa/ui": "workspace:*",
