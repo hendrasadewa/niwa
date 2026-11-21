@@ -146,6 +146,14 @@ export default function LoginRoute() {
             disabled={submitting}
             required
           />
+          <div className="mt-1.5 flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-xs font-medium text-emerald-400 hover:text-emerald-300"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </FormField>
 
         <Button

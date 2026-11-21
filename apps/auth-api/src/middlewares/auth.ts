@@ -57,6 +57,7 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
     name: userRecord.name,
     whatsapp_number: userRecord.whatsapp_number,
     is_active: userRecord.is_active,
+    email_verified_at: userRecord.email_verified_at ?? null,
     app_roles,
     app_permissions,
     created_at: userRecord.created_at,

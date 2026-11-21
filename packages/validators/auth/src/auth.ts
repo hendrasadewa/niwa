@@ -102,6 +102,30 @@ export const revokeAppRoleSchema = z.object({
   user_id: z.string().trim().min(1, "User ID is required").max(128),
 });
 
+export const verifyEmailSchema = z.object({
+  token: z
+    .string()
+    .trim()
+    .min(1, "Verification token is required")
+    .max(512, "Invalid verification token"),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email("Invalid email address"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z
+    .string()
+    .trim()
+    .min(1, "Reset token is required")
+    .max(512, "Invalid reset token"),
+  new_password: z
+    .string()
+    .min(8, "New password must be at least 8 characters")
+    .max(128, "New password must be at most 128 characters"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
@@ -110,3 +134,6 @@ export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type LogoutInput = z.infer<typeof logoutSchema>;
 export type GrantAppRoleInput = z.infer<typeof grantAppRoleSchema>;
 export type RevokeAppRoleInput = z.infer<typeof revokeAppRoleSchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

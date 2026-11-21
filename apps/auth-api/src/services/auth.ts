@@ -37,6 +37,7 @@ function toAuthUserResponse(
     name: record.name,
     whatsapp_number: record.whatsapp_number,
     is_active: record.is_active,
+    email_verified_at: record.email_verified_at ?? null,
     app_roles,
     app_permissions,
     created_at: record.created_at,

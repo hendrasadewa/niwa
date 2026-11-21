@@ -12,12 +12,6 @@ import { extractZodFieldErrors, formatUnixDate } from "../../lib/format";
 
 const UPCOMING_SECURITY_FEATURES = [
   {
-    title: "Email Verification",
-    phase: "Phase 5",
-    description:
-      "Verify your primary email address for account recovery and high-trust app access.",
-  },
-  {
     title: "Passkeys (WebAuthn)",
     phase: "Phase 6",
     description:
@@ -61,6 +55,29 @@ export default function AccountProfileRoute() {
     null
   );
   const [savingPassword, setSavingPassword] = useState(false);
+
+  // Email verification resend state
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
+  const [verifyErrorMsg, setVerifyErrorMsg] = useState<string | null>(null);
+
+  const handleResendVerification = async () => {
+    setVerifyMsg(null);
+    setVerifyErrorMsg(null);
+    setResendingVerification(true);
+    try {
+      const res = await authApi.resendVerificationEmail();
+      setVerifyMsg(
+        res.message || "Verification email sent. Check your inbox."
+      );
+    } catch (err) {
+      setVerifyErrorMsg(
+        getErrorMessage(err, "Unable to resend verification email.")
+      );
+    } finally {
+      setResendingVerification(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -153,6 +170,47 @@ export default function AccountProfileRoute() {
           Manage your Niwa identity details and account security credentials.
         </p>
       </div>
+
+      {/* Email Verification Banner */}
+      {user && !user.email_verified_at && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-amber-200">
+                  Verify your email address
+                </p>
+                <Badge variant="warning">Unverified</Badge>
+              </div>
+              <p className="text-xs text-amber-200/80">
+                Confirm <strong>{user.email}</strong> to secure your Niwa
+                account and ensure reliable password recovery.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleResendVerification}
+              disabled={resendingVerification}
+            >
+              {resendingVerification
+                ? "Sending..."
+                : "Resend verification email"}
+            </Button>
+          </div>
+          {verifyMsg && (
+            <div className="mt-3">
+              <Alert variant="success">{verifyMsg}</Alert>
+            </div>
+          )}
+          {verifyErrorMsg && (
+            <div className="mt-3">
+              <Alert variant="error">{verifyErrorMsg}</Alert>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Profile Card */}
       <Card

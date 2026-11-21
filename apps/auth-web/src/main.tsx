@@ -6,6 +6,9 @@ import { AuthProvider } from "./context/auth-context";
 import IndexRoute from "./routes/index";
 import LoginRoute from "./routes/login";
 import RegisterRoute from "./routes/register";
+import VerifyEmailRoute from "./routes/verify-email";
+import ForgotPasswordRoute from "./routes/forgot-password";
+import ResetPasswordRoute from "./routes/reset-password";
 import ConsentRoute from "./routes/consent";
 import AccountProfileRoute from "./routes/account/profile";
 import AccountSessionsRoute from "./routes/account/sessions";
@@ -19,6 +22,9 @@ const router = createBrowserRouter([
   { path: "/", element: <IndexRoute /> },
   { path: "/login", element: <LoginRoute /> },
   { path: "/register", element: <RegisterRoute /> },
+  { path: "/verify-email", element: <VerifyEmailRoute /> },
+  { path: "/forgot-password", element: <ForgotPasswordRoute /> },
+  { path: "/reset-password", element: <ResetPasswordRoute /> },
   { path: "/consent", element: <ConsentRoute /> },
   {
     element: <RequireAuth />,

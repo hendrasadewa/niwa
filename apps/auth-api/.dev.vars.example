@@ -8,3 +8,6 @@ JWT_PRIVATE_KEY_JWK='{"kty":"EC","crv":"P-256","x":"_EtheeAKWhaNvgzpHTMJ0y_f-2zD
 # JWT_PUBLIC_JWKS_EXTRA="[]"
 AUTH_WEB_URL="http://localhost:3003"
 ADMIN_EMAIL="admin@example.com"
+EMAIL_FROM="Niwa <no-reply@hendrasadewa.com>"
+# Optional in local dev: leave unset to log verification/reset links to console
+# RESEND_API_KEY="re_..."

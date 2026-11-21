@@ -1,8 +1,13 @@
 export const DEFAULT_REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 export const DEFAULT_IDP_SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+export const EMAIL_VERIFY_TOKEN_TTL_SECONDS = 60 * 60 * 24; // 24 hours
+export const PASSWORD_RESET_TOKEN_TTL_SECONDS = 60 * 30; // 30 minutes
+export const VERIFICATION_RESEND_COOLDOWN_SECONDS = 60; // 1 minute
 
 const REFRESH_TOKEN_PREFIX = "niwa_rt_";
 const IDP_SESSION_PREFIX = "niwa_sid_";
+const EMAIL_VERIFY_PREFIX = "niwa_ev_";
+const PASSWORD_RESET_PREFIX = "niwa_pr_";
 
 export function resolveRefreshTokenTtl(envValue?: string): number {
   if (!envValue) return DEFAULT_REFRESH_TOKEN_TTL_SECONDS;
@@ -44,6 +49,15 @@ export function generateRawRefreshToken(): string {
 export function generateRawSessionToken(): string {
   const randomBytes = crypto.getRandomValues(new Uint8Array(32));
   return `${IDP_SESSION_PREFIX}${bytesToBase64Url(randomBytes)}`;
+}
+
+export function generateRawVerificationToken(
+  purpose: "email_verify" | "password_reset"
+): string {
+  const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+  const prefix =
+    purpose === "email_verify" ? EMAIL_VERIFY_PREFIX : PASSWORD_RESET_PREFIX;
+  return `${prefix}${bytesToBase64Url(randomBytes)}`;
 }
 
 export async function hashToken(rawToken: string): Promise<string> {

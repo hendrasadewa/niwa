@@ -24,6 +24,7 @@ import {
   refreshTokenSchema,
   registerSchema,
 } from "../../validators/auth";
+import { getEmailVerificationService } from "./email";
 
 function getJwtSigningConfig(c: Context<AppEnv>) {
   return {
@@ -92,6 +93,16 @@ authCoreRoutes.post("/register", validate("json", registerSchema), async (c) => 
       maxAgeSeconds: issuedSession.maxAge,
     })
   );
+
+  // Best-effort verification email on registration (user can also resend from /account)
+  try {
+    await getEmailVerificationService(c).sendVerificationEmail({
+      userId: result.user.id,
+      enforceCooldown: false,
+    });
+  } catch (err) {
+    console.error("[niwa-auth:register-verification-email-failed]", err);
+  }
 
   return c.json(result, 201);
 });

@@ -141,7 +141,7 @@ export function createSsoService({
         appId: app.id,
         sessionId: input.session.id,
         amr: input.session.amr,
-        emailVerified: false,
+        emailVerified: Boolean(input.user.email_verified_at),
       });
 
       return {

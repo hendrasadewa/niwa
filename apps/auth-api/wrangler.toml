@@ -14,7 +14,8 @@ port = 8788
 JWT_ISSUER = "https://auth.api.hendrasadewa.com"
 JWT_ACTIVE_KID = "niwa-es256-2026-11"
 AUTH_WEB_URL = "https://auth.hendrasadewa.com"
-# Set JWT_PRIVATE_KEY_JWK and ADMIN_EMAIL via `wrangler secret put` in production
+EMAIL_FROM = "Niwa <no-reply@hendrasadewa.com>"
+# Set JWT_PRIVATE_KEY_JWK, ADMIN_EMAIL, and RESEND_API_KEY via `wrangler secret put` in production
 # (and keep local-dev values in apps/auth-api/.dev.vars — see .dev.vars.example).
 
 [[d1_databases]]

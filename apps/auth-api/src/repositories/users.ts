@@ -62,6 +62,7 @@ export function createUserRepo(db: Database) {
       return {
         ...input,
         is_active: input.is_active ?? true,
+        email_verified_at: input.email_verified_at ?? null,
       };
     },
 
@@ -100,6 +101,19 @@ export function createUserRepo(db: Database) {
         .update(users)
         .set({
           is_active: input.is_active,
+          updated_at: input.updated_at,
+        })
+        .where(eq(users.id, id));
+    },
+
+    async markEmailVerified(
+      id: string,
+      input: { email_verified_at: number; updated_at: number }
+    ): Promise<void> {
+      await db
+        .update(users)
+        .set({
+          email_verified_at: input.email_verified_at,
           updated_at: input.updated_at,
         })
         .where(eq(users.id, id));

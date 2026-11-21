@@ -3,8 +3,10 @@ import type {
   CreateAppInput,
   CreatePermissionInput,
   CreateRoleInput,
+  ForgotPasswordInput,
   LoginInput,
   RegisterInput,
+  ResetPasswordInput,
   SetUserAppRolesInput,
   SsoConsentInput,
   SsoTokenInput,
@@ -12,6 +14,7 @@ import type {
   UpdateRolePermissionsInput,
   UpdateUserInput,
   UpdateUserStatusInput,
+  VerifyEmailInput,
 } from "@niwa/auth-validators";
 
 export type AppRoleMap = Record<string, string[]>;
@@ -23,6 +26,7 @@ export interface AuthUser {
   name: string;
   whatsapp_number: string;
   is_active: boolean;
+  email_verified_at: number | null;
   app_roles: AppRoleMap;
   app_permissions: AppPermissionMap;
   created_at: number;
@@ -273,6 +277,39 @@ export const authApi = {
       method: "POST",
       body: input,
     });
+  },
+
+  verifyEmail(input: VerifyEmailInput) {
+    return request<{ message: string; email_verified_at: number }>(
+      "/api/v1/auth/email/verify",
+      {
+        method: "POST",
+        body: input,
+      }
+    );
+  },
+
+  resendVerificationEmail() {
+    return request<{ message: string }>("/api/v1/auth/email/resend", {
+      method: "POST",
+    });
+  },
+
+  forgotPassword(input: ForgotPasswordInput) {
+    return request<{ message: string }>("/api/v1/auth/password/forgot", {
+      method: "POST",
+      body: input,
+    });
+  },
+
+  resetPassword(input: ResetPasswordInput) {
+    return request<{ message: string; revoked_sessions: number }>(
+      "/api/v1/auth/password/reset",
+      {
+        method: "POST",
+        body: input,
+      }
+    );
   },
 
   // SSO

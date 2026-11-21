@@ -7,6 +7,7 @@ export type AuthUserResponse = {
   name: string;
   whatsapp_number: string;
   is_active: boolean;
+  email_verified_at: number | null;
   app_roles: AppRoleMap;
   app_permissions: AppPermissionMap;
   created_at: number;

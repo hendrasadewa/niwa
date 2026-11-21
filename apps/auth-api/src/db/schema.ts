@@ -14,6 +14,7 @@ export const users = sqliteTable("users", {
   name: text("name").notNull(),
   whatsapp_number: text("whatsapp_number").notNull(),
   is_active: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  email_verified_at: integer("email_verified_at"),
   created_at: integer("created_at").notNull(),
   updated_at: integer("updated_at").notNull(),
 });
@@ -151,4 +152,23 @@ export const userAppConsents = sqliteTable(
     revoked_at: integer("revoked_at"),
   },
   (table) => [primaryKey({ columns: [table.user_id, table.app_id] })]
+);
+
+export const verificationTokens = sqliteTable(
+  "verification_tokens",
+  {
+    id: text("id").primaryKey(),
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    purpose: text("purpose").notNull(), // "email_verify" | "password_reset"
+    token_hash: text("token_hash").notNull().unique(),
+    expires_at: integer("expires_at").notNull(),
+    consumed_at: integer("consumed_at"),
+    created_at: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("verification_tokens_user_id_idx").on(table.user_id),
+    index("verification_tokens_expires_at_idx").on(table.expires_at),
+  ]
 );

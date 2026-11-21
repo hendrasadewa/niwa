@@ -131,4 +131,39 @@ export const AuthErrors = {
       code: "AUTH_ROLE_NOT_FOUND",
       message: `Role '${role}' does not exist for app '${appId}'`,
     }),
+
+  invalidOrExpiredVerificationToken: (
+    message = "Verification or reset link is invalid or has expired"
+  ) =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "AUTH_VERIFICATION_TOKEN_INVALID",
+      message,
+    }),
+
+  emailAlreadyVerified: () =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "AUTH_EMAIL_ALREADY_VERIFIED",
+      message: "Email address is already verified",
+    }),
+
+  verificationResendRateLimited: (retryAfterSeconds: number) =>
+    new AppError({
+      status: 429,
+      error: "TooManyRequests",
+      code: "AUTH_VERIFICATION_RESEND_RATE_LIMITED",
+      message: `Please wait ${retryAfterSeconds} seconds before requesting another email`,
+      details: { retry_after_seconds: retryAfterSeconds },
+    }),
+
+  emailDeliveryFailed: () =>
+    new AppError({
+      status: 502,
+      error: "BadGateway",
+      code: "AUTH_EMAIL_DELIVERY_FAILED",
+      message: "Unable to send email right now. Please try again later.",
+    }),
 };

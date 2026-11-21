@@ -11,6 +11,8 @@ export type Bindings = {
   AUTH_WEB_URL?: string;
   ALLOWED_ORIGINS?: string;
   ADMIN_EMAIL?: string;
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
   ACCESS_TOKEN_TTL_SECONDS?: string;
   REFRESH_TOKEN_TTL_SECONDS?: string;
   IDP_SESSION_TTL_SECONDS?: string;
