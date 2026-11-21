@@ -1,0 +1,36 @@
+{
+  "name": "@niwa/auth-web",
+  "version": "0.0.0",
+  "description": "Hosted Niwa Identity Provider Portal (Login, Consent, Account & Security, Admin ACL)",
+  "keywords": ["niwa", "auth", "sso", "idp", "portal"],
+  "license": "ISC",
+  "author": "Hendra Sadewa <me@hendrasadewa.com>",
+  "type": "module",
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --noEmit",
+    "preview": "vite preview",
+    "deploy": "vite build && wrangler deploy"
+  },
+  "dependencies": {
+    "@niwa/auth-validators": "workspace:*",
+    "@niwa/ui": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.3.0",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "wrangler": "^4.125.0"
+  }
+}
