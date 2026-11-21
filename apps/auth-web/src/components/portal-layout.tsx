@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router";
 import { Alert, Badge, Button } from "@niwa/ui/components";
 import { useAuth } from "../context/auth-context";
+import { maskEmail } from "../lib/format";
 import { FullPageLoader } from "./form-controls";
 
 interface NavItem {
@@ -151,7 +152,7 @@ function PortalLayout() {
                 {user?.name}
               </p>
               <p className="truncate text-[11px] text-neutral-500">
-                {user?.email}
+                {maskEmail(user?.email)}
               </p>
             </div>
             <Button
@@ -199,7 +200,7 @@ function PortalLayout() {
                 {isAdmin && <Badge variant="info">Admin</Badge>}
               </div>
               <p className="truncate text-[11px] text-neutral-500">
-                {user?.email}
+                {maskEmail(user?.email)}
               </p>
             </div>
             <Button

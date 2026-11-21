@@ -1,4 +1,5 @@
 import { AuthErrors } from "../errors/auth";
+import { maskEmail } from "../utils/pii";
 
 export const DEFAULT_EMAIL_FROM = "Niwa <no-reply@hendrasadewa.com>";
 const RESEND_API_URL = "https://api.resend.com/emails";
@@ -71,7 +72,7 @@ export function createMailerRepo(config: MailerConfig) {
     if (!config.resendApiKey) {
       console.info("[niwa-mailer:dev]", {
         from,
-        to: payload.to,
+        to: maskEmail(payload.to),
         subject: payload.subject,
         text: payload.text,
       });

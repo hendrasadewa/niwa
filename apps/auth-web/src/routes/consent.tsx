@@ -9,6 +9,7 @@ import {
   getErrorMessage,
   type SsoAppMetadata,
 } from "../lib/auth-api";
+import { maskEmail } from "../lib/format";
 import { buildSsoQueryString } from "../lib/sso-handoff";
 
 const REQUESTED_SCOPES = [
@@ -202,7 +203,7 @@ export default function ConsentRoute() {
           onClick={handleSwitchAccount}
           className="text-neutral-400 hover:text-neutral-200 underline underline-offset-4 cursor-pointer"
         >
-          Not {user.email}? Switch account
+          Not {maskEmail(user.email)}? Switch account
         </button>
       }
     >
@@ -232,7 +233,7 @@ export default function ConsentRoute() {
               </Badge>
             </div>
             <p className="truncate text-xs text-neutral-400">
-              Signed in as <span className="text-neutral-200">{user.email}</span>
+              Signed in as <span className="text-neutral-200">{maskEmail(user.email)}</span>
             </p>
           </div>
         </div>

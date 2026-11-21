@@ -9,7 +9,12 @@ import {
   extractApiFieldErrors,
   getErrorMessage,
 } from "../../lib/auth-api";
-import { extractZodFieldErrors, formatUnixDate } from "../../lib/format";
+import {
+  extractZodFieldErrors,
+  formatUnixDate,
+  maskEmail,
+  maskPhone,
+} from "../../lib/format";
 
 const UPCOMING_SECURITY_FEATURES = [
   {
@@ -36,6 +41,7 @@ export default function AccountProfileRoute() {
     null
   );
   const [savingProfile, setSavingProfile] = useState(false);
+  const [revealPii, setRevealPii] = useState(false);
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -178,8 +184,8 @@ export default function AccountProfileRoute() {
                 <Badge variant="warning">Unverified</Badge>
               </div>
               <p className="text-xs text-amber-200/80">
-                Confirm <strong>{user.email}</strong> to secure your Niwa
-                account and ensure reliable password recovery.
+                Confirm <strong>{maskEmail(user.email)}</strong> to secure your
+                Niwa account and ensure reliable password recovery.
               </p>
             </div>
             <Button
@@ -221,8 +227,12 @@ export default function AccountProfileRoute() {
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Email address" hint="Primary identifier">
               <TextInput
-                type="email"
-                value={user?.email ?? ""}
+                type="text"
+                value={
+                  revealPii
+                    ? (user?.email ?? "")
+                    : maskEmail(user?.email)
+                }
                 disabled
                 readOnly
               />
@@ -257,21 +267,30 @@ export default function AccountProfileRoute() {
             <FormField
               label="WhatsApp number"
               htmlFor="profile-whatsapp"
-              hint="8–25 characters"
+              hint={revealPii ? "8–25 characters" : "Masked for privacy"}
               error={profileErrors.whatsapp_number}
             >
               <TextInput
                 id="profile-whatsapp"
                 type="tel"
                 placeholder="08123456789"
-                value={whatsappNumber}
+                value={revealPii ? whatsappNumber : maskPhone(whatsappNumber)}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
+                onFocus={() => setRevealPii(true)}
                 disabled={savingProfile}
               />
             </FormField>
           </div>
 
-          <div className="flex justify-end pt-1">
+          <div className="flex items-center justify-between pt-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setRevealPii((prev) => !prev)}
+            >
+              {revealPii ? "Hide contact details" : "Show contact details"}
+            </Button>
             <Button
               type="submit"
               variant="primary"

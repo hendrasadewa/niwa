@@ -233,7 +233,7 @@ export const DEFAULT_PERMISSIONS: ReadonlyArray<{
   },
 ];
 
-let rbacSeededPromise: Promise<void> | null = null;
+let rbacSeeded = false;
 
 async function runRbacSeed(db: Database): Promise<void> {
   const rolePermValues: Array<{ role_id: string; permission_id: string }> = [];
@@ -297,14 +297,11 @@ async function runRbacSeed(db: Database): Promise<void> {
 
 /**
  * Ensures default apps, roles, permissions, and role_permissions exist in D1.
- * Memoized per Worker isolate to avoid redundant D1 round-trips on every request.
+ * Memoized with a plain boolean (never a shared I/O Promise) so concurrent
+ * Cloudflare Worker requests never share a D1 Promise across request contexts.
  */
-export function ensureRbacSeeded(db: Database): Promise<void> {
-  if (!rbacSeededPromise) {
-    rbacSeededPromise = runRbacSeed(db).catch((err) => {
-      rbacSeededPromise = null;
-      throw err;
-    });
-  }
-  return rbacSeededPromise;
+export async function ensureRbacSeeded(db: Database): Promise<void> {
+  if (rbacSeeded) return;
+  await runRbacSeed(db);
+  rbacSeeded = true;
 }

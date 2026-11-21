@@ -13,7 +13,7 @@ import {
   type AppWithRbac,
   type AuthUser,
 } from "../../lib/auth-api";
-import { formatUnixDate } from "../../lib/format";
+import { formatUnixDate, maskEmail, maskPhone } from "../../lib/format";
 
 export default function AdminUsersRoute() {
   const { user: currentUser, getAdminToken } = useAuth();
@@ -100,7 +100,7 @@ export default function AdminUsersRoute() {
         prev.map((u) => (u.id === res.user.id ? res.user : u))
       );
       setFeedbackMessage(
-        `${res.user.email} is now ${res.user.is_active ? "active" : "deactivated"}.`
+        `${maskEmail(res.user.email)} is now ${res.user.is_active ? "active" : "deactivated"}.`
       );
     } catch (err) {
       setErrorMessage(getErrorMessage(err, "Failed to update user status."));
@@ -152,7 +152,7 @@ export default function AdminUsersRoute() {
       );
       setEditingUserId(null);
       setFeedbackMessage(
-        `Updated ${roleEditorAppId} roles for ${updated.email}.`
+        `Updated ${roleEditorAppId} roles for ${maskEmail(updated.email)}.`
       );
     } catch (err) {
       setErrorMessage(getErrorMessage(err, "Failed to update user roles."));
@@ -303,10 +303,10 @@ export default function AdminUsersRoute() {
                       </div>
 
                       <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-neutral-400">
-                        <span>{target.email}</span>
+                        <span>{maskEmail(target.email)}</span>
                         {target.whatsapp_number && (
                           <span className="font-mono text-neutral-500">
-                            WA: {target.whatsapp_number}
+                            WA: {maskPhone(target.whatsapp_number)}
                           </span>
                         )}
                         <span className="text-neutral-500">
@@ -404,7 +404,7 @@ export default function AdminUsersRoute() {
                         <p className="text-[11px] text-neutral-500">
                           Replaces all roles for{" "}
                           <span className="text-neutral-300">
-                            {target.email}
+                            {maskEmail(target.email)}
                           </span>{" "}
                           in{" "}
                           <span className="font-mono text-neutral-300">

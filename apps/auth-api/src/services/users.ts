@@ -4,6 +4,7 @@ import type { RefreshTokenRepo } from "../repositories/refresh-tokens";
 import type { RoleRepo } from "../repositories/roles";
 import type { UserRecord, UserRepo } from "../repositories/users";
 import type { AuthUserResponse, UserWithSessionCount } from "../types/auth";
+import { maskEmail, maskPhone } from "../utils/pii";
 
 export type UserServiceDeps = {
   userRepo: UserRepo;
@@ -26,9 +27,9 @@ export function createUserService({
 
     return {
       id: record.id,
-      email: record.email,
+      email: maskEmail(record.email),
       name: record.name,
-      whatsapp_number: record.whatsapp_number,
+      whatsapp_number: maskPhone(record.whatsapp_number),
       is_active: record.is_active,
       email_verified_at: record.email_verified_at ?? null,
       app_roles,
@@ -130,9 +131,9 @@ export function createUserService({
       return {
         user: {
           id: userRecord.id,
-          email: userRecord.email,
+          email: maskEmail(userRecord.email),
           name: userRecord.name,
-          whatsapp_number: userRecord.whatsapp_number,
+          whatsapp_number: maskPhone(userRecord.whatsapp_number),
           is_active: input.is_active,
           email_verified_at: userRecord.email_verified_at ?? null,
           app_roles,
