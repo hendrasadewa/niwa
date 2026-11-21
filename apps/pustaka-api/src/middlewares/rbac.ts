@@ -1,5 +1,8 @@
 import { createMiddleware } from "hono/factory";
-import type { AppEnv, RoleName } from "../types";
+import { AuthErrors } from "../errors/auth";
+import { CommonErrors } from "../errors/common";
+import type { RoleName } from "../types/auth";
+import type { AppEnv } from "../types/env";
 
 /**
  * RBAC middleware checking that the authenticated user possesses at least one of the allowed roles.
@@ -9,10 +12,7 @@ export function requireRole(...allowedRoles: RoleName[]) {
   return createMiddleware<AppEnv>(async (c, next) => {
     const user = c.get("user");
     if (!user) {
-      return c.json(
-        { error: "Unauthorized", message: "Authentication required" },
-        401
-      );
+      throw CommonErrors.unauthorized();
     }
 
     const hasRole =
@@ -20,13 +20,7 @@ export function requireRole(...allowedRoles: RoleName[]) {
       allowedRoles.some((role) => user.roles.includes(role));
 
     if (!hasRole) {
-      return c.json(
-        {
-          error: "Forbidden",
-          message: `Insufficient role privileges. Required: ${allowedRoles.join(" or ")}`,
-        },
-        403
-      );
+      throw AuthErrors.insufficientRole(allowedRoles);
     }
 
     await next();
@@ -40,10 +34,7 @@ export function requirePermission(...requiredPermissions: string[]) {
   return createMiddleware<AppEnv>(async (c, next) => {
     const user = c.get("user");
     if (!user) {
-      return c.json(
-        { error: "Unauthorized", message: "Authentication required" },
-        401
-      );
+      throw CommonErrors.unauthorized();
     }
 
     const isAdmin = user.roles.includes("admin");
@@ -52,13 +43,7 @@ export function requirePermission(...requiredPermissions: string[]) {
       requiredPermissions.every((perm) => user.permissions.includes(perm));
 
     if (!hasPermissions) {
-      return c.json(
-        {
-          error: "Forbidden",
-          message: `Missing required permission(s): ${requiredPermissions.join(", ")}`,
-        },
-        403
-      );
+      throw AuthErrors.missingPermissions(requiredPermissions);
     }
 
     await next();

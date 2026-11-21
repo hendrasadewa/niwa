@@ -1,56 +1,42 @@
-import { zValidator } from "@hono/zod-validator";
-import { createBookshelfSchema } from "@niwa/pustaka-validators";
-import { eq } from "drizzle-orm";
-import { Hono } from "hono";
-import { bookshelves, createDb } from "../db";
-import { authMiddleware } from "../middleware/auth";
-import { requireRole } from "../middleware/rbac";
-import type { AppEnv } from "../types";
+import { Hono, type Context } from "hono";
+import { authMiddleware } from "../middlewares/auth";
+import { requireRole } from "../middlewares/rbac";
+import { createBookshelfRepo } from "../repositories/bookshelves";
+import { createBookshelfService } from "../services/bookshelves";
+import type { AppEnv } from "../types/env";
+import { validate } from "../validators";
+import { createBookshelfSchema } from "../validators/bookshelves";
+
+function getBookshelfService(c: Context<AppEnv>) {
+  return createBookshelfService({
+    bookshelfRepo: createBookshelfRepo(c.get("db")),
+  });
+}
 
 export const bookshelvesRoutes = new Hono<AppEnv>();
 
-// GET /api/v1/bookshelves - List all bookshelves (Member & Admin)
+// GET /api/v1/bookshelves
 bookshelvesRoutes.get("/", authMiddleware, async (c) => {
-  const db = createDb(c.env.DB);
-  const items = await db.select().from(bookshelves);
-  return c.json({ bookshelves: items });
+  const bookshelves = await getBookshelfService(c).listBookshelves();
+  return c.json({ bookshelves });
 });
 
-// GET /api/v1/bookshelves/:id - Get a single bookshelf by ID
+// GET /api/v1/bookshelves/:id
 bookshelvesRoutes.get("/:id", authMiddleware, async (c) => {
   const id = c.req.param("id");
-  const db = createDb(c.env.DB);
-  const [shelf] = await db
-    .select()
-    .from(bookshelves)
-    .where(eq(bookshelves.id, id))
-    .limit(1);
-
-  if (!shelf) {
-    return c.json({ error: "NotFound", message: "Bookshelf not found" }, 404);
-  }
-
-  return c.json({ bookshelf: shelf });
+  const bookshelf = await getBookshelfService(c).getBookshelf(id);
+  return c.json({ bookshelf });
 });
 
-// POST /api/v1/bookshelves - Create a new bookshelf (Admin only)
+// POST /api/v1/bookshelves
 bookshelvesRoutes.post(
   "/",
   authMiddleware,
   requireRole("admin"),
-  zValidator("json", createBookshelfSchema),
+  validate("json", createBookshelfSchema),
   async (c) => {
-    const { name, location } = c.req.valid("json");
-    const db = createDb(c.env.DB);
-
-    const newShelf = {
-      id: crypto.randomUUID(),
-      name,
-      location,
-    };
-
-    await db.insert(bookshelves).values(newShelf);
-
-    return c.json({ bookshelf: newShelf }, 201);
+    const body = c.req.valid("json");
+    const bookshelf = await getBookshelfService(c).createBookshelf(body);
+    return c.json({ bookshelf }, 201);
   }
 );
