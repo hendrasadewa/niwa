@@ -1,5 +1,5 @@
 import type { Store, User } from "@/types/api";
-import { exchangeSsoToken } from "./sso";
+import { openPoSsoClient } from "./sso";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
@@ -13,8 +13,6 @@ export const ACTIVE_STORE_STORAGE_KEY = "open_po_active_store_id";
 export const TOKEN_COOKIE_NAME = "open_po_token";
 export const ROLES_COOKIE_NAME = "open_po_roles";
 
-// Access JWT is stored strictly in-memory (never persisted to localStorage)
-let inMemoryToken: string | null = null;
 let inMemoryUser: User | null = null;
 let inMemoryStores: Store[] = [];
 
@@ -44,11 +42,11 @@ export function setOnUnauthorizedHandler(handler: (() => void) | null) {
 }
 
 export function getAuthToken(): string | null {
-  return inMemoryToken;
+  return openPoSsoClient.getAccessToken();
 }
 
 export function setAuthToken(token: string): void {
-  inMemoryToken = token;
+  openPoSsoClient.setAccessToken(token);
 }
 
 export function getRefreshToken(): string | null {
@@ -76,7 +74,7 @@ export function setStoredOwnedStores(stores: Store[]): void {
 }
 
 export function clearAuthToken(): void {
-  inMemoryToken = null;
+  openPoSsoClient.clearAccessToken();
   inMemoryUser = null;
   inMemoryStores = [];
   if (typeof window === "undefined") return;
@@ -160,40 +158,8 @@ export function formatApiErrorMessage(
   return `Request failed with status ${status}`;
 }
 
-let inFlightRefreshPromise: Promise<string | null> | null = null;
-
-async function attemptTokenRefresh(): Promise<string | null> {
-  if (inFlightRefreshPromise) {
-    return inFlightRefreshPromise;
-  }
-
-  inFlightRefreshPromise = (async () => {
-    try {
-      const redirectUri =
-        typeof window !== "undefined" ? window.location.href : undefined;
-      const result = await exchangeSsoToken(redirectUri);
-
-      if (result.status === "authenticated") {
-        setAuthToken(result.token);
-        return result.token;
-      }
-
-      if (
-        result.status === "consent_required" &&
-        typeof window !== "undefined"
-      ) {
-        window.location.replace(result.consent_url);
-      }
-
-      return null;
-    } catch {
-      return null;
-    } finally {
-      inFlightRefreshPromise = null;
-    }
-  })();
-
-  return inFlightRefreshPromise;
+function attemptTokenRefresh(): Promise<string | null> {
+  return openPoSsoClient.refreshAccessToken();
 }
 
 const NON_REFRESHABLE_AUTH_ENDPOINTS = [

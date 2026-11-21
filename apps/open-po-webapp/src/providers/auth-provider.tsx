@@ -3,25 +3,19 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNiwaSsoSession } from "@niwa/auth/react";
+import type { SsoUserPayload } from "@niwa/auth/types";
 import type { ProfileResponse, Store, User } from "@/types/api";
 import {
   ACTIVE_STORE_STORAGE_KEY,
   apiClient,
   clearAuthToken,
   getAuthToken,
-  setAuthToken,
   setOnUnauthorizedHandler,
   setStoredOwnedStores,
   setStoredUser,
 } from "@/lib/api";
-import {
-  OPEN_PO_APP_ID,
-  buildAuthPortalUrl,
-  exchangeSsoToken,
-  logoutSso,
-  resolveSafeRedirectUri,
-  type SsoUserPayload,
-} from "@/lib/sso";
+import { OPEN_PO_APP_ID, openPoSsoClient } from "@/lib/sso";
 
 export interface AuthContextValue {
   user: User | null;
@@ -44,25 +38,7 @@ const AuthContext = React.createContext<AuthContextValue | undefined>(
   undefined
 );
 
-const PROTECTED_PREFIXES = ["/profile", "/orders", "/seller"];
-const VISIBILITY_RECHECK_MIN_MS = 30_000;
-
-function isProtectedPath(pathname: string | null): boolean {
-  if (!pathname) return false;
-  return PROTECTED_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-}
-
-function isAuthRedirectPath(pathname: string | null): boolean {
-  if (!pathname) return false;
-  return (
-    pathname === "/login" ||
-    pathname.startsWith("/login/") ||
-    pathname === "/register" ||
-    pathname.startsWith("/register/")
-  );
-}
+const PROTECTED_PREFIXES = ["/profile", "/orders", "/seller"] as const;
 
 function mapSsoUserFallback(ssoUser: SsoUserPayload): User {
   return {
@@ -80,25 +56,11 @@ function mapSsoUserFallback(ssoUser: SsoUserPayload): User {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
-  const [token, setToken] = React.useState<string | null>(null);
   const [user, setUser] = React.useState<User | null>(null);
   const [ownedStores, setOwnedStores] = React.useState<Store[]>([]);
   const [activeStoreId, setActiveStoreIdState] = React.useState<string | null>(
     null
   );
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  const refreshTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
-  const lastSyncAtRef = React.useRef<number>(0);
-
-  const clearRefreshTimer = React.useCallback(() => {
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-      refreshTimerRef.current = null;
-    }
-  }, []);
 
   const setActiveStoreId = React.useCallback((storeId: string) => {
     setActiveStoreIdState(storeId);
@@ -111,62 +73,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const syncProfileState = React.useCallback(
-    (profile: ProfileResponse, activeToken: string) => {
-      setToken(activeToken);
-      setUser(profile.user);
-      setStoredUser(profile.user);
-      const stores = profile.stores ?? [];
-      setOwnedStores(stores);
-      setStoredOwnedStores(stores);
+  const syncProfileState = React.useCallback((profile: ProfileResponse) => {
+    setUser(profile.user);
+    setStoredUser(profile.user);
+    const stores = profile.stores ?? [];
+    setOwnedStores(stores);
+    setStoredOwnedStores(stores);
 
-      if (stores.length > 0) {
-        const savedId =
-          typeof window !== "undefined"
-            ? window.localStorage.getItem(ACTIVE_STORE_STORAGE_KEY)
-            : null;
-        const matched = stores.find((s) => s.id === savedId);
-        const targetId = matched ? matched.id : stores[0]!.id;
-        setActiveStoreIdState(targetId);
-      } else {
-        setActiveStoreIdState(null);
-      }
-    },
-    []
-  );
-
-  const loginWithSso = React.useCallback((redirectUri?: string) => {
-    if (typeof window === "undefined") return;
-    window.location.assign(buildAuthPortalUrl("login", redirectUri));
-  }, []);
-
-  const registerWithSso = React.useCallback((redirectUri?: string) => {
-    if (typeof window === "undefined") return;
-    window.location.assign(buildAuthPortalUrl("register", redirectUri));
-  }, []);
-
-  const logout = React.useCallback(() => {
-    clearRefreshTimer();
-    setIsLoading(true);
-
-    void logoutSso().finally(() => {
-      clearAuthToken();
-      setToken(null);
-      setUser(null);
-      setOwnedStores([]);
+    if (stores.length > 0) {
+      const savedId =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem(ACTIVE_STORE_STORAGE_KEY)
+          : null;
+      const matched = stores.find((s) => s.id === savedId);
+      setActiveStoreIdState(matched ? matched.id : stores[0]!.id);
+    } else {
       setActiveStoreIdState(null);
-      queryClient.clear();
-      if (typeof window !== "undefined") {
-        window.location.replace("/");
-      }
-    });
-  }, [clearRefreshTimer, queryClient]);
+    }
+  }, []);
 
   const hydrateOpenPoProfile = React.useCallback(
-    async (
-      activeToken: string,
-      fallbackUser?: User
-    ): Promise<ProfileResponse | null> => {
+    async (fallbackUser?: User): Promise<ProfileResponse | null> => {
       try {
         const [response, storesResponse] = await Promise.all([
           apiClient.get<ProfileResponse>("/api/v1/me", {
@@ -182,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user: response.user,
           stores: storesResponse?.stores ?? response.stores ?? [],
         };
-        syncProfileState(mergedProfile, activeToken);
+        syncProfileState(mergedProfile);
         return mergedProfile;
       } catch {
         if (fallbackUser) {
@@ -190,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             user: fallbackUser,
             stores: [],
           };
-          syncProfileState(fallbackProfile, activeToken);
+          syncProfileState(fallbackProfile);
           return fallbackProfile;
         }
         return null;
@@ -199,155 +126,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [syncProfileState]
   );
 
-  const syncSsoSession = React.useCallback(
-    async (options?: {
-      silent?: boolean;
-      redirectOnConsent?: boolean;
-    }): Promise<{ profile: ProfileResponse | null; redirecting: boolean }> => {
-      const redirectUri =
-        typeof window !== "undefined" ? resolveSafeRedirectUri() : undefined;
-
-      try {
-        const result = await exchangeSsoToken(redirectUri);
-        lastSyncAtRef.current = Date.now();
-
-        if (result.status === "authenticated") {
-          setAuthToken(result.token);
-          setToken(result.token);
-
-          clearRefreshTimer();
-          const refreshDelayMs = Math.max(
-            (result.expires_in - 60) * 1000,
-            15_000
-          );
-          refreshTimerRef.current = setTimeout(() => {
-            void syncSsoSession({ silent: true, redirectOnConsent: true });
-          }, refreshDelayMs);
-
-          const profile = await hydrateOpenPoProfile(
-            result.token,
-            mapSsoUserFallback(result.user)
-          );
-          return { profile, redirecting: false };
-        }
-
-        if (result.status === "consent_required") {
-          clearRefreshTimer();
-          clearAuthToken();
-          setToken(null);
-          setUser(null);
-          setOwnedStores([]);
-          setActiveStoreIdState(null);
-          if (
-            options?.redirectOnConsent !== false &&
-            typeof window !== "undefined"
-          ) {
-            window.location.replace(result.consent_url);
-            return { profile: null, redirecting: true };
-          }
-          return { profile: null, redirecting: false };
-        }
-
-        clearRefreshTimer();
-        clearAuthToken();
-        setToken(null);
-        setUser(null);
-        setOwnedStores([]);
-        setActiveStoreIdState(null);
-        return { profile: null, redirecting: false };
-      } catch {
-        if (!options?.silent) {
-          clearRefreshTimer();
-          clearAuthToken();
-          setToken(null);
-          setUser(null);
-          setOwnedStores([]);
-          setActiveStoreIdState(null);
-        }
-        return { profile: null, redirecting: false };
-      }
+  const sso = useNiwaSsoSession({
+    client: openPoSsoClient,
+    pathname,
+    protectedPrefixes: PROTECTED_PREFIXES,
+    postLogoutRedirect: "home",
+    onAuthenticated: async ({ user: ssoUser }) => {
+      await hydrateOpenPoProfile(mapSsoUserFallback(ssoUser));
     },
-    [clearRefreshTimer, hydrateOpenPoProfile]
-  );
-
-  React.useEffect(() => {
-    setOnUnauthorizedHandler(() => {
-      clearRefreshTimer();
+    onCleared: () => {
       clearAuthToken();
-      setToken(null);
       setUser(null);
       setOwnedStores([]);
       setActiveStoreIdState(null);
       queryClient.clear();
-    });
+    },
+  });
 
+  React.useEffect(() => {
+    setOnUnauthorizedHandler(() => {
+      sso.clearLocalSession();
+    });
     return () => {
       setOnUnauthorizedHandler(null);
     };
-  }, [clearRefreshTimer, queryClient]);
-
-  React.useEffect(() => {
-    if (isAuthRedirectPath(pathname)) {
-      setIsLoading(false);
-      return;
-    }
-
-    let active = true;
-
-    async function hydrate() {
-      const { redirecting } = await syncSsoSession({ redirectOnConsent: true });
-      if (active && !redirecting) {
-        setIsLoading(false);
-      }
-    }
-
-    void hydrate();
-
-    return () => {
-      active = false;
-      clearRefreshTimer();
-    };
-  }, [pathname, syncSsoSession, clearRefreshTimer]);
-
-  // Enforce login on protected routes (/profile, /orders, /seller)
-  React.useEffect(() => {
-    if (isLoading) return;
-    if (!token && isProtectedPath(pathname) && typeof window !== "undefined") {
-      window.location.replace(buildAuthPortalUrl("login", window.location.href));
-    }
-  }, [isLoading, token, pathname]);
-
-  // Re-verify session on tab focus to propagate Global Single Logout promptly
-  React.useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState !== "visible") return;
-      if (isAuthRedirectPath(pathname)) return;
-      if (Date.now() - lastSyncAtRef.current < VISIBILITY_RECHECK_MIN_MS) {
-        return;
-      }
-      void syncSsoSession({ silent: true, redirectOnConsent: true });
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [pathname, syncSsoSession]);
+  }, [sso.clearLocalSession]);
 
   const refreshProfile =
     React.useCallback(async (): Promise<ProfileResponse | null> => {
       const activeToken = getAuthToken();
       if (!activeToken) {
-        const { profile } = await syncSsoSession({ redirectOnConsent: true });
-        return profile;
+        const { user: ssoUser } = await sso.syncSession({
+          redirectOnConsent: true,
+        });
+        return ssoUser ? hydrateOpenPoProfile(mapSsoUserFallback(ssoUser)) : null;
       }
-      const profile = await hydrateOpenPoProfile(activeToken);
+      const profile = await hydrateOpenPoProfile();
       if (!profile) {
-        const synced = await syncSsoSession({ redirectOnConsent: true });
-        return synced.profile;
+        const { user: ssoUser } = await sso.syncSession({
+          redirectOnConsent: true,
+        });
+        return ssoUser ? hydrateOpenPoProfile(mapSsoUserFallback(ssoUser)) : null;
       }
       return profile;
-    }, [hydrateOpenPoProfile, syncSsoSession]);
+    }, [hydrateOpenPoProfile, sso.syncSession]);
 
   const activeStore = React.useMemo(() => {
     if (ownedStores.length === 0) return null;
@@ -356,7 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }, [ownedStores, activeStoreId]);
 
-  const isAuthenticated = Boolean(token && user);
+  const isAuthenticated = Boolean(sso.token && user);
   const isAdmin = Boolean(user?.roles?.includes("admin"));
   const isSeller = Boolean(
     isAdmin || user?.roles?.includes("seller") || ownedStores.length > 0
@@ -374,34 +196,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo<AuthContextValue>(
     () => ({
       user,
-      token,
+      token: sso.token,
       ownedStores,
       activeStore,
       setActiveStoreId,
       isAuthenticated,
       isSeller,
       isAdmin,
-      isLoading,
+      isLoading: sso.isLoading,
       hasPermission,
-      loginWithSso,
-      registerWithSso,
-      logout,
+      loginWithSso: sso.loginWithSso,
+      registerWithSso: sso.registerWithSso,
+      logout: sso.logout,
       refreshProfile,
     }),
     [
       user,
-      token,
+      sso.token,
       ownedStores,
       activeStore,
       setActiveStoreId,
       isAuthenticated,
       isSeller,
       isAdmin,
-      isLoading,
+      sso.isLoading,
       hasPermission,
-      loginWithSso,
-      registerWithSso,
-      logout,
+      sso.loginWithSso,
+      sso.registerWithSso,
+      sso.logout,
       refreshProfile,
     ]
   );

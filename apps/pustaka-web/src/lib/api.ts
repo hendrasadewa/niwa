@@ -1,5 +1,5 @@
 import type { User } from "@/types/api";
-import { exchangeSsoToken } from "./sso";
+import { pustakaSsoClient } from "./sso";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
@@ -11,8 +11,6 @@ export const USER_STORAGE_KEY = "pustaka_auth_user";
 export const TOKEN_COOKIE_NAME = "pustaka_token";
 export const ROLES_COOKIE_NAME = "pustaka_roles";
 
-// Access JWT is stored strictly in-memory (never persisted to localStorage)
-let inMemoryToken: string | null = null;
 let inMemoryUser: User | null = null;
 
 export class ApiError extends Error {
@@ -41,11 +39,11 @@ export function setOnUnauthorizedHandler(handler: (() => void) | null) {
 }
 
 export function getAuthToken(): string | null {
-  return inMemoryToken;
+  return pustakaSsoClient.getAccessToken();
 }
 
 export function setAuthToken(token: string): void {
-  inMemoryToken = token;
+  pustakaSsoClient.setAccessToken(token);
 }
 
 export function getRefreshToken(): string | null {
@@ -65,7 +63,7 @@ export function setStoredUser(user: User): void {
 }
 
 export function clearAuthToken(): void {
-  inMemoryToken = null;
+  pustakaSsoClient.clearAccessToken();
   inMemoryUser = null;
   if (typeof window === "undefined") return;
   try {
@@ -147,40 +145,8 @@ export function formatApiErrorMessage(
   return `Request failed with status ${status}`;
 }
 
-let inFlightRefreshPromise: Promise<string | null> | null = null;
-
-async function attemptTokenRefresh(): Promise<string | null> {
-  if (inFlightRefreshPromise) {
-    return inFlightRefreshPromise;
-  }
-
-  inFlightRefreshPromise = (async () => {
-    try {
-      const redirectUri =
-        typeof window !== "undefined" ? window.location.href : undefined;
-      const result = await exchangeSsoToken(redirectUri);
-
-      if (result.status === "authenticated") {
-        setAuthToken(result.token);
-        return result.token;
-      }
-
-      if (
-        result.status === "consent_required" &&
-        typeof window !== "undefined"
-      ) {
-        window.location.replace(result.consent_url);
-      }
-
-      return null;
-    } catch {
-      return null;
-    } finally {
-      inFlightRefreshPromise = null;
-    }
-  })();
-
-  return inFlightRefreshPromise;
+function attemptTokenRefresh(): Promise<string | null> {
+  return pustakaSsoClient.refreshAccessToken();
 }
 
 const NON_REFRESHABLE_AUTH_ENDPOINTS = [

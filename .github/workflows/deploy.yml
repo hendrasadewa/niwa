@@ -57,9 +57,11 @@ jobs:
               - 'packages/validators/auth/**'
             open_po_api:
               - 'apps/open-po-api/**'
+              - 'packages/auth/**'
               - 'packages/validators/open-po/**'
             pustaka_api:
               - 'apps/pustaka-api/**'
+              - 'packages/auth/**'
               - 'packages/validators/pustaka/**'
             web_api:
               - 'apps/web-api/**'
@@ -69,10 +71,12 @@ jobs:
               - 'packages/validators/auth/**'
             open_po_webapp:
               - 'apps/open-po-webapp/**'
+              - 'packages/auth/**'
               - 'packages/ui/**'
               - 'packages/validators/open-po/**'
             pustaka_web:
               - 'apps/pustaka-web/**'
+              - 'packages/auth/**'
               - 'packages/ui/**'
               - 'packages/validators/pustaka/**'
             labs:

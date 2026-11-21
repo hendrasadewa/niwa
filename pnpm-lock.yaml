@@ -172,6 +172,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.6
         version: 0.7.6(hono@4.13.18)(zod@4.6.7)
+      '@niwa/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@niwa/open-po-validators':
         specifier: workspace:*
         version: link:../../packages/validators/open-po
@@ -206,6 +209,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.9.2(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.2.8))(zod@4.6.7)
+      '@niwa/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@niwa/open-po-validators':
         specifier: workspace:*
         version: link:../../packages/validators/open-po
@@ -300,6 +306,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.6
         version: 0.7.6(hono@4.13.18)(zod@4.6.7)
+      '@niwa/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@niwa/pustaka-validators':
         specifier: workspace:*
         version: link:../../packages/validators/pustaka
@@ -334,6 +343,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.9.2(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.2.8))(zod@4.6.7)
+      '@niwa/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@niwa/pustaka-validators':
         specifier: workspace:*
         version: link:../../packages/validators/pustaka
@@ -487,6 +499,22 @@ importers:
       wrangler:
         specifier: ^4.125.0
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)
+
+  packages/auth:
+    dependencies:
+      jose:
+        specifier: ^6.2.18
+        version: 6.2.18
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.17
+        version: 19.3.0
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
 
   packages/ui:
     dependencies:
