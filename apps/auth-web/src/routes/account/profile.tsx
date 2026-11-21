@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { changePasswordSchema, updateUserSchema } from "@niwa/auth-validators";
 import { Alert, Badge, Button } from "@niwa/ui/components";
 import { Card, FormField, TextInput } from "../../components/form-controls";
+import { PasskeysCard } from "../../components/passkeys-card";
 import { useAuth } from "../../context/auth-context";
 import {
   authApi,
@@ -11,12 +12,6 @@ import {
 import { extractZodFieldErrors, formatUnixDate } from "../../lib/format";
 
 const UPCOMING_SECURITY_FEATURES = [
-  {
-    title: "Passkeys (WebAuthn)",
-    phase: "Phase 6",
-    description:
-      "Sign in without a password using Face ID, Touch ID, or hardware security keys.",
-  },
   {
     title: "Authenticator App (TOTP 2FA)",
     phase: "Phase 6",
@@ -385,7 +380,10 @@ export default function AccountProfileRoute() {
         </form>
       </Card>
 
-      {/* Upcoming Security Features (Phase 5 & 6) */}
+      {/* Passkeys Management */}
+      <PasskeysCard />
+
+      {/* Upcoming Security Features (Phase 6) */}
       <Card
         title="Additional Security"
         description="Upcoming authentication and verification methods for your Niwa account."

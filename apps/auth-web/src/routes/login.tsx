@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import {
+  browserSupportsWebAuthn,
+  startAuthentication,
+  type PublicKeyCredentialRequestOptionsJSON,
+} from "@simplewebauthn/browser";
 import { loginSchema } from "@niwa/auth-validators";
 import { Alert, Badge, Button } from "@niwa/ui/components";
 import { AuthCardLayout } from "../components/auth-card-layout";
@@ -31,7 +36,11 @@ export default function LoginRoute() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [passkeySubmitting, setPasskeySubmitting] = useState(false);
   const [handingOff, setHandingOff] = useState(false);
+
+  const webAuthnSupported =
+    typeof window !== "undefined" && browserSupportsWebAuthn();
 
   const silentHandoffStartedRef = useRef(false);
 
@@ -79,6 +88,45 @@ export default function LoginRoute() {
       setErrorMessage(getErrorMessage(err, "Unable to sign in."));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    setErrorMessage(null);
+    setFieldErrors({});
+    setPasskeySubmitting(true);
+
+    try {
+      const emailHint = email.trim() || undefined;
+      const { challenge_id, options } =
+        await authApi.startPasskeyLogin(emailHint);
+
+      const assertion = await startAuthentication({
+        optionsJSON:
+          options as unknown as PublicKeyCredentialRequestOptionsJSON,
+      });
+
+      const res = await authApi.verifyPasskeyLogin({
+        challenge_id,
+        response: assertion as unknown as Record<string, unknown>,
+      });
+
+      setUser(res.user);
+      silentHandoffStartedRef.current = true;
+      setHandingOff(true);
+      await runPostAuthHandoff({ app, redirectUri, navigate });
+    } catch (err) {
+      setHandingOff(false);
+      const errName = (err as { name?: string })?.name;
+      if (errName === "NotAllowedError" || errName === "AbortError") {
+        setErrorMessage("Passkey sign-in was cancelled.");
+      } else {
+        setErrorMessage(
+          getErrorMessage(err, "Unable to sign in with passkey.")
+        );
+      }
+    } finally {
+      setPasskeySubmitting(false);
     }
   };
 
@@ -161,10 +209,36 @@ export default function LoginRoute() {
           variant="primary"
           size="md"
           className="w-full py-2 text-sm"
-          disabled={submitting}
+          disabled={submitting || passkeySubmitting}
         >
           {submitting ? "Signing in..." : "Sign in"}
         </Button>
+
+        {webAuthnSupported && (
+          <>
+            <div className="relative py-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neutral-800" />
+              </div>
+              <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
+                <span className="bg-neutral-900 px-2 text-neutral-500">or</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              className="w-full py-2 text-sm"
+              onClick={handlePasskeyLogin}
+              disabled={submitting || passkeySubmitting}
+            >
+              {passkeySubmitting
+                ? "Waiting for passkey..."
+                : "Sign in with Passkey"}
+            </Button>
+          </>
+        )}
       </form>
     </AuthCardLayout>
   );

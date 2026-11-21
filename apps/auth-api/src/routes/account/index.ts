@@ -10,8 +10,15 @@ import { createAccountService } from "../../services/account";
 import type { AppEnv } from "../../types/env";
 import { buildClearSessionCookie } from "../../utils/cookie";
 import { validate } from "../../validators";
-import { changePasswordSchema, updateUserSchema } from "../../validators/auth";
+import {
+  changePasswordSchema,
+  passkeyIdParamSchema,
+  passkeyRegisterVerifySchema,
+  renamePasskeySchema,
+  updateUserSchema,
+} from "../../validators/auth";
 import { appIdParamSchema, sessionIdParamSchema } from "../../validators/sso";
+import { getPasskeyService } from "../auth/passkeys";
 
 function getAccountService(c: Context<AppEnv>) {
   const db = c.get("db");
@@ -125,5 +132,69 @@ accountRoutes.delete(
     const { appId } = c.req.valid("param");
     await getAccountService(c).revokeAppConsent(user.id, appId);
     return c.json({ message: "App consent revoked", app_id: appId });
+  }
+);
+
+// GET /api/v1/account/passkeys
+accountRoutes.get("/passkeys", async (c) => {
+  const user = c.get("user")!;
+  const passkeys = await getPasskeyService(c).listPasskeys(user.id);
+  return c.json({ passkeys });
+});
+
+// POST /api/v1/account/passkeys/register/options
+accountRoutes.post("/passkeys/register/options", async (c) => {
+  const user = c.get("user")!;
+  const result = await getPasskeyService(c).startRegistration(user);
+  return c.json(result);
+});
+
+// POST /api/v1/account/passkeys/register/verify
+accountRoutes.post(
+  "/passkeys/register/verify",
+  validate("json", passkeyRegisterVerifySchema),
+  async (c) => {
+    const user = c.get("user")!;
+    const { challenge_id, name, response } = c.req.valid("json");
+    const result = await getPasskeyService(c).verifyRegistration({
+      user,
+      challengeId: challenge_id,
+      name,
+      response,
+    });
+    return c.json(result, 201);
+  }
+);
+
+// PATCH /api/v1/account/passkeys/:id
+accountRoutes.patch(
+  "/passkeys/:id",
+  validate("param", passkeyIdParamSchema),
+  validate("json", renamePasskeySchema),
+  async (c) => {
+    const user = c.get("user")!;
+    const { id } = c.req.valid("param");
+    const { name } = c.req.valid("json");
+    const result = await getPasskeyService(c).renamePasskey({
+      userId: user.id,
+      passkeyId: id,
+      name,
+    });
+    return c.json(result);
+  }
+);
+
+// DELETE /api/v1/account/passkeys/:id
+accountRoutes.delete(
+  "/passkeys/:id",
+  validate("param", passkeyIdParamSchema),
+  async (c) => {
+    const user = c.get("user")!;
+    const { id } = c.req.valid("param");
+    await getPasskeyService(c).deletePasskey({
+      userId: user.id,
+      passkeyId: id,
+    });
+    return c.json({ message: "Passkey removed" });
   }
 );

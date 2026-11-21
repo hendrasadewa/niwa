@@ -172,3 +172,43 @@ export const verificationTokens = sqliteTable(
     index("verification_tokens_expires_at_idx").on(table.expires_at),
   ]
 );
+
+export const webauthnCredentials = sqliteTable(
+  "webauthn_credentials",
+  {
+    id: text("id").primaryKey(), // base64url credential ID
+    user_id: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    public_key: text("public_key").notNull(), // base64url-encoded public key bytes
+    counter: integer("counter").notNull().default(0),
+    transports: text("transports").notNull().default("[]"), // JSON array of transports
+    device_type: text("device_type").notNull(), // "singleDevice" | "multiDevice"
+    backed_up: integer("backed_up", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    name: text("name").notNull(),
+    created_at: integer("created_at").notNull(),
+    last_used_at: integer("last_used_at"),
+  },
+  (table) => [index("webauthn_credentials_user_id_idx").on(table.user_id)]
+);
+
+export const webauthnChallenges = sqliteTable(
+  "webauthn_challenges",
+  {
+    id: text("id").primaryKey(),
+    user_id: text("user_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    challenge: text("challenge").notNull().unique(),
+    purpose: text("purpose").notNull(), // "register" | "authenticate"
+    expires_at: integer("expires_at").notNull(),
+    consumed_at: integer("consumed_at"),
+    created_at: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("webauthn_challenges_user_id_idx").on(table.user_id),
+    index("webauthn_challenges_expires_at_idx").on(table.expires_at),
+  ]
+);

@@ -166,4 +166,38 @@ export const AuthErrors = {
       code: "AUTH_EMAIL_DELIVERY_FAILED",
       message: "Unable to send email right now. Please try again later.",
     }),
+
+  passkeyChallengeInvalid: () =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "AUTH_PASSKEY_CHALLENGE_INVALID",
+      message: "Passkey challenge is invalid or has expired. Please try again.",
+    }),
+
+  passkeyVerificationFailed: (
+    message = "Passkey verification failed. Please try again."
+  ) =>
+    new AppError({
+      status: 401,
+      error: "Unauthorized",
+      code: "AUTH_PASSKEY_VERIFICATION_FAILED",
+      message,
+    }),
+
+  passkeyNotFound: () =>
+    new AppError({
+      status: 404,
+      error: "NotFound",
+      code: "AUTH_PASSKEY_NOT_FOUND",
+      message: "Passkey not found",
+    }),
+
+  passkeyAlreadyRegistered: () =>
+    new AppError({
+      status: 409,
+      error: "Conflict",
+      code: "AUTH_PASSKEY_ALREADY_REGISTERED",
+      message: "This passkey is already registered",
+    }),
 };

@@ -25,6 +25,7 @@
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
     "@niwa/auth-validators": "workspace:*",
+    "@simplewebauthn/server": "^13.1.1",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.3",
     "jose": "^6.2.18",

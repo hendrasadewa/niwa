@@ -126,6 +126,38 @@ export const resetPasswordSchema = z.object({
     .max(128, "New password must be at most 128 characters"),
 });
 
+export const passkeyRegisterVerifySchema = z.object({
+  challenge_id: z.string().trim().min(1, "Challenge ID is required").max(128),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Passkey name cannot be empty")
+    .max(100, "Passkey name must be at most 100 characters")
+    .optional(),
+  response: z.record(z.string(), z.unknown()),
+});
+
+export const passkeyLoginOptionsSchema = z.object({
+  email: z.string().trim().email("Invalid email address").optional(),
+});
+
+export const passkeyLoginVerifySchema = z.object({
+  challenge_id: z.string().trim().min(1, "Challenge ID is required").max(128),
+  response: z.record(z.string(), z.unknown()),
+});
+
+export const renamePasskeySchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Passkey name is required")
+    .max(100, "Passkey name must be at most 100 characters"),
+});
+
+export const passkeyIdParamSchema = z.object({
+  id: z.string().trim().min(1, "Passkey ID is required").max(512),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
@@ -137,3 +169,11 @@ export type RevokeAppRoleInput = z.infer<typeof revokeAppRoleSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type PasskeyRegisterVerifyInput = z.infer<
+  typeof passkeyRegisterVerifySchema
+>;
+export type PasskeyLoginOptionsInput = z.infer<
+  typeof passkeyLoginOptionsSchema
+>;
+export type PasskeyLoginVerifyInput = z.infer<typeof passkeyLoginVerifySchema>;
+export type RenamePasskeyInput = z.infer<typeof renamePasskeySchema>;

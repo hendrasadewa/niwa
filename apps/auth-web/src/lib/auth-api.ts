@@ -93,6 +93,16 @@ export interface ConnectedApp {
   consented_at: number;
 }
 
+export interface PasskeyRecord {
+  id: string;
+  name: string;
+  device_type: string;
+  backed_up: boolean;
+  transports: string[];
+  created_at: number;
+  last_used_at: number | null;
+}
+
 export interface PermissionRecord {
   id: string;
   app_id: string;
@@ -308,6 +318,76 @@ export const authApi = {
       {
         method: "POST",
         body: input,
+      }
+    );
+  },
+
+  startPasskeyLogin(email?: string) {
+    return request<{
+      challenge_id: string;
+      options: Record<string, unknown>;
+    }>("/api/v1/auth/passkeys/login/options", {
+      method: "POST",
+      body: email?.trim() ? { email: email.trim() } : {},
+    });
+  },
+
+  verifyPasskeyLogin(input: {
+    challenge_id: string;
+    response: Record<string, unknown>;
+  }) {
+    return request<{ user: AuthUser }>("/api/v1/auth/passkeys/login/verify", {
+      method: "POST",
+      body: input,
+    });
+  },
+
+  // Passkeys (authenticated account management)
+  listPasskeys(signal?: AbortSignal) {
+    return request<{ passkeys: PasskeyRecord[] }>("/api/v1/account/passkeys", {
+      method: "GET",
+      signal,
+    });
+  },
+
+  startPasskeyRegistration() {
+    return request<{
+      challenge_id: string;
+      options: Record<string, unknown>;
+    }>("/api/v1/account/passkeys/register/options", {
+      method: "POST",
+    });
+  },
+
+  verifyPasskeyRegistration(input: {
+    challenge_id: string;
+    name?: string;
+    response: Record<string, unknown>;
+  }) {
+    return request<{ passkey: PasskeyRecord }>(
+      "/api/v1/account/passkeys/register/verify",
+      {
+        method: "POST",
+        body: input,
+      }
+    );
+  },
+
+  renamePasskey(id: string, name: string) {
+    return request<{ passkey: PasskeyRecord }>(
+      `/api/v1/account/passkeys/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        body: { name },
+      }
+    );
+  },
+
+  deletePasskey(id: string) {
+    return request<{ message: string }>(
+      `/api/v1/account/passkeys/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
       }
     );
   },
