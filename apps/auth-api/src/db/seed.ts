@@ -1,13 +1,5 @@
-import { eq, inArray } from "drizzle-orm";
 import type { Database } from "./index";
-import {
-  apps,
-  permissions,
-  rolePermissions,
-  roles,
-  userAppRoles,
-} from "./schema";
-import type { AppPermissionMap, AppRoleMap } from "../types";
+import { apps, permissions, rolePermissions, roles } from "./schema";
 
 export const DEFAULT_APPS: ReadonlyArray<{
   id: string;
@@ -169,45 +161,9 @@ export const DEFAULT_PERMISSIONS: ReadonlyArray<{
   },
 ];
 
-/**
- * Ensures default apps, roles, permissions, and role_permissions exist in D1.
- */
-export async function ensureRbacSeeded(db: Database): Promise<void> {
-  await db
-    .insert(apps)
-    .values(
-      DEFAULT_APPS.map((a) => ({
-        id: a.id,
-        name: a.name,
-        description: a.description,
-      }))
-    )
-    .onConflictDoNothing();
+let rbacSeededPromise: Promise<void> | null = null;
 
-  await db
-    .insert(roles)
-    .values(
-      DEFAULT_ROLES.map((r) => ({
-        id: r.id,
-        app_id: r.app_id,
-        name: r.name,
-        description: r.description,
-      }))
-    )
-    .onConflictDoNothing();
-
-  await db
-    .insert(permissions)
-    .values(
-      DEFAULT_PERMISSIONS.map((p) => ({
-        id: p.id,
-        app_id: p.app_id,
-        slug: p.slug,
-        description: p.description,
-      }))
-    )
-    .onConflictDoNothing();
-
+async function runRbacSeed(db: Database): Promise<void> {
   const rolePermValues: Array<{ role_id: string; permission_id: string }> = [];
   for (const perm of DEFAULT_PERMISSIONS) {
     for (const roleName of perm.roles) {
@@ -223,70 +179,55 @@ export async function ensureRbacSeeded(db: Database): Promise<void> {
     }
   }
 
-  if (rolePermValues.length > 0) {
-    await db
-      .insert(rolePermissions)
-      .values(rolePermValues)
-      .onConflictDoNothing();
-  }
+  await db.batch([
+    db
+      .insert(apps)
+      .values(
+        DEFAULT_APPS.map((a) => ({
+          id: a.id,
+          name: a.name,
+          description: a.description,
+        }))
+      )
+      .onConflictDoNothing(),
+    db
+      .insert(roles)
+      .values(
+        DEFAULT_ROLES.map((r) => ({
+          id: r.id,
+          app_id: r.app_id,
+          name: r.name,
+          description: r.description,
+        }))
+      )
+      .onConflictDoNothing(),
+    db
+      .insert(permissions)
+      .values(
+        DEFAULT_PERMISSIONS.map((p) => ({
+          id: p.id,
+          app_id: p.app_id,
+          slug: p.slug,
+          description: p.description,
+        }))
+      )
+      .onConflictDoNothing(),
+    ...(rolePermValues.length > 0
+      ? [db.insert(rolePermissions).values(rolePermValues).onConflictDoNothing()]
+      : []),
+  ]);
 }
 
 /**
- * Resolves a user's app-scoped roles and permissions from D1.
+ * Ensures default apps, roles, permissions, and role_permissions exist in D1.
+ * Memoized per Worker isolate to avoid redundant D1 round-trips on every request.
  */
-export async function getUserAppRolesAndPermissions(
-  db: Database,
-  userId: string
-): Promise<{ app_roles: AppRoleMap; app_permissions: AppPermissionMap }> {
-  const assignedRoles = await db
-    .select({
-      appId: userAppRoles.app_id,
-      roleId: roles.id,
-      roleName: roles.name,
-    })
-    .from(userAppRoles)
-    .innerJoin(roles, eq(userAppRoles.role_id, roles.id))
-    .where(eq(userAppRoles.user_id, userId));
-
-  const appRoles: AppRoleMap = {};
-  const roleIds: string[] = [];
-
-  for (const row of assignedRoles) {
-    roleIds.push(row.roleId);
-    const list = appRoles[row.appId] ?? [];
-    if (!list.includes(row.roleName)) {
-      list.push(row.roleName);
-    }
-    appRoles[row.appId] = list;
+export function ensureRbacSeeded(db: Database): Promise<void> {
+  if (!rbacSeededPromise) {
+    rbacSeededPromise = runRbacSeed(db).catch((err) => {
+      rbacSeededPromise = null;
+      throw err;
+    });
   }
-
-  const appPermissions: AppPermissionMap = {};
-  if (roleIds.length === 0) {
-    return { app_roles: appRoles, app_permissions: appPermissions };
-  }
-
-  const assignedPerms = await db
-    .select({
-      appId: permissions.app_id,
-      slug: permissions.slug,
-    })
-    .from(rolePermissions)
-    .innerJoin(
-      permissions,
-      eq(rolePermissions.permission_id, permissions.id)
-    )
-    .where(inArray(rolePermissions.role_id, roleIds));
-
-  for (const perm of assignedPerms) {
-    const list = appPermissions[perm.appId] ?? [];
-    if (!list.includes(perm.slug)) {
-      list.push(perm.slug);
-    }
-    appPermissions[perm.appId] = list;
-  }
-
-  return {
-    app_roles: appRoles,
-    app_permissions: appPermissions,
-  };
+  return rbacSeededPromise;
 }

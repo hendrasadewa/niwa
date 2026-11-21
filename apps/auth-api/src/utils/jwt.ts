@@ -1,5 +1,5 @@
-import { sign } from "hono/jwt";
-import type { AuthUserResponse, NiwaJwtPayload } from "../types";
+import { sign, verify } from "hono/jwt";
+import type { AuthUserResponse, NiwaJwtPayload } from "../types/auth";
 
 export const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 60 * 15; // 15 minutes
 
@@ -40,4 +40,11 @@ export async function signNiwaToken(
   };
 
   return sign(payload, jwtSecret, "HS256");
+}
+
+export async function verifyNiwaToken(
+  token: string,
+  jwtSecret: string
+): Promise<NiwaJwtPayload> {
+  return (await verify(token, jwtSecret, "HS256")) as unknown as NiwaJwtPayload;
 }

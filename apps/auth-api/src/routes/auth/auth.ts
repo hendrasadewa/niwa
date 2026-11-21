@@ -1,0 +1,117 @@
+import { Hono, type Context } from "hono";
+import { ensureRbacSeeded } from "../../db/seed";
+import { authMiddleware } from "../../middlewares/auth";
+import { createRefreshTokenRepo } from "../../repositories/refresh-tokens";
+import { createRoleRepo } from "../../repositories/roles";
+import { createUserRepo } from "../../repositories/users";
+import { createAuthService } from "../../services/auth";
+import type { AppEnv } from "../../types/env";
+import { resolveAccessTokenTtl } from "../../utils/jwt";
+import { resolveRefreshTokenTtl } from "../../utils/token";
+import { validate } from "../../validators";
+import {
+  changePasswordSchema,
+  loginSchema,
+  logoutSchema,
+  refreshTokenSchema,
+  registerSchema,
+} from "../../validators/auth";
+
+function getAuthService(c: Context<AppEnv>) {
+  const db = c.get("db");
+  return createAuthService({
+    userRepo: createUserRepo(db),
+    roleRepo: createRoleRepo(db),
+    refreshTokenRepo: createRefreshTokenRepo(db),
+    ensureSeeded: () => ensureRbacSeeded(db),
+    config: {
+      jwtSecret: c.env.JWT_SECRET,
+      adminEmail: c.env.ADMIN_EMAIL,
+      accessTokenTtl: resolveAccessTokenTtl(c.env.ACCESS_TOKEN_TTL_SECONDS),
+      refreshTokenTtl: resolveRefreshTokenTtl(c.env.REFRESH_TOKEN_TTL_SECONDS),
+    },
+  });
+}
+
+export const authCoreRoutes = new Hono<AppEnv>();
+
+// POST /api/v1/auth/register
+authCoreRoutes.post("/register", validate("json", registerSchema), async (c) => {
+  const body = c.req.valid("json");
+  const result = await getAuthService(c).register({
+    ...body,
+    userAgent: c.req.header("User-Agent"),
+  });
+  return c.json(result, 201);
+});
+
+// POST /api/v1/auth/login
+authCoreRoutes.post("/login", validate("json", loginSchema), async (c) => {
+  const body = c.req.valid("json");
+  const result = await getAuthService(c).login({
+    ...body,
+    userAgent: c.req.header("User-Agent"),
+  });
+  return c.json(result);
+});
+
+// POST /api/v1/auth/refresh
+authCoreRoutes.post(
+  "/refresh",
+  validate("json", refreshTokenSchema),
+  async (c) => {
+    const { refresh_token } = c.req.valid("json");
+    const result = await getAuthService(c).refresh({
+      refreshToken: refresh_token,
+      userAgent: c.req.header("User-Agent"),
+    });
+    return c.json(result);
+  }
+);
+
+// POST /api/v1/auth/logout
+authCoreRoutes.post("/logout", validate("json", logoutSchema), async (c) => {
+  const { refresh_token } = c.req.valid("json");
+  await getAuthService(c).logout(refresh_token);
+  return c.json({ message: "Logged out successfully" });
+});
+
+// POST /api/v1/auth/logout-all
+authCoreRoutes.post("/logout-all", authMiddleware, async (c) => {
+  const user = c.get("user")!;
+  const revokedCount = await getAuthService(c).logoutAll(user.id);
+  return c.json({
+    message: "Logged out from all sessions",
+    revoked_sessions: revokedCount,
+  });
+});
+
+// GET /api/v1/auth/sessions
+authCoreRoutes.get("/sessions", authMiddleware, async (c) => {
+  const user = c.get("user")!;
+  const sessions = await getAuthService(c).listSessions(user.id);
+  return c.json({ sessions });
+});
+
+// PUT /api/v1/auth/password
+authCoreRoutes.put(
+  "/password",
+  authMiddleware,
+  validate("json", changePasswordSchema),
+  async (c) => {
+    const currentUser = c.get("user")!;
+    const { current_password, new_password, revoke_other_sessions } =
+      c.req.valid("json");
+    const result = await getAuthService(c).changePassword({
+      currentUser,
+      currentPassword: current_password,
+      newPassword: new_password,
+      revokeOtherSessions: revoke_other_sessions,
+      userAgent: c.req.header("User-Agent"),
+    });
+    return c.json({
+      message: "Password updated successfully",
+      ...result,
+    });
+  }
+);

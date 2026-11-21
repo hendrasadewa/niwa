@@ -13,6 +13,10 @@ export type AuthUserResponse = {
   updated_at: number;
 };
 
+export type UserWithSessionCount = AuthUserResponse & {
+  active_sessions_count: number;
+};
+
 export type NiwaJwtPayload = {
   sub: string;
   email: string;
@@ -25,20 +29,17 @@ export type NiwaJwtPayload = {
   exp: number;
 };
 
-export type Bindings = {
-  DB: D1Database;
-  JWT_SECRET: string;
-  ADMIN_EMAIL?: string;
-  ACCESS_TOKEN_TTL_SECONDS?: string;
-  REFRESH_TOKEN_TTL_SECONDS?: string;
+export type ActiveSessionResponse = {
+  id: string;
+  family_id: string;
+  user_agent: string | null;
+  created_at: number;
+  expires_at: number;
 };
 
-export type Variables = {
-  user?: AuthUserResponse;
-  jwtPayload?: NiwaJwtPayload;
-};
-
-export type AppEnv = {
-  Bindings: Bindings;
-  Variables: Variables;
+export type AuthTokenResponse = {
+  user: AuthUserResponse;
+  token: string;
+  refresh_token: string;
+  expires_in: number;
 };
