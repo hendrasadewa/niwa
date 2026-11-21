@@ -96,7 +96,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @niwa/auth-api typecheck
       - run: pnpm --filter @niwa/auth-api db:migrate:remote
-      - run: pnpm --filter @niwa/auth-api deploy
+      - run: pnpm --filter @niwa/auth-api run deploy
 
   deploy-open-po-api:
     needs: [changes, deploy-auth-api]
@@ -112,7 +112,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @niwa/open-po-api typecheck
       - run: pnpm --filter @niwa/open-po-api db:migrate:remote
-      - run: pnpm --filter @niwa/open-po-api deploy
+      - run: pnpm --filter @niwa/open-po-api run deploy
 
   deploy-pustaka-api:
     needs: [changes, deploy-auth-api]
@@ -128,7 +128,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @niwa/pustaka-api typecheck
       - run: pnpm --filter @niwa/pustaka-api db:migrate:remote
-      - run: pnpm --filter @niwa/pustaka-api deploy
+      - run: pnpm --filter @niwa/pustaka-api run deploy
 
   deploy-web-api:
     needs: [changes, deploy-auth-api]
@@ -142,7 +142,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @niwa/web-api deploy
+      - run: pnpm --filter @niwa/web-api run deploy
 
   deploy-auth-web:
     needs: [changes, deploy-auth-api]
@@ -159,7 +159,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @niwa/auth-web typecheck
-      - run: pnpm --filter @niwa/auth-web deploy
+      - run: pnpm --filter @niwa/auth-web run deploy
 
   deploy-open-po-webapp:
     needs: [changes, deploy-open-po-api]
@@ -176,7 +176,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @niwa/open-po-webapp typecheck
-      - run: pnpm --filter @niwa/open-po-webapp deploy
+      - run: pnpm --filter @niwa/open-po-webapp run deploy
 
   deploy-pustaka-web:
     needs: [changes, deploy-pustaka-api]
@@ -193,7 +193,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @niwa/pustaka-web typecheck
-      - run: pnpm --filter @niwa/pustaka-web deploy
+      - run: pnpm --filter @niwa/pustaka-web run deploy
 
   deploy-labs:
     needs: [changes, deploy-auth-api, deploy-open-po-api, deploy-pustaka-api, deploy-web-api]
@@ -212,7 +212,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @niwa/labs deploy
+      - run: pnpm --filter @niwa/labs run deploy
 
   deploy-web:
     needs: [changes, deploy-web-api]
@@ -228,4 +228,4 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @niwa/web deploy
+      - run: pnpm --filter @niwa/web run deploy

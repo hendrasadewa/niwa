@@ -20,14 +20,14 @@
     "dev:labs": "pnpm --filter @niwa/labs dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
-    "deploy:auth": "pnpm --filter @niwa/auth-api deploy",
-    "deploy:auth-web": "pnpm --filter @niwa/auth-web deploy",
-    "deploy:open-po": "pnpm --filter @niwa/open-po-api deploy",
-    "deploy:open-po-web": "pnpm --filter @niwa/open-po-webapp deploy",
-    "deploy:pustaka": "pnpm --filter @niwa/pustaka-api deploy",
-    "deploy:pustaka-web": "pnpm --filter @niwa/pustaka-web deploy",
-    "deploy:api": "pnpm --filter @niwa/web-api deploy",
-    "deploy:web": "pnpm --filter @niwa/web deploy",
-    "deploy:labs": "pnpm --filter @niwa/labs deploy"
+    "deploy:auth": "pnpm --filter @niwa/auth-api run deploy",
+    "deploy:auth-web": "pnpm --filter @niwa/auth-web run deploy",
+    "deploy:open-po": "pnpm --filter @niwa/open-po-api run deploy",
+    "deploy:open-po-web": "pnpm --filter @niwa/open-po-webapp run deploy",
+    "deploy:pustaka": "pnpm --filter @niwa/pustaka-api run deploy",
+    "deploy:pustaka-web": "pnpm --filter @niwa/pustaka-web run deploy",
+    "deploy:api": "pnpm --filter @niwa/web-api run deploy",
+    "deploy:web": "pnpm --filter @niwa/web run deploy",
+    "deploy:labs": "pnpm --filter @niwa/labs run deploy"
   }
 }
