@@ -1,4 +1,5 @@
 import type { User } from "@/types/api";
+import { exchangeSsoToken } from "./sso";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
@@ -10,7 +11,9 @@ export const USER_STORAGE_KEY = "pustaka_auth_user";
 export const TOKEN_COOKIE_NAME = "pustaka_token";
 export const ROLES_COOKIE_NAME = "pustaka_roles";
 
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+// Access JWT is stored strictly in-memory (never persisted to localStorage)
+let inMemoryToken: string | null = null;
+let inMemoryUser: User | null = null;
 
 export class ApiError extends Error {
   status: number;
@@ -38,67 +41,35 @@ export function setOnUnauthorizedHandler(handler: (() => void) | null) {
 }
 
 export function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(TOKEN_STORAGE_KEY);
-  } catch {
-    return null;
-  }
+  return inMemoryToken;
 }
 
 export function setAuthToken(token: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
-    document.cookie = `${TOKEN_COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
-  } catch {
-    // ignore storage errors
-  }
+  inMemoryToken = token;
 }
 
 export function getRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
-  } catch {
-    return null;
-  }
+  return null;
 }
 
-export function setRefreshToken(refreshToken: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
-  } catch {
-    // ignore storage errors
-  }
+export function setRefreshToken(_refreshToken: string): void {
+  // Refresh is handled by the HttpOnly __Host-niwa_session cookie on auth-api
 }
 
 export function getStoredUser(): User | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(USER_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as User;
-  } catch {
-    return null;
-  }
+  return inMemoryUser;
 }
 
 export function setStoredUser(user: User): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    const rolesValue = (user.roles || []).join(",");
-    document.cookie = `${ROLES_COOKIE_NAME}=${encodeURIComponent(rolesValue)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
-  } catch {
-    // ignore storage errors
-  }
+  inMemoryUser = user;
 }
 
 export function clearAuthToken(): void {
+  inMemoryToken = null;
+  inMemoryUser = null;
   if (typeof window === "undefined") return;
   try {
+    // Clean up any legacy localStorage/cookie artifacts from pre-SSO sessions
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
     window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
     window.localStorage.removeItem(USER_STORAGE_KEY);
@@ -183,42 +154,25 @@ async function attemptTokenRefresh(): Promise<string | null> {
     return inFlightRefreshPromise;
   }
 
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) {
-    return null;
-  }
-
   inFlightRefreshPromise = (async () => {
     try {
-      const res = await fetch(buildUrl("/api/v1/auth/refresh"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      });
+      const redirectUri =
+        typeof window !== "undefined" ? window.location.href : undefined;
+      const result = await exchangeSsoToken(redirectUri);
 
-      if (!res.ok) {
-        return null;
+      if (result.status === "authenticated") {
+        setAuthToken(result.token);
+        return result.token;
       }
 
-      const data = (await res.json().catch(() => null)) as {
-        token?: string;
-        refresh_token?: string;
-        user?: User;
-      } | null;
-
-      if (!data?.token) {
-        return null;
+      if (
+        result.status === "consent_required" &&
+        typeof window !== "undefined"
+      ) {
+        window.location.replace(result.consent_url);
       }
 
-      setAuthToken(data.token);
-      if (data.refresh_token) {
-        setRefreshToken(data.refresh_token);
-      }
-      if (data.user) {
-        setStoredUser(data.user);
-      }
-
-      return data.token;
+      return null;
     } catch {
       return null;
     } finally {
