@@ -8,7 +8,7 @@
   "main": "index.js",
   "packageManager": "pnpm@10.32.1",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --port 8790",
     "deploy": "wrangler deploy",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply niwa-db --local",

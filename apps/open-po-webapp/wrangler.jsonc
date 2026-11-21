@@ -7,6 +7,6 @@
     "directory": ".open-next/assets"
   },
   "vars": {
-    "NEXT_PUBLIC_API_URL": "http://localhost:8787"
+    "NEXT_PUBLIC_API_URL": "http://localhost:8789"
   }
 }

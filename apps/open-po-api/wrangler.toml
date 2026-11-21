@@ -3,6 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2026-08-22"
 compatibility_flags = ["nodejs_compat"]
 
+[dev]
+port = 8789
+
 [vars]
 JWT_SECRET = "open-po-local-dev-jwt-secret-key"
 AUTH_API_URL = "http://127.0.0.1:8788"

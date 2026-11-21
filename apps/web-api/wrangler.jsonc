@@ -3,6 +3,9 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
+  "dev": {
+    "port": 8790
+  },
   "d1_databases": [
     {
       "binding": "DB",

@@ -15,7 +15,7 @@ User identity, authentication, and multi-app RBAC are delegated to the standalon
 - **Language**: TypeScript (extending root `tsconfig.base.json` with `strict: true`)
 
 ## 3. Monorepo Structure & Workspace Requirements
-- **API Application**: `apps/open-po-api` (`@niwa/open-po-api`, local dev port `8787`)
+- **API Application**: `apps/open-po-api` (`@niwa/open-po-api`, local dev port `8789`)
 - **Identity Service**: `apps/auth-api` (`@niwa/auth-api`, local dev port `8788`)
 - **Shared Validation**: `packages/validators/open-po` (`@niwa/open-po-validators`), linked in `apps/open-po-api/package.json` via `"@niwa/open-po-validators": "workspace:*"`
 - **Documentation**: Stored locally in `apps/open-po-api/.docs/` (`PRD.md`, `PLAN.md`, `AUTH_SEPARATION_PLAN.md`), ignored by Git via `.gitignore`.

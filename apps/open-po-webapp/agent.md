@@ -8,7 +8,7 @@
 - **Styling & UI**: Tailwind CSS v4 (`@tailwindcss/postcss`), `shadcn/ui` (Radix UI primitives), `lucide-react`.
 - **State & Data Fetching**:
   - `@tanstack/react-query` for server state, caching, and mutations.
-  - Global API client (`src/lib/api.ts`) configured with `NEXT_PUBLIC_API_URL` (default `http://localhost:8787`) and `Authorization: Bearer <token>` header injection.
+  - Global API client (`src/lib/api.ts`) configured with `NEXT_PUBLIC_API_URL` (default `http://localhost:8789`) and `Authorization: Bearer <token>` header injection.
   - Global Auth & Store Context (`src/providers/auth-provider.tsx`) managing JWT token, user profile, roles (`admin` | `seller` | `member`), owned stores, and currently selected active store.
   - Global Pre-Order Wave Cart Context (`src/providers/cart-provider.tsx`) persisted in `localStorage` (`open_po_cart`) scoped to an active pre-order wave.
 - **Forms & Validation**: `react-hook-form` + `@hookform/resolvers/zod` consuming shared Zod v4 schemas from `@niwa/open-po-validators` (`packages/validators/open-po`).
