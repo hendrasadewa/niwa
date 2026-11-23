@@ -26,30 +26,30 @@ export function DataTable<TCell = unknown>({
   return (
     <div
       className={cn(
-        "flex-1 overflow-auto rounded-lg border border-neutral-800 bg-neutral-900/40",
+        "flex-1 overflow-auto rounded-[var(--radius-xl)] border border-border bg-surface shadow-[var(--shadow-card)]",
         className
       )}
       {...props}
     >
       <table className="w-full border-collapse text-left text-xs font-mono">
-        <thead className="bg-neutral-900 sticky top-0 border-b border-neutral-800">
+        <thead className="sticky top-0 border-b border-border bg-surface-muted">
           <tr>
             {columns.map((col, idx) => (
               <th
                 key={`${col}-${idx}`}
-                className="px-3 py-2 font-semibold text-neutral-300 border-r border-neutral-800/60 last:border-r-0 whitespace-nowrap"
+                className="border-r border-border px-3 py-2.5 font-semibold text-foreground last:border-r-0 whitespace-nowrap"
               >
                 {col}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-800/60">
+        <tbody className="divide-y divide-border">
           {rows.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-3 py-6 text-center font-sans text-neutral-500"
+                className="px-3 py-6 text-center font-sans text-muted-foreground"
               >
                 {emptyMessage}
               </td>
@@ -58,13 +58,13 @@ export function DataTable<TCell = unknown>({
             rows.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="hover:bg-neutral-800/40 transition-colors"
+                className="transition-colors hover:bg-surface-muted/60"
               >
                 {row.map((cell, cellIndex) => (
                   <td
                     key={cellIndex}
                     className={cn(
-                      "px-3 py-2 border-r border-neutral-800/40 last:border-r-0 whitespace-nowrap max-w-xs truncate text-neutral-200",
+                      "max-w-xs truncate border-r border-border/60 px-3 py-2 text-foreground last:border-r-0 whitespace-nowrap",
                       getCellClassName?.(cell, rowIndex, cellIndex)
                     )}
                   >

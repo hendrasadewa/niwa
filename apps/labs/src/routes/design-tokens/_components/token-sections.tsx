@@ -1,5 +1,19 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
+  Alert,
+  Badge,
+  Button,
+  Checkbox,
+  Divider,
+  FormField,
+  PasswordInput,
+  SelectInput,
+  Spinner,
+  Switch,
+  TextArea,
+  TextInput,
+} from "@niwa/ui/components";
+import {
   authAccentSwatches,
   neutralSwatches,
   niwaCoreSwatches,
@@ -892,6 +906,107 @@ export function SemanticReferenceSection({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+    </StudyCard>
+  );
+}
+
+export function SharedComponentsSection() {
+  const [role, setRole] = useState("member");
+  const [consent, setConsent] = useState(true);
+  const [passkeysOnly, setPasskeysOnly] = useState(false);
+
+  return (
+    <StudyCard index="12" title="@niwa/ui Shared Components" className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <FormField
+            label="Email address"
+            htmlFor="showcase-email"
+            hint="FormField + TextInput"
+            required
+          >
+            <TextInput
+              id="showcase-email"
+              type="email"
+              placeholder="you@hendrasadewa.com"
+            />
+          </FormField>
+
+          <FormField
+            label="Password"
+            htmlFor="showcase-password"
+            hint="PasswordInput with unmask toggle"
+            required
+          >
+            <PasswordInput
+              id="showcase-password"
+              defaultValue="niwa-garden-2026"
+            />
+          </FormField>
+
+          <FormField label="Default role" htmlFor="showcase-role">
+            <SelectInput
+              id="showcase-role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="member">Member (default)</option>
+              <option value="editor">Editor</option>
+              <option value="admin">Administrator</option>
+            </SelectInput>
+          </FormField>
+
+          <FormField label="Allowed origins" htmlFor="showcase-origins" hint="TextArea (mono)">
+            <TextArea
+              id="showcase-origins"
+              mono
+              defaultValue={"https://hendrasadewa.com\nhttps://auth.hendrasadewa.com"}
+            />
+          </FormField>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="primary" size="md">Primary</Button>
+            <Button variant="secondary" size="md">Secondary</Button>
+            <Button variant="soft" size="md">Soft</Button>
+            <Button variant="ghost" size="md">Ghost</Button>
+            <Button variant="danger" size="md">Danger</Button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="primary" dot>Primary</Badge>
+            <Badge variant="success" dot>Active</Badge>
+            <Badge variant="warning">Pending</Badge>
+            <Badge variant="danger">Revoked</Badge>
+            <Badge variant="info" mono>auth-web</Badge>
+            <Badge variant="neutral" mono>v1</Badge>
+            <Spinner size="sm" />
+          </div>
+
+          <Divider label="controls" />
+
+          <Checkbox
+            card
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            label="Require explicit first-time consent"
+            description="Built with @niwa/ui Checkbox (card mode)."
+          />
+
+          <Switch
+            checked={passkeysOnly}
+            onChange={(e) => setPasskeysOnly(e.target.checked)}
+            label="Prefer passkey sign-in"
+            description="Built with @niwa/ui Switch."
+          />
+
+          <div className="space-y-2.5">
+            <Alert variant="success">Profile and passkey settings synchronized.</Alert>
+            <Alert variant="error">Invalid credentials. Check your email and password.</Alert>
           </div>
         </div>
       </div>

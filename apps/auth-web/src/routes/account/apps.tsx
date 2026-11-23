@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Badge, Button, EmptyState } from "@niwa/ui/components";
-import { Card } from "../../components/form-controls";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  PageHeader,
+} from "@niwa/ui/components";
 import {
   authApi,
   getErrorMessage,
@@ -54,15 +60,11 @@ export default function AccountAppsRoute() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight text-neutral-100">
-          Connected Niwa Apps
-        </h1>
-        <p className="mt-1 text-xs text-neutral-400">
-          Applications you have authorized to sign in with your Niwa account.
-          Revoking access will prompt you for consent again on your next visit.
-        </p>
-      </div>
+      <PageHeader
+        kicker="Account"
+        title="Connected Niwa Apps"
+        description="Applications you have authorized to sign in with your Niwa account. Revoking access will prompt you for consent again on your next visit."
+      />
 
       {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
       {feedbackMessage && <Alert variant="success">{feedbackMessage}</Alert>}
@@ -81,7 +83,7 @@ export default function AccountAppsRoute() {
         }
       >
         {loading ? (
-          <p className="py-6 text-center text-xs text-neutral-500">
+          <p className="py-6 text-center text-xs text-muted-foreground">
             Loading connected applications...
           </p>
         ) : apps.length === 0 ? (
@@ -90,7 +92,7 @@ export default function AccountAppsRoute() {
             description="When you approve a Niwa app on the consent screen, it will appear here."
           />
         ) : (
-          <div className="divide-y divide-neutral-800/80">
+          <div className="divide-y divide-border">
             {apps.map((app) => {
               const isConfirming = confirmAppId === app.app_id;
               const isRevoking = revokingAppId === app.app_id;
@@ -100,22 +102,22 @@ export default function AccountAppsRoute() {
                   key={app.app_id}
                   className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"
                 >
-                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                  <div className="flex min-w-0 flex-1 items-start gap-3.5">
                     {app.icon_url ? (
                       <img
                         src={app.icon_url}
                         alt={app.name}
-                        className="h-10 w-10 shrink-0 rounded-lg border border-neutral-800 object-cover"
+                        className="h-10 w-10 shrink-0 rounded-[var(--radius-md)] border border-border object-cover"
                       />
                     ) : (
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-900 text-xs font-semibold uppercase text-emerald-400">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-primary-soft font-serif text-sm font-semibold uppercase text-primary-soft-foreground">
                         {app.name.slice(0, 2)}
                       </div>
                     )}
 
                     <div className="min-w-0 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-neutral-100">
+                        <p className="font-serif text-base font-medium text-foreground">
                           {app.name}
                         </p>
                         <Badge variant="neutral" mono>
@@ -123,12 +125,12 @@ export default function AccountAppsRoute() {
                         </Badge>
                       </div>
 
-                      <p className="text-xs text-neutral-400">
+                      <p className="text-xs text-muted-foreground">
                         {app.description}
                       </p>
 
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] text-neutral-500">
+                        <span className="text-[11px] text-muted-foreground">
                           Scopes:
                         </span>
                         {app.granted_scopes.length > 0 ? (
@@ -138,30 +140,30 @@ export default function AccountAppsRoute() {
                             </Badge>
                           ))
                         ) : (
-                          <span className="text-[11px] text-neutral-500">
+                          <span className="text-[11px] text-muted-foreground">
                             None
                           </span>
                         )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] text-neutral-500">
+                        <span className="text-[11px] text-muted-foreground">
                           Roles:
                         </span>
                         {app.roles.length > 0 ? (
                           app.roles.map((role) => (
-                            <Badge key={role} variant="info" mono>
+                            <Badge key={role} variant="primary" mono>
                               {role}
                             </Badge>
                           ))
                         ) : (
-                          <span className="text-[11px] text-neutral-500">
+                          <span className="text-[11px] text-muted-foreground">
                             No roles assigned
                           </span>
                         )}
                       </div>
 
-                      <p className="text-[11px] text-neutral-500">
+                      <p className="text-[11px] text-muted-foreground">
                         Consented on {formatUnixDate(app.consented_at)}
                       </p>
                     </div>

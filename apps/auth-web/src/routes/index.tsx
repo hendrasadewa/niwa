@@ -1,5 +1,5 @@
 import { Navigate } from "react-router";
-import { FullPageLoader } from "../components/form-controls";
+import { FullPageLoader } from "@niwa/ui/components";
 import { useAuth } from "../context/auth-context";
 
 export default function IndexRoute() {

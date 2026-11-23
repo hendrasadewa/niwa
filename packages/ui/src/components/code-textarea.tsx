@@ -12,7 +12,7 @@ export function CodeTextarea({
     <textarea
       spellCheck={spellCheck}
       className={cn(
-        "w-full rounded-lg border border-neutral-800 bg-neutral-900/90 p-3 font-mono text-xs leading-relaxed text-neutral-100 placeholder-neutral-600 focus:border-emerald-500/60 focus:outline-none resize-y",
+        "w-full rounded-[var(--radius-md)] border border-border-strong/65 bg-surface-muted p-3 font-mono text-xs leading-relaxed text-foreground placeholder:text-muted-foreground shadow-[var(--shadow-inset)] focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring resize-y disabled:cursor-not-allowed disabled:opacity-60",
         className
       )}
       {...props}

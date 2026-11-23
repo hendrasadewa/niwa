@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { Alert, Badge, Button } from "@niwa/ui/components";
+import { Alert, Badge, Button, FullPageLoader } from "@niwa/ui/components";
 import { AuthCardLayout } from "../components/auth-card-layout";
-import { FullPageLoader } from "../components/form-controls";
 import { useAuth } from "../context/auth-context";
 import {
   authApi,
@@ -158,7 +157,7 @@ export default function ConsentRoute() {
           <Alert variant="error">{errorMessage}</Alert>
           <Button
             variant="secondary"
-            size="md"
+            size="lg"
             className="w-full"
             onClick={() => navigate("/account")}
           >
@@ -182,7 +181,7 @@ export default function ConsentRoute() {
           </Alert>
           <Button
             variant="primary"
-            size="md"
+            size="lg"
             className="w-full"
             onClick={() => navigate("/account", { replace: true })}
           >
@@ -201,7 +200,7 @@ export default function ConsentRoute() {
         <button
           type="button"
           onClick={handleSwitchAccount}
-          className="text-neutral-400 hover:text-neutral-200 underline underline-offset-4 cursor-pointer"
+          className="text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground cursor-pointer"
         >
           Not {maskEmail(user.email)}? Switch account
         </button>
@@ -211,52 +210,58 @@ export default function ConsentRoute() {
         {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
 
         {/* App & User Summary */}
-        <div className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950/70 p-3">
+        <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-surface-muted/70 p-3.5">
           {appMeta?.icon_url ? (
             <img
               src={appMeta.icon_url}
               alt={appMeta.name}
-              className="h-10 w-10 rounded-lg border border-neutral-800 object-cover"
+              className="h-10 w-10 rounded-[var(--radius-md)] border border-border object-cover"
             />
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-neutral-800 bg-neutral-900 text-sm font-semibold uppercase text-emerald-400">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-primary-soft font-serif text-sm font-semibold uppercase text-primary-soft-foreground">
               {(appMeta?.name ?? appId ?? "A").slice(0, 2)}
             </div>
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-semibold text-neutral-100">
+              <p className="truncate font-serif text-base font-medium text-foreground">
                 {appMeta?.name}
               </p>
               <Badge variant="neutral" mono>
                 {appMeta?.id}
               </Badge>
             </div>
-            <p className="truncate text-xs text-neutral-400">
-              Signed in as <span className="text-neutral-200">{maskEmail(user.email)}</span>
+            <p className="truncate text-xs text-muted-foreground">
+              Signed in as{" "}
+              <span className="font-medium text-foreground">
+                {maskEmail(user.email)}
+              </span>
             </p>
           </div>
         </div>
 
         {/* Requested Scopes */}
         <div className="space-y-2.5">
-          <p className="text-xs font-medium text-neutral-300">
+          <p className="text-xs font-medium text-foreground">
             This Niwa application is requesting access to:
           </p>
-          <ul className="space-y-2 rounded-lg border border-neutral-800/80 bg-neutral-950/50 p-3">
+          <ul className="space-y-2.5 rounded-[var(--radius-lg)] border border-border bg-surface-muted/50 p-3.5">
             {REQUESTED_SCOPES.map((scope) => (
               <li key={scope.name} className="flex items-start gap-2.5 text-xs">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+                <span
+                  aria-hidden="true"
+                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-neutral-200">
+                    <span className="font-medium text-foreground">
                       {scope.label}
                     </span>
                     <Badge variant="neutral" mono>
                       {scope.name}
                     </Badge>
                   </div>
-                  <p className="mt-0.5 text-[11px] text-neutral-500">
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
                     {scope.detail}
                   </p>
                 </div>
@@ -265,7 +270,7 @@ export default function ConsentRoute() {
           </ul>
 
           {appMeta?.default_role_name && (
-            <p className="text-[11px] text-neutral-400">
+            <p className="text-[11px] text-muted-foreground">
               Default role assigned on approval:{" "}
               <Badge variant="success" mono>
                 {appMeta.default_role_name}
@@ -278,8 +283,8 @@ export default function ConsentRoute() {
         <div className="flex items-center gap-3 pt-1">
           <Button
             variant="secondary"
-            size="md"
-            className="flex-1 py-2 text-sm"
+            size="lg"
+            className="flex-1"
             disabled={submittingDecision !== null}
             onClick={() => handleDecision("deny")}
           >
@@ -287,8 +292,8 @@ export default function ConsentRoute() {
           </Button>
           <Button
             variant="primary"
-            size="md"
-            className="flex-1 py-2 text-sm"
+            size="lg"
+            className="flex-1"
             disabled={submittingDecision !== null}
             onClick={() => handleDecision("approve")}
           >

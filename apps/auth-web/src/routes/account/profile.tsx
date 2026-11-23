@@ -1,7 +1,17 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { changePasswordSchema, updateUserSchema } from "@niwa/auth-validators";
-import { Alert, Badge, Button } from "@niwa/ui/components";
-import { Card, FormField, TextInput } from "../../components/form-controls";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  ColorSchemeToggle,
+  FormField,
+  PageHeader,
+  PasswordInput,
+  TextInput,
+} from "@niwa/ui/components";
 import { PasskeysCard } from "../../components/passkeys-card";
 import { useAuth } from "../../context/auth-context";
 import {
@@ -163,27 +173,24 @@ export default function AccountProfileRoute() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight text-neutral-100">
-          Profile &amp; Security
-        </h1>
-        <p className="mt-1 text-xs text-neutral-400">
-          Manage your Niwa identity details and account security credentials.
-        </p>
-      </div>
+      <PageHeader
+        kicker="Account"
+        title="Profile & Security"
+        description="Manage your Niwa identity details, appearance preference, and account security credentials."
+      />
 
       {/* Email Verification Banner */}
       {user && !user.email_verified_at && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+        <div className="rounded-[var(--radius-2xl)] border border-warning-border bg-warning-soft p-5 shadow-[var(--shadow-card)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-amber-200">
+                <p className="font-serif text-base font-medium text-warning-foreground">
                   Verify your email address
                 </p>
                 <Badge variant="warning">Unverified</Badge>
               </div>
-              <p className="text-xs text-amber-200/80">
+              <p className="text-xs text-warning-foreground/90">
                 Confirm <strong>{maskEmail(user.email)}</strong> to secure your
                 Niwa account and ensure reliable password recovery.
               </p>
@@ -218,7 +225,12 @@ export default function AccountProfileRoute() {
         title="Profile Information"
         description="Your name and contact details shared across connected Niwa applications."
       >
-        <form onSubmit={handleProfileSubmit} className="space-y-4" noValidate>
+        <form
+          aria-label="Profile information"
+          onSubmit={handleProfileSubmit}
+          className="space-y-4"
+          noValidate
+        >
           {profileErrorMsg && <Alert variant="error">{profileErrorMsg}</Alert>}
           {profileSuccessMsg && (
             <Alert variant="success">{profileSuccessMsg}</Alert>
@@ -253,12 +265,16 @@ export default function AccountProfileRoute() {
               label="Full name"
               htmlFor="profile-name"
               error={profileErrors.name}
+              required
             >
               <TextInput
                 id="profile-name"
+                name="name"
                 type="text"
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                invalid={Boolean(profileErrors.name)}
                 disabled={savingProfile}
                 required
               />
@@ -272,17 +288,20 @@ export default function AccountProfileRoute() {
             >
               <TextInput
                 id="profile-whatsapp"
+                name="whatsapp_number"
                 type="tel"
+                autoComplete="tel"
                 placeholder="08123456789"
                 value={revealPii ? whatsappNumber : maskPhone(whatsappNumber)}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
                 onFocus={() => setRevealPii(true)}
+                invalid={Boolean(profileErrors.whatsapp_number)}
                 disabled={savingProfile}
               />
             </FormField>
           </div>
 
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <Button
               type="button"
               variant="ghost"
@@ -308,7 +327,12 @@ export default function AccountProfileRoute() {
         title="Change Password"
         description="Update your password. Use a unique password of at least 8 characters."
       >
-        <form onSubmit={handlePasswordSubmit} className="space-y-4" noValidate>
+        <form
+          aria-label="Change password"
+          onSubmit={handlePasswordSubmit}
+          className="space-y-4"
+          noValidate
+        >
           {passwordErrorMsg && (
             <Alert variant="error">{passwordErrorMsg}</Alert>
           )}
@@ -320,13 +344,15 @@ export default function AccountProfileRoute() {
             label="Current password"
             htmlFor="current-password"
             error={passwordErrors.current_password}
+            required
           >
-            <TextInput
+            <PasswordInput
               id="current-password"
-              type="password"
+              name="current_password"
               autoComplete="current-password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
+              invalid={Boolean(passwordErrors.current_password)}
               disabled={savingPassword}
               required
             />
@@ -338,13 +364,15 @@ export default function AccountProfileRoute() {
               htmlFor="new-password"
               hint="Min. 8 characters"
               error={passwordErrors.new_password}
+              required
             >
-              <TextInput
+              <PasswordInput
                 id="new-password"
-                type="password"
+                name="new_password"
                 autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                invalid={Boolean(passwordErrors.new_password)}
                 disabled={savingPassword}
                 required
               />
@@ -354,37 +382,29 @@ export default function AccountProfileRoute() {
               label="Confirm new password"
               htmlFor="confirm-password"
               error={passwordErrors.confirm_password}
+              required
             >
-              <TextInput
+              <PasswordInput
                 id="confirm-password"
-                type="password"
+                name="confirm_password"
                 autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                invalid={Boolean(passwordErrors.confirm_password)}
                 disabled={savingPassword}
                 required
               />
             </FormField>
           </div>
 
-          <label className="flex items-start gap-2.5 rounded-lg border border-neutral-800/80 bg-neutral-950/50 p-3 text-xs cursor-pointer">
-            <input
-              type="checkbox"
-              checked={revokeOtherSessions}
-              onChange={(e) => setRevokeOtherSessions(e.target.checked)}
-              disabled={savingPassword}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-neutral-700 bg-neutral-900 accent-emerald-500"
-            />
-            <span>
-              <span className="font-medium text-neutral-200">
-                Sign out other devices
-              </span>
-              <span className="block text-[11px] text-neutral-500">
-                Revokes all other active Niwa sessions while keeping this device
-                signed in.
-              </span>
-            </span>
-          </label>
+          <Checkbox
+            card
+            checked={revokeOtherSessions}
+            onChange={(e) => setRevokeOtherSessions(e.target.checked)}
+            disabled={savingPassword}
+            label="Sign out other devices"
+            description="Revokes all other active Niwa sessions while keeping this device signed in."
+          />
 
           <div className="flex justify-end pt-1">
             <Button
@@ -402,22 +422,39 @@ export default function AccountProfileRoute() {
       {/* Passkeys Management */}
       <PasskeysCard />
 
+      {/* Appearance Settings */}
+      <Card
+        title="Appearance"
+        description="Choose how the Niwa Identity portal adapts to your display preference."
+      >
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <p className="text-xs font-medium text-foreground">Color scheme</p>
+            <p className="text-[11px] text-muted-foreground">
+              Follows your system appearance by default, or pin light or dark
+              mode.
+            </p>
+          </div>
+          <ColorSchemeToggle />
+        </div>
+      </Card>
+
       {/* Upcoming Security Features (Phase 6) */}
       <Card
         title="Additional Security"
         description="Upcoming authentication and verification methods for your Niwa account."
       >
-        <div className="divide-y divide-neutral-800/80">
+        <div className="divide-y divide-border">
           {UPCOMING_SECURITY_FEATURES.map((feature) => (
             <div
               key={feature.title}
               className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
             >
               <div className="space-y-0.5">
-                <p className="text-xs font-medium text-neutral-200">
+                <p className="text-sm font-medium text-foreground">
                   {feature.title}
                 </p>
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-xs text-muted-foreground">
                   {feature.description}
                 </p>
               </div>

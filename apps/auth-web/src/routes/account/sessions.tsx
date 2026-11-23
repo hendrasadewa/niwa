@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Alert, Badge, Button, EmptyState } from "@niwa/ui/components";
-import { Card } from "../../components/form-controls";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  PageHeader,
+} from "@niwa/ui/components";
 import { useAuth } from "../../context/auth-context";
 import {
   authApi,
@@ -82,50 +88,42 @@ export default function AccountSessionsRoute() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-neutral-100">
-            Active Sessions
-          </h1>
-          <p className="mt-1 text-xs text-neutral-400">
-            Devices and browsers currently signed in to your Niwa identity.
-            Revoking a session signs that device out across all Niwa apps.
-          </p>
-        </div>
-
-        {sessions.length > 0 && (
-          <div className="flex items-center gap-2">
-            {confirmRevokeAll ? (
-              <>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={revokingAll}
-                  onClick={() => setConfirmRevokeAll(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  disabled={revokingAll}
-                  onClick={handleRevokeAll}
-                >
-                  {revokingAll ? "Signing out..." : "Confirm Sign Out All"}
-                </Button>
-              </>
-            ) : (
+      <PageHeader
+        kicker="Account"
+        title="Active Sessions"
+        description="Devices and browsers currently signed in to your Niwa identity. Revoking a session signs that device out across all Niwa apps."
+        actions={
+          sessions.length > 0 &&
+          (confirmRevokeAll ? (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={revokingAll}
+                onClick={() => setConfirmRevokeAll(false)}
+              >
+                Cancel
+              </Button>
               <Button
                 variant="danger"
-                size="md"
-                onClick={() => setConfirmRevokeAll(true)}
+                size="sm"
+                disabled={revokingAll}
+                onClick={handleRevokeAll}
               >
-                Sign Out All Devices
+                {revokingAll ? "Signing out..." : "Confirm Sign Out All"}
               </Button>
-            )}
-          </div>
-        )}
-      </div>
+            </>
+          ) : (
+            <Button
+              variant="danger"
+              size="md"
+              onClick={() => setConfirmRevokeAll(true)}
+            >
+              Sign Out All Devices
+            </Button>
+          ))
+        }
+      />
 
       {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
       {feedbackMessage && <Alert variant="success">{feedbackMessage}</Alert>}
@@ -145,7 +143,7 @@ export default function AccountSessionsRoute() {
         }
       >
         {loading ? (
-          <p className="py-6 text-center text-xs text-neutral-500">
+          <p className="py-6 text-center text-xs text-muted-foreground">
             Loading active sessions...
           </p>
         ) : sessions.length === 0 ? (
@@ -154,7 +152,7 @@ export default function AccountSessionsRoute() {
             description="Active sign-in sessions will appear here."
           />
         ) : (
-          <div className="divide-y divide-neutral-800/80">
+          <div className="divide-y divide-border">
             {sessions.map((session) => (
               <div
                 key={session.id}
@@ -162,7 +160,7 @@ export default function AccountSessionsRoute() {
               >
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-medium text-neutral-100">
+                    <p className="text-sm font-semibold text-foreground">
                       {summarizeUserAgent(session.user_agent)}
                     </p>
                     {session.is_current && (
@@ -178,33 +176,33 @@ export default function AccountSessionsRoute() {
                   </div>
 
                   {session.user_agent && (
-                    <p className="truncate font-mono text-[11px] text-neutral-500">
+                    <p className="truncate font-mono text-[11px] text-muted-foreground">
                       {session.user_agent}
                     </p>
                   )}
 
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-neutral-400">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                     <span>
                       IP:{" "}
-                      <span className="font-mono text-neutral-300">
+                      <span className="font-mono text-foreground">
                         {session.ip_address ?? "Unknown"}
                       </span>
                     </span>
                     <span>
                       Last active:{" "}
-                      <span className="text-neutral-300">
+                      <span className="text-foreground">
                         {formatRelativeUnix(session.last_seen_at)}
                       </span>
                     </span>
                     <span>
                       Signed in:{" "}
-                      <span className="text-neutral-300">
+                      <span className="text-foreground">
                         {formatUnixDate(session.created_at)}
                       </span>
                     </span>
                     <span>
                       Expires:{" "}
-                      <span className="text-neutral-300">
+                      <span className="text-foreground">
                         {formatUnixDate(session.expires_at)}
                       </span>
                     </span>

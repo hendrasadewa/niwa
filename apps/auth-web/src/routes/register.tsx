@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { registerSchema } from "@niwa/auth-validators";
-import { Alert, Badge, Button } from "@niwa/ui/components";
-import { AuthCardLayout } from "../components/auth-card-layout";
 import {
+  Alert,
+  Badge,
+  Button,
   FormField,
   FullPageLoader,
+  PasswordInput,
   TextInput,
-} from "../components/form-controls";
+} from "@niwa/ui/components";
+import { AuthCardLayout } from "../components/auth-card-layout";
 import { useAuth } from "../context/auth-context";
 import {
   authApi,
@@ -51,7 +54,9 @@ export default function RegisterRoute() {
   if (isLoading || handingOff) {
     return (
       <FullPageLoader
-        label={handingOff ? "Continuing to application..." : "Checking session..."}
+        label={
+          handingOff ? "Continuing to application..." : "Checking session..."
+        }
       />
     );
   }
@@ -105,7 +110,7 @@ export default function RegisterRoute() {
           Already have an account?{" "}
           <Link
             to={`/login${ssoQuery}`}
-            className="font-medium text-emerald-400 hover:text-emerald-300"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
           >
             Sign in
           </Link>
@@ -114,9 +119,9 @@ export default function RegisterRoute() {
     >
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {app && (
-          <div className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950/70 px-3 py-2 text-xs">
-            <span className="text-neutral-400">Target application</span>
-            <Badge variant="info" mono>
+          <div className="flex items-center justify-between rounded-[var(--radius-lg)] border border-border bg-surface-muted/70 px-3.5 py-2.5 text-xs">
+            <span className="text-muted-foreground">Target application</span>
+            <Badge variant="primary" mono>
               {app}
             </Badge>
           </div>
@@ -124,14 +129,22 @@ export default function RegisterRoute() {
 
         {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
 
-        <FormField label="Full name" htmlFor="register-name" error={fieldErrors.name}>
+        <FormField
+          label="Full name"
+          htmlFor="register-name"
+          error={fieldErrors.name}
+          required
+        >
           <TextInput
             id="register-name"
+            name="name"
             type="text"
             autoComplete="name"
+            enterKeyHint="next"
             placeholder="Hendra Sadewa"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            invalid={Boolean(fieldErrors.name)}
             disabled={submitting}
             required
           />
@@ -141,14 +154,21 @@ export default function RegisterRoute() {
           label="Email address"
           htmlFor="register-email"
           error={fieldErrors.email}
+          required
         >
           <TextInput
             id="register-email"
+            name="email"
             type="email"
             autoComplete="email"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            enterKeyHint="next"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            invalid={Boolean(fieldErrors.email)}
             disabled={submitting}
             required
           />
@@ -162,11 +182,14 @@ export default function RegisterRoute() {
         >
           <TextInput
             id="register-whatsapp"
+            name="whatsapp_number"
             type="tel"
             autoComplete="tel"
+            enterKeyHint="next"
             placeholder="08123456789"
             value={whatsappNumber}
             onChange={(e) => setWhatsappNumber(e.target.value)}
+            invalid={Boolean(fieldErrors.whatsapp_number)}
             disabled={submitting}
           />
         </FormField>
@@ -176,14 +199,17 @@ export default function RegisterRoute() {
           htmlFor="register-password"
           hint="Min. 8 characters"
           error={fieldErrors.password}
+          required
         >
-          <TextInput
+          <PasswordInput
             id="register-password"
-            type="password"
+            name="password"
             autoComplete="new-password"
+            enterKeyHint="done"
             placeholder="Create a strong password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            invalid={Boolean(fieldErrors.password)}
             disabled={submitting}
             required
           />
@@ -192,8 +218,8 @@ export default function RegisterRoute() {
         <Button
           type="submit"
           variant="primary"
-          size="md"
-          className="w-full py-2 text-sm"
+          size="lg"
+          className="w-full"
           disabled={submitting}
         >
           {submitting ? "Creating account..." : "Create account"}

@@ -16,14 +16,16 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-lg border border-dashed border-neutral-800/80 p-6 text-center",
+        "flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-dashed border-border-strong/60 bg-surface-muted/40 px-6 py-8 text-center",
         className
       )}
       {...props}
     >
-      <p className="text-xs text-neutral-400">{title}</p>
+      <p className="font-serif text-base font-medium text-foreground">{title}</p>
       {description && (
-        <p className="text-[11px] text-neutral-500 mt-1">{description}</p>
+        <p className="mt-1 max-w-md text-xs text-muted-foreground">
+          {description}
+        </p>
       )}
     </div>
   );

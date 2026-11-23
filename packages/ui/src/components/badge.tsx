@@ -1,7 +1,13 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "../utils/cn";
 
-export type BadgeVariant = "neutral" | "success" | "warning" | "danger" | "info";
+export type BadgeVariant =
+  | "neutral"
+  | "primary"
+  | "success"
+  | "warning"
+  | "danger"
+  | "info";
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
@@ -10,20 +16,21 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantClasses: Record<BadgeVariant, string> = {
-  neutral: "bg-neutral-800 text-neutral-300",
-  success:
-    "bg-emerald-950/80 text-emerald-300 border border-emerald-800/60",
-  warning: "bg-amber-950/80 text-amber-300 border border-amber-800/60",
-  danger: "bg-red-950/80 text-red-300 border border-red-800/60",
-  info: "bg-sky-950/80 text-sky-300 border border-sky-800/60",
+  neutral: "border border-border bg-surface-subtle text-muted-foreground",
+  primary: "border border-border bg-primary-soft text-primary-soft-foreground",
+  success: "border border-success-border bg-success-soft text-success-foreground",
+  warning: "border border-warning-border bg-warning-soft text-warning-foreground",
+  danger: "border border-danger-border bg-danger-soft text-danger-foreground",
+  info: "border border-info-border bg-info-soft text-info-foreground",
 };
 
 const dotClasses: Record<BadgeVariant, string> = {
-  neutral: "bg-neutral-400",
-  success: "bg-emerald-400",
-  warning: "bg-amber-400",
-  danger: "bg-red-400",
-  info: "bg-sky-400",
+  neutral: "bg-muted-foreground",
+  primary: "bg-primary",
+  success: "bg-success",
+  warning: "bg-warning",
+  danger: "bg-danger",
+  info: "bg-info",
 };
 
 export function Badge({
@@ -45,7 +52,10 @@ export function Badge({
       {...props}
     >
       {dot && (
-        <span className={cn("h-1.5 w-1.5 rounded-full", dotClasses[variant])} />
+        <span
+          aria-hidden="true"
+          className={cn("h-1.5 w-1.5 rounded-full shrink-0", dotClasses[variant])}
+        />
       )}
       {children}
     </span>

@@ -6,13 +6,17 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
 import { loginSchema } from "@niwa/auth-validators";
-import { Alert, Badge, Button } from "@niwa/ui/components";
-import { AuthCardLayout } from "../components/auth-card-layout";
 import {
+  Alert,
+  Badge,
+  Button,
+  Divider,
   FormField,
   FullPageLoader,
+  PasswordInput,
   TextInput,
-} from "../components/form-controls";
+} from "@niwa/ui/components";
+import { AuthCardLayout } from "../components/auth-card-layout";
 import { useAuth } from "../context/auth-context";
 import {
   authApi,
@@ -59,7 +63,9 @@ export default function LoginRoute() {
   if (isLoading || handingOff) {
     return (
       <FullPageLoader
-        label={handingOff ? "Continuing to application..." : "Checking session..."}
+        label={
+          handingOff ? "Continuing to application..." : "Checking session..."
+        }
       />
     );
   }
@@ -143,7 +149,7 @@ export default function LoginRoute() {
           Don&apos;t have a Niwa account?{" "}
           <Link
             to={`/register${ssoQuery}`}
-            className="font-medium text-emerald-400 hover:text-emerald-300"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
           >
             Create one
           </Link>
@@ -152,9 +158,9 @@ export default function LoginRoute() {
     >
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {app && (
-          <div className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950/70 px-3 py-2 text-xs">
-            <span className="text-neutral-400">Target application</span>
-            <Badge variant="info" mono>
+          <div className="flex items-center justify-between rounded-[var(--radius-lg)] border border-border bg-surface-muted/70 px-3.5 py-2.5 text-xs">
+            <span className="text-muted-foreground">Target application</span>
+            <Badge variant="primary" mono>
               {app}
             </Badge>
           </div>
@@ -166,14 +172,21 @@ export default function LoginRoute() {
           label="Email address"
           htmlFor="login-email"
           error={fieldErrors.email}
+          required
         >
           <TextInput
             id="login-email"
+            name="email"
             type="email"
             autoComplete="email"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            enterKeyHint="next"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            invalid={Boolean(fieldErrors.email)}
             disabled={submitting}
             required
           />
@@ -183,21 +196,24 @@ export default function LoginRoute() {
           label="Password"
           htmlFor="login-password"
           error={fieldErrors.password}
+          required
         >
-          <TextInput
+          <PasswordInput
             id="login-password"
-            type="password"
+            name="password"
             autoComplete="current-password"
+            enterKeyHint="done"
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            invalid={Boolean(fieldErrors.password)}
             disabled={submitting}
             required
           />
           <div className="mt-1.5 flex justify-end">
             <Link
               to="/forgot-password"
-              className="text-xs font-medium text-emerald-400 hover:text-emerald-300"
+              className="text-xs font-medium text-primary underline-offset-4 hover:underline"
             >
               Forgot password?
             </Link>
@@ -207,8 +223,8 @@ export default function LoginRoute() {
         <Button
           type="submit"
           variant="primary"
-          size="md"
-          className="w-full py-2 text-sm"
+          size="lg"
+          className="w-full"
           disabled={submitting || passkeySubmitting}
         >
           {submitting ? "Signing in..." : "Sign in"}
@@ -216,20 +232,13 @@ export default function LoginRoute() {
 
         {webAuthnSupported && (
           <>
-            <div className="relative py-1">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-neutral-800" />
-              </div>
-              <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
-                <span className="bg-neutral-900 px-2 text-neutral-500">or</span>
-              </div>
-            </div>
+            <Divider label="or" />
 
             <Button
               type="button"
               variant="secondary"
-              size="md"
-              className="w-full py-2 text-sm"
+              size="lg"
+              className="w-full"
               onClick={handlePasskeyLogin}
               disabled={submitting || passkeySubmitting}
             >

@@ -1,8 +1,8 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "../utils/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-export type ButtonSize = "xs" | "sm" | "md";
+export type ButtonVariant = "primary" | "secondary" | "soft" | "ghost" | "danger";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -11,19 +11,22 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-emerald-600 font-semibold text-white hover:bg-emerald-500 border border-transparent",
+    "border border-transparent bg-primary font-semibold text-primary-foreground shadow-[var(--shadow-card)] hover:bg-primary-hover",
   secondary:
-    "border border-neutral-800 bg-neutral-900 font-medium text-neutral-300 hover:bg-neutral-800 hover:text-neutral-100",
+    "border border-border-strong/80 bg-surface font-medium text-foreground shadow-[var(--shadow-card)] hover:bg-surface-muted",
+  soft:
+    "border border-transparent bg-primary-soft font-medium text-primary-soft-foreground hover:opacity-90",
   ghost:
-    "border border-transparent bg-transparent font-medium text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-100",
+    "border border-transparent bg-transparent font-medium text-muted-foreground hover:bg-surface-subtle/75 hover:text-foreground",
   danger:
-    "border border-red-900/50 bg-red-950/40 font-medium text-red-300 hover:bg-red-900/40",
+    "border border-danger-border bg-danger-soft font-medium text-danger-foreground hover:opacity-90",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  xs: "rounded px-1.5 py-0.5 text-[10px]",
-  sm: "rounded-md px-2.5 py-1 text-xs",
-  md: "rounded-md px-3.5 py-1.5 text-xs",
+  xs: "rounded-full px-2.5 py-1 text-[11px]",
+  sm: "rounded-full px-3.5 py-1.5 text-xs",
+  md: "rounded-full px-5 py-2 text-sm",
+  lg: "rounded-full px-6 py-2.5 text-sm",
 };
 
 export function Button({
@@ -37,7 +40,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+        "inline-flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50 disabled:cursor-not-allowed",
         variantClasses[variant],
         sizeClasses[size],
         className

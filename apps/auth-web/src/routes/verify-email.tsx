@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { Alert, Button } from "@niwa/ui/components";
+import { Alert, Button, Spinner } from "@niwa/ui/components";
 import { AuthCardLayout } from "../components/auth-card-layout";
 import { useAuth } from "../context/auth-context";
 import { authApi, getErrorMessage } from "../lib/auth-api";
@@ -52,8 +52,11 @@ export default function VerifyEmailRoute() {
     >
       <div className="space-y-4">
         {status === "verifying" && (
-          <div className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950/70 px-4 py-3 text-sm text-neutral-300">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-700 border-t-emerald-500" />
+          <div
+            role="status"
+            className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-surface-muted px-4 py-3 text-sm text-foreground"
+          >
+            <Spinner size="sm" />
             <span>{message}</span>
           </div>
         )}
@@ -63,7 +66,7 @@ export default function VerifyEmailRoute() {
 
         <div className="flex flex-col gap-2 pt-1">
           <Link to={user ? "/account" : "/login"} className="block">
-            <Button variant="primary" size="md" className="w-full py-2 text-sm">
+            <Button variant="primary" size="lg" className="w-full">
               {user ? "Go to Account" : "Sign in to Niwa"}
             </Button>
           </Link>

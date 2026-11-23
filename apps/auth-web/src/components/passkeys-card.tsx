@@ -4,8 +4,14 @@ import {
   startRegistration,
   type PublicKeyCredentialCreationOptionsJSON,
 } from "@simplewebauthn/browser";
-import { Alert, Badge, Button } from "@niwa/ui/components";
-import { Card, FormField, TextInput } from "./form-controls";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  FormField,
+  TextInput,
+} from "@niwa/ui/components";
 import {
   authApi,
   getErrorMessage,
@@ -140,6 +146,7 @@ export function PasskeysCard() {
               >
                 <TextInput
                   id="new-passkey-name"
+                  name="passkey_name"
                   type="text"
                   placeholder="MacBook Pro Touch ID"
                   value={newName}
@@ -153,6 +160,7 @@ export function PasskeysCard() {
               type="submit"
               variant="primary"
               size="md"
+              className="min-h-11"
               disabled={registering}
             >
               {registering ? "Waiting for device..." : "Add passkey"}
@@ -160,11 +168,13 @@ export function PasskeysCard() {
           </form>
         )}
 
-        <div className="divide-y divide-neutral-800/80 border-t border-neutral-800/80 pt-3">
+        <div className="divide-y divide-border border-t border-border pt-3">
           {loading ? (
-            <p className="py-2 text-xs text-neutral-500">Loading passkeys...</p>
+            <p className="py-2 text-xs text-muted-foreground">
+              Loading passkeys...
+            </p>
           ) : passkeys.length === 0 ? (
-            <p className="py-2 text-xs text-neutral-500">
+            <p className="py-2 text-xs text-muted-foreground">
               No passkeys registered yet. Add one above to enable passwordless
               sign-in.
             </p>
@@ -180,9 +190,10 @@ export function PasskeysCard() {
                 >
                   <div className="min-w-0 flex-1 space-y-1">
                     {isEditing ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <TextInput
                           type="text"
+                          aria-label="New passkey label"
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
                           disabled={isBusy}
@@ -213,7 +224,7 @@ export function PasskeysCard() {
                       </div>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-xs font-medium text-neutral-100">
+                        <p className="text-sm font-medium text-foreground">
                           {passkey.name}
                         </p>
                         <Badge
@@ -229,7 +240,7 @@ export function PasskeysCard() {
                         </Badge>
                       </div>
                     )}
-                    <p className="text-[11px] text-neutral-500">
+                    <p className="text-[11px] text-muted-foreground">
                       Added {formatUnixDate(passkey.created_at)}
                       {passkey.last_used_at
                         ? ` · Last used ${formatUnixDate(passkey.last_used_at)}`

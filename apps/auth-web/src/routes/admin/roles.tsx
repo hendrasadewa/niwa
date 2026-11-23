@@ -1,12 +1,26 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { createPermissionSchema, createRoleSchema } from "@niwa/auth-validators";
-import { Alert, Badge, Button, EmptyState } from "@niwa/ui/components";
 import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
+import {
+  createPermissionSchema,
+  createRoleSchema,
+} from "@niwa/auth-validators";
+import {
+  Alert,
+  Badge,
+  Button,
   Card,
+  Checkbox,
+  EmptyState,
   FormField,
+  PageHeader,
   SelectInput,
   TextInput,
-} from "../../components/form-controls";
+} from "@niwa/ui/components";
 import { useAuth } from "../../context/auth-context";
 import {
   authApi,
@@ -248,7 +262,10 @@ export default function AdminRolesRoute() {
       setRoles((prev) =>
         prev.map((r) =>
           r.app_id === perm.app_id
-            ? { ...r, permissions: r.permissions.filter((s) => s !== perm.slug) }
+            ? {
+                ...r,
+                permissions: r.permissions.filter((s) => s !== perm.slug),
+              }
             : r
         )
       );
@@ -262,34 +279,29 @@ export default function AdminRolesRoute() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-neutral-100">
-            Roles &amp; Permissions
-          </h1>
-          <p className="mt-1 text-xs text-neutral-400">
-            Define per-app roles, create granular permissions, and map
-            permissions to roles.
-          </p>
-        </div>
-
-        <div className="w-56">
-          <FormField label="Filter by app" htmlFor="roles-app-filter">
-            <SelectInput
-              id="roles-app-filter"
-              value={selectedAppId}
-              onChange={(e) => handleFilterChange(e.target.value)}
-            >
-              <option value="">All applications</option>
-              {apps.map((app) => (
-                <option key={app.id} value={app.id}>
-                  {app.name} ({app.id})
-                </option>
-              ))}
-            </SelectInput>
-          </FormField>
-        </div>
-      </div>
+      <PageHeader
+        kicker="Admin ACL"
+        title="Roles & Permissions"
+        description="Define per-app roles, create granular permissions, and map permissions to roles."
+        actions={
+          <div className="w-60">
+            <FormField label="Filter by app" htmlFor="roles-app-filter">
+              <SelectInput
+                id="roles-app-filter"
+                value={selectedAppId}
+                onChange={(e) => handleFilterChange(e.target.value)}
+              >
+                <option value="">All applications</option>
+                {apps.map((app) => (
+                  <option key={app.id} value={app.id}>
+                    {app.name} ({app.id})
+                  </option>
+                ))}
+              </SelectInput>
+            </FormField>
+          </div>
+        }
+      />
 
       {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
       {feedbackMessage && <Alert variant="success">{feedbackMessage}</Alert>}
@@ -300,16 +312,24 @@ export default function AdminRolesRoute() {
           title="Create Role"
           description="Add a custom role to an application."
         >
-          <form onSubmit={handleCreateRole} className="space-y-3" noValidate>
+          <form
+            aria-label="Create role"
+            onSubmit={handleCreateRole}
+            className="space-y-3.5"
+            noValidate
+          >
             <FormField
               label="Application"
               htmlFor="new-role-app"
               error={roleErrors.app_id}
+              required
             >
               <SelectInput
                 id="new-role-app"
+                name="app_id"
                 value={roleAppId}
                 onChange={(e) => setRoleAppId(e.target.value)}
+                invalid={Boolean(roleErrors.app_id)}
                 disabled={creatingRole}
                 required
               >
@@ -327,11 +347,17 @@ export default function AdminRolesRoute() {
               htmlFor="new-role-name"
               hint="Lowercase slug (e.g. moderator)"
               error={roleErrors.name}
+              required
             >
               <TextInput
                 id="new-role-name"
+                name="name"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
+                invalid={Boolean(roleErrors.name)}
                 disabled={creatingRole}
                 placeholder="editor"
                 required
@@ -342,11 +368,14 @@ export default function AdminRolesRoute() {
               label="Description"
               htmlFor="new-role-desc"
               error={roleErrors.description}
+              required
             >
               <TextInput
                 id="new-role-desc"
+                name="description"
                 value={roleDesc}
                 onChange={(e) => setRoleDesc(e.target.value)}
+                invalid={Boolean(roleErrors.description)}
                 disabled={creatingRole}
                 placeholder="Can manage content"
                 required
@@ -357,7 +386,7 @@ export default function AdminRolesRoute() {
               <Button
                 type="submit"
                 variant="primary"
-                size="sm"
+                size="md"
                 disabled={creatingRole}
               >
                 {creatingRole ? "Creating..." : "Create Role"}
@@ -371,19 +400,23 @@ export default function AdminRolesRoute() {
           description="Add a fine-grained permission slug to an application."
         >
           <form
+            aria-label="Create permission"
             onSubmit={handleCreatePermission}
-            className="space-y-3"
+            className="space-y-3.5"
             noValidate
           >
             <FormField
               label="Application"
               htmlFor="new-perm-app"
               error={permErrors.app_id}
+              required
             >
               <SelectInput
                 id="new-perm-app"
+                name="app_id"
                 value={permAppId}
                 onChange={(e) => setPermAppId(e.target.value)}
+                invalid={Boolean(permErrors.app_id)}
                 disabled={creatingPerm}
                 required
               >
@@ -401,11 +434,17 @@ export default function AdminRolesRoute() {
               htmlFor="new-perm-slug"
               hint="e.g. books:write"
               error={permErrors.slug}
+              required
             >
               <TextInput
                 id="new-perm-slug"
+                name="slug"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 value={permSlug}
                 onChange={(e) => setPermSlug(e.target.value)}
+                invalid={Boolean(permErrors.slug)}
                 disabled={creatingPerm}
                 placeholder="inventory:manage"
                 required
@@ -416,11 +455,14 @@ export default function AdminRolesRoute() {
               label="Description"
               htmlFor="new-perm-desc"
               error={permErrors.description}
+              required
             >
               <TextInput
                 id="new-perm-desc"
+                name="description"
                 value={permDesc}
                 onChange={(e) => setPermDesc(e.target.value)}
+                invalid={Boolean(permErrors.description)}
                 disabled={creatingPerm}
                 placeholder="Allows creating and updating items"
                 required
@@ -431,7 +473,7 @@ export default function AdminRolesRoute() {
               <Button
                 type="submit"
                 variant="primary"
-                size="sm"
+                size="md"
                 disabled={creatingPerm}
               >
                 {creatingPerm ? "Creating..." : "Create Permission"}
@@ -457,7 +499,7 @@ export default function AdminRolesRoute() {
         }
       >
         {loading ? (
-          <p className="py-6 text-center text-xs text-neutral-500">
+          <p className="py-6 text-center text-xs text-muted-foreground">
             Loading roles...
           </p>
         ) : roles.length === 0 ? (
@@ -466,7 +508,7 @@ export default function AdminRolesRoute() {
             description="Create a role above or clear the app filter."
           />
         ) : (
-          <div className="divide-y divide-neutral-800/80">
+          <div className="divide-y divide-border">
             {roles.map((role) => {
               const isBuiltin = PROTECTED_ROLE_NAMES.has(role.name);
               const isEditing = editingRoleId === role.id;
@@ -478,17 +520,17 @@ export default function AdminRolesRoute() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold text-neutral-100">
+                        <span className="font-serif text-base font-medium text-foreground">
                           {role.name}
                         </span>
-                        <Badge variant="info" mono>
+                        <Badge variant="primary" mono>
                           {role.app_id}
                         </Badge>
                         {isBuiltin && (
                           <Badge variant="neutral">Built-in</Badge>
                         )}
                       </div>
-                      <p className="text-xs text-neutral-400">
+                      <p className="text-xs text-muted-foreground">
                         {role.description}
                       </p>
                       <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
@@ -499,7 +541,7 @@ export default function AdminRolesRoute() {
                             </Badge>
                           ))
                         ) : (
-                          <span className="text-[11px] text-neutral-500">
+                          <span className="text-[11px] text-muted-foreground">
                             No permissions mapped
                           </span>
                         )}
@@ -555,51 +597,34 @@ export default function AdminRolesRoute() {
 
                   {/* Inline Permission Mapper */}
                   {isEditing && (
-                    <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-950/70 p-4 space-y-3">
-                      <p className="text-xs font-medium text-neutral-300">
+                    <div className="mt-4 space-y-3 rounded-[var(--radius-xl)] border border-border bg-surface-muted/70 p-4">
+                      <p className="text-xs font-medium text-foreground">
                         Permissions for{" "}
-                        <span className="font-mono text-emerald-400">
+                        <span className="font-mono text-primary">
                           {role.app_id}:{role.name}
                         </span>
                       </p>
 
                       {appPerms.length === 0 ? (
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-xs text-muted-foreground">
                           No permissions defined for{" "}
                           <span className="font-mono">{role.app_id}</span> yet.
                           Create one above first.
                         </p>
                       ) : (
                         <div className="grid gap-2 sm:grid-cols-2">
-                          {appPerms.map((perm) => {
-                            const checked = draftPermSlugs.has(perm.slug);
-                            return (
-                              <label
-                                key={perm.id}
-                                className={`flex items-start gap-2.5 rounded-md border p-2.5 text-xs cursor-pointer transition-colors ${
-                                  checked
-                                    ? "border-emerald-500/40 bg-emerald-500/10"
-                                    : "border-neutral-800/80 bg-neutral-900/40 hover:border-neutral-700"
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => toggleDraftPerm(perm.slug)}
-                                  disabled={savingRolePerms}
-                                  className="mt-0.5 h-3.5 w-3.5 rounded accent-emerald-500"
-                                />
-                                <span className="min-w-0">
-                                  <span className="block font-mono font-medium text-neutral-200">
-                                    {perm.slug}
-                                  </span>
-                                  <span className="block text-[11px] text-neutral-500">
-                                    {perm.description}
-                                  </span>
-                                </span>
-                              </label>
-                            );
-                          })}
+                          {appPerms.map((perm) => (
+                            <Checkbox
+                              key={perm.id}
+                              card
+                              monoLabel
+                              checked={draftPermSlugs.has(perm.slug)}
+                              onChange={() => toggleDraftPerm(perm.slug)}
+                              disabled={savingRolePerms}
+                              label={perm.slug}
+                              description={perm.description}
+                            />
+                          ))}
                         </div>
                       )}
 
@@ -633,7 +658,7 @@ export default function AdminRolesRoute() {
       {/* Permissions Catalog */}
       <Card title={`Permissions Catalog (${permissions.length})`}>
         {loading ? (
-          <p className="py-6 text-center text-xs text-neutral-500">
+          <p className="py-6 text-center text-xs text-muted-foreground">
             Loading permissions...
           </p>
         ) : permissions.length === 0 ? (
@@ -642,30 +667,29 @@ export default function AdminRolesRoute() {
             description="Create a permission above to assign it to roles."
           />
         ) : (
-          <div className="divide-y divide-neutral-800/80">
+          <div className="divide-y divide-border">
             {permissions.map((perm) => (
               <div
                 key={perm.id}
-                className="flex flex-wrap items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
+                className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
               >
                 <div className="min-w-0 space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-medium text-neutral-200">
+                    <span className="font-mono text-xs font-semibold text-foreground">
                       {perm.slug}
                     </span>
                     <Badge variant="neutral" mono>
                       {perm.app_id}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-neutral-500">
+                  <p className="text-[11px] text-muted-foreground">
                     {perm.description}
                   </p>
                 </div>
 
                 <Button
-                  variant="ghost"
+                  variant="danger"
                   size="xs"
-                  className="text-red-400 hover:text-red-300"
                   disabled={deletingPermId === perm.id}
                   onClick={() => handleDeletePermission(perm)}
                 >

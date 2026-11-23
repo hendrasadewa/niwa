@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { forgotPasswordSchema } from "@niwa/auth-validators";
-import { Alert, Button } from "@niwa/ui/components";
+import { Alert, Button, FormField, TextInput } from "@niwa/ui/components";
 import { AuthCardLayout } from "../components/auth-card-layout";
-import { FormField, TextInput } from "../components/form-controls";
 import {
   authApi,
   extractApiFieldErrors,
@@ -53,7 +52,7 @@ export default function ForgotPasswordRoute() {
           Remembered your password?{" "}
           <Link
             to="/login"
-            className="font-medium text-emerald-400 hover:text-emerald-300"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
           >
             Back to sign in
           </Link>
@@ -68,14 +67,21 @@ export default function ForgotPasswordRoute() {
           label="Email address"
           htmlFor="forgot-email"
           error={fieldErrors.email}
+          required
         >
           <TextInput
             id="forgot-email"
+            name="email"
             type="email"
             autoComplete="email"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            enterKeyHint="send"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            invalid={Boolean(fieldErrors.email)}
             disabled={submitting}
             required
           />
@@ -84,8 +90,8 @@ export default function ForgotPasswordRoute() {
         <Button
           type="submit"
           variant="primary"
-          size="md"
-          className="w-full py-2 text-sm"
+          size="lg"
+          className="w-full"
           disabled={submitting}
         >
           {submitting ? "Sending reset link..." : "Send reset link"}

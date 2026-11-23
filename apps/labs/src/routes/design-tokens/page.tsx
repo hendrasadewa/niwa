@@ -21,6 +21,7 @@ import {
   SearchInputSection,
   SegmentedTabsSection,
   SemanticReferenceSection,
+  SharedComponentsSection,
   TypographySection,
 } from "./_components/token-sections";
 
@@ -219,6 +220,7 @@ export default function DesignTokensPage() {
               copiedKey={copiedKey}
               onCopy={handleCopy}
             />
+            <SharedComponentsSection />
           </main>
         </div>
       </div>

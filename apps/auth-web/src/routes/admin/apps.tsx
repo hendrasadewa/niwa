@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { createAppSchema, updateAppSchema } from "@niwa/auth-validators";
-import { Alert, Badge, Button, EmptyState } from "@niwa/ui/components";
 import {
+  Alert,
+  Badge,
+  Button,
   Card,
+  Checkbox,
+  EmptyState,
   FormField,
+  PageHeader,
   TextArea,
   TextInput,
-} from "../../components/form-controls";
+} from "@niwa/ui/components";
 import { useAuth } from "../../context/auth-context";
 import {
   authApi,
@@ -184,26 +189,21 @@ export default function AdminAppsRoute() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-neutral-100">
-            Apps Registry
-          </h1>
-          <p className="mt-1 text-xs text-neutral-400">
-            Manage first-party Niwa applications, allowed CORS origins, redirect
-            URIs, and consent defaults.
-          </p>
-        </div>
-
-        <Button variant="primary" size="md" onClick={openCreate}>
-          + Register App
-        </Button>
-      </div>
+      <PageHeader
+        kicker="Admin ACL"
+        title="Apps Registry"
+        description="Manage first-party Niwa applications, allowed CORS origins, redirect URIs, and consent defaults."
+        actions={
+          <Button variant="primary" size="md" onClick={openCreate}>
+            + Register App
+          </Button>
+        }
+      />
 
       {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
       {feedbackMessage && <Alert variant="success">{feedbackMessage}</Alert>}
 
-      {/* Create / Edit Drawer Card */}
+      {/* Create / Edit Card */}
       {mode !== "closed" && (
         <Card
           title={
@@ -229,13 +229,19 @@ export default function AdminAppsRoute() {
                 htmlFor="app-id"
                 hint="Lowercase slug (e.g. pustaka)"
                 error={fieldErrors.id}
+                required
               >
                 <TextInput
                   id="app-id"
+                  name="id"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   value={form.id}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, id: e.target.value }))
                   }
+                  invalid={Boolean(fieldErrors.id)}
                   disabled={mode === "edit" || saving}
                   placeholder="my-app"
                   required
@@ -246,13 +252,16 @@ export default function AdminAppsRoute() {
                 label="Display Name"
                 htmlFor="app-name"
                 error={fieldErrors.name}
+                required
               >
                 <TextInput
                   id="app-name"
+                  name="name"
                   value={form.name}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, name: e.target.value }))
                   }
+                  invalid={Boolean(fieldErrors.name)}
                   disabled={saving}
                   placeholder="My Niwa App"
                   required
@@ -264,13 +273,16 @@ export default function AdminAppsRoute() {
               label="Description"
               htmlFor="app-description"
               error={fieldErrors.description}
+              required
             >
               <TextInput
                 id="app-description"
+                name="description"
                 value={form.description}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, description: e.target.value }))
                 }
+                invalid={Boolean(fieldErrors.description)}
                 disabled={saving}
                 placeholder="Shown to users on the consent screen"
                 required
@@ -286,6 +298,9 @@ export default function AdminAppsRoute() {
               >
                 <TextArea
                   id="app-origins"
+                  name="allowed_origins"
+                  mono
+                  spellCheck={false}
                   value={form.allowedOriginsText}
                   onChange={(e) =>
                     setForm((f) => ({
@@ -293,8 +308,11 @@ export default function AdminAppsRoute() {
                       allowedOriginsText: e.target.value,
                     }))
                   }
+                  invalid={Boolean(fieldErrors.allowed_origins)}
                   disabled={saving}
-                  placeholder={"https://app.hendrasadewa.com\nhttp://localhost:3001"}
+                  placeholder={
+                    "https://app.hendrasadewa.com\nhttp://localhost:3001"
+                  }
                 />
               </FormField>
 
@@ -306,6 +324,9 @@ export default function AdminAppsRoute() {
               >
                 <TextArea
                   id="app-redirects"
+                  name="allowed_redirect_uris"
+                  mono
+                  spellCheck={false}
                   value={form.allowedRedirectUrisText}
                   onChange={(e) =>
                     setForm((f) => ({
@@ -313,6 +334,7 @@ export default function AdminAppsRoute() {
                       allowedRedirectUrisText: e.target.value,
                     }))
                   }
+                  invalid={Boolean(fieldErrors.allowed_redirect_uris)}
                   disabled={saving}
                   placeholder={
                     "https://app.hendrasadewa.com/\nhttp://localhost:3001/"
@@ -330,10 +352,15 @@ export default function AdminAppsRoute() {
               >
                 <TextInput
                   id="app-default-role"
+                  name="default_role_name"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   value={form.defaultRoleName}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, defaultRoleName: e.target.value }))
                   }
+                  invalid={Boolean(fieldErrors.default_role_name)}
                   disabled={saving}
                   placeholder="member"
                 />
@@ -347,37 +374,32 @@ export default function AdminAppsRoute() {
               >
                 <TextInput
                   id="app-icon-url"
+                  name="icon_url"
                   type="url"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   value={form.iconUrl}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, iconUrl: e.target.value }))
                   }
+                  invalid={Boolean(fieldErrors.icon_url)}
                   disabled={saving}
                   placeholder="https://..."
                 />
               </FormField>
             </div>
 
-            <label className="flex items-start gap-2.5 rounded-lg border border-neutral-800/80 bg-neutral-950/50 p-3 text-xs cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.requireConsent}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, requireConsent: e.target.checked }))
-                }
-                disabled={saving}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-neutral-700 bg-neutral-900 accent-emerald-500"
-              />
-              <span>
-                <span className="font-medium text-neutral-200">
-                  Require explicit first-time consent
-                </span>
-                <span className="block text-[11px] text-neutral-500">
-                  Prompt users on /consent before issuing app tokens for the
-                  first time.
-                </span>
-              </span>
-            </label>
+            <Checkbox
+              card
+              checked={form.requireConsent}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, requireConsent: e.target.checked }))
+              }
+              disabled={saving}
+              label="Require explicit first-time consent"
+              description="Prompt users on /consent before issuing app tokens for the first time."
+            />
 
             <div className="flex justify-end gap-2 pt-1">
               <Button
@@ -420,7 +442,7 @@ export default function AdminAppsRoute() {
         }
       >
         {loading ? (
-          <p className="py-6 text-center text-xs text-neutral-500">
+          <p className="py-6 text-center text-xs text-muted-foreground">
             Loading applications...
           </p>
         ) : apps.length === 0 ? (
@@ -429,18 +451,18 @@ export default function AdminAppsRoute() {
             description="Register your first Niwa application to configure SSO and RBAC."
           />
         ) : (
-          <div className="divide-y divide-neutral-800/80">
+          <div className="divide-y divide-border">
             {apps.map((app) => (
               <div
                 key={app.id}
                 className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"
               >
-                <div className="min-w-0 flex-1 space-y-2">
+                <div className="min-w-0 flex-1 space-y-2.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold text-neutral-100">
+                    <p className="font-serif text-base font-medium text-foreground">
                       {app.name}
                     </p>
-                    <Badge variant="info" mono>
+                    <Badge variant="primary" mono>
                       {app.id}
                     </Badge>
                     <Badge
@@ -455,15 +477,17 @@ export default function AdminAppsRoute() {
                     )}
                   </div>
 
-                  <p className="text-xs text-neutral-400">{app.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {app.description}
+                  </p>
 
-                  <div className="grid gap-2 pt-1 text-[11px] sm:grid-cols-2">
-                    <div className="rounded-md border border-neutral-800/70 bg-neutral-950/60 p-2.5">
-                      <p className="font-medium text-neutral-400">
+                  <div className="grid gap-2.5 pt-1 text-[11px] sm:grid-cols-2">
+                    <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted/70 p-3">
+                      <p className="font-semibold text-muted-foreground">
                         Allowed Origins ({app.allowed_origins.length})
                       </p>
                       {app.allowed_origins.length > 0 ? (
-                        <ul className="mt-1 space-y-0.5 font-mono text-neutral-300">
+                        <ul className="mt-1 space-y-0.5 font-mono text-foreground">
                           {app.allowed_origins.map((origin) => (
                             <li key={origin} className="truncate">
                               {origin}
@@ -471,17 +495,19 @@ export default function AdminAppsRoute() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="mt-1 text-neutral-600">None configured</p>
+                        <p className="mt-1 text-muted-foreground">
+                          None configured
+                        </p>
                       )}
                     </div>
 
-                    <div className="rounded-md border border-neutral-800/70 bg-neutral-950/60 p-2.5">
-                      <p className="font-medium text-neutral-400">
+                    <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted/70 p-3">
+                      <p className="font-semibold text-muted-foreground">
                         Allowed Redirect URIs ({app.allowed_redirect_uris.length}
                         )
                       </p>
                       {app.allowed_redirect_uris.length > 0 ? (
-                        <ul className="mt-1 space-y-0.5 font-mono text-neutral-300">
+                        <ul className="mt-1 space-y-0.5 font-mono text-foreground">
                           {app.allowed_redirect_uris.map((uri) => (
                             <li key={uri} className="truncate">
                               {uri}
@@ -489,12 +515,14 @@ export default function AdminAppsRoute() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="mt-1 text-neutral-600">None configured</p>
+                        <p className="mt-1 text-muted-foreground">
+                          None configured
+                        </p>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-3 text-[11px] text-neutral-500">
+                  <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
                     <span>{app.roles.length} role(s)</span>
                     <span>{app.permissions.length} permission(s)</span>
                   </div>

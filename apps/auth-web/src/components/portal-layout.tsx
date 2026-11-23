@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router";
-import { Alert, Badge, Button } from "@niwa/ui/components";
+import { Alert, Badge, Button, FullPageLoader } from "@niwa/ui/components";
 import { useAuth } from "../context/auth-context";
 import { maskEmail } from "../lib/format";
-import { FullPageLoader } from "./form-controls";
 
 interface NavItem {
   to: string;
@@ -47,7 +46,7 @@ export function RequireAdmin() {
         <Alert variant="error">
           Administrator privileges are required to access the ACL dashboard.
         </Alert>
-        <Button variant="secondary" onClick={() => navigate("/account")}>
+        <Button variant="secondary" size="md" onClick={() => navigate("/account")}>
           Back to Account
         </Button>
       </div>
@@ -67,11 +66,11 @@ function NavSection({
   onNavigate?: () => void;
 }) {
   return (
-    <div className="space-y-1">
-      <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+    <div className="space-y-1.5">
+      <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {title}
       </p>
-      <nav className="space-y-0.5">
+      <nav aria-label={title} className="space-y-1">
         {items.map((item) => (
           <NavLink
             key={item.to}
@@ -79,10 +78,10 @@ function NavSection({
             end={item.end}
             onClick={onNavigate}
             className={({ isActive }) =>
-              `block rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+              `block rounded-full px-3.5 py-2 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
                 isActive
-                  ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-                  : "text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-100 border border-transparent"
+                  ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
+                  : "text-muted-foreground hover:bg-surface-subtle/80 hover:text-foreground"
               }`
             }
           >
@@ -111,20 +110,22 @@ function PortalLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-neutral-800 bg-neutral-950/90 px-4 py-3 backdrop-blur md:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/90 px-4 py-3 backdrop-blur md:hidden">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-xs font-bold text-emerald-400">
+          <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] border border-border bg-primary-soft font-serif text-sm font-semibold text-primary-soft-foreground">
             N
           </div>
-          <span className="text-sm font-semibold text-neutral-100">
+          <span className="font-serif text-base font-medium text-foreground">
             Niwa Account
           </span>
         </div>
         <Button
           variant="secondary"
           size="sm"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-portal-menu"
           onClick={() => setMobileMenuOpen((v) => !v)}
         >
           {mobileMenuOpen ? "Close" : "Menu"}
@@ -133,7 +134,10 @@ function PortalLayout() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="border-b border-neutral-800 bg-neutral-900/95 px-4 py-4 space-y-5 md:hidden">
+        <div
+          id="mobile-portal-menu"
+          className="border-b border-border bg-surface px-4 py-4 space-y-5 shadow-[var(--shadow-card)] md:hidden"
+        >
           <NavSection
             title="Account"
             items={ACCOUNT_NAV}
@@ -146,12 +150,12 @@ function PortalLayout() {
               onNavigate={() => setMobileMenuOpen(false)}
             />
           )}
-          <div className="border-t border-neutral-800 pt-3 flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
             <div className="min-w-0">
-              <p className="truncate text-xs font-medium text-neutral-200">
+              <p className="truncate text-xs font-semibold text-foreground">
                 {user?.name}
               </p>
-              <p className="truncate text-[11px] text-neutral-500">
+              <p className="truncate text-[11px] text-muted-foreground">
                 {maskEmail(user?.email)}
               </p>
             </div>
@@ -169,17 +173,17 @@ function PortalLayout() {
 
       <div className="mx-auto flex max-w-6xl">
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:justify-between md:border-r md:border-neutral-800/80 md:min-h-screen md:sticky md:top-0 md:h-screen md:px-4 md:py-6">
+        <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:justify-between md:border-r md:border-border md:bg-surface/60 md:min-h-screen md:sticky md:top-0 md:h-screen md:px-4 md:py-6">
           <div className="space-y-6">
-            <div className="flex items-center gap-2.5 px-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-xs font-bold text-emerald-400">
+            <div className="flex items-center gap-3 px-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-primary-soft font-serif text-base font-semibold text-primary-soft-foreground shadow-[var(--shadow-card)]">
                 N
               </div>
               <div>
-                <p className="text-sm font-semibold leading-tight text-neutral-100">
+                <p className="font-serif text-base font-medium leading-tight text-foreground">
                   Niwa Account
                 </p>
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-[11px] text-muted-foreground">
                   Identity &amp; Access Portal
                 </p>
               </div>
@@ -191,15 +195,15 @@ function PortalLayout() {
             </div>
           </div>
 
-          <div className="space-y-3 border-t border-neutral-800/80 pt-4">
-            <div className="px-2 space-y-1">
+          <div className="space-y-3 border-t border-border pt-4">
+            <div className="space-y-1 px-2">
               <div className="flex items-center gap-2">
-                <p className="truncate text-xs font-medium text-neutral-200">
+                <p className="truncate text-xs font-semibold text-foreground">
                   {user?.name}
                 </p>
-                {isAdmin && <Badge variant="info">Admin</Badge>}
+                {isAdmin && <Badge variant="primary">Admin</Badge>}
               </div>
-              <p className="truncate text-[11px] text-neutral-500">
+              <p className="truncate text-[11px] text-muted-foreground">
                 {maskEmail(user?.email)}
               </p>
             </div>
@@ -216,7 +220,7 @@ function PortalLayout() {
         </aside>
 
         {/* Main Content */}
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8">
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-10">
           <Outlet />
         </main>
       </div>

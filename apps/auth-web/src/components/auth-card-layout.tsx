@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Card } from "@niwa/ui/components";
 
 export function AuthCardLayout({
   title,
@@ -12,29 +13,31 @@ export function AuthCardLayout({
   footer?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-950 px-4 py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-sm font-bold text-emerald-400">
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-primary-soft font-serif text-lg font-semibold text-primary-soft-foreground shadow-[var(--shadow-card)]">
             N
           </div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-500">
-            Niwa Identity
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            NIWA / IDENTITY
           </p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight text-neutral-100">
+          <h1 className="mt-2 font-serif text-3xl font-medium tracking-[-0.02em] text-foreground">
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1 text-xs text-neutral-400">{subtitle}</p>
+            <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
+              {subtitle}
+            </p>
           )}
         </div>
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6 shadow-xl shadow-black/40">
-          {children}
-        </div>
+        <Card className="shadow-[var(--shadow-elevated)]">{children}</Card>
 
         {footer && (
-          <div className="text-center text-xs text-neutral-400">{footer}</div>
+          <div className="text-center text-xs text-muted-foreground">
+            {footer}
+          </div>
         )}
       </div>
     </div>

@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
 import { resetPasswordSchema } from "@niwa/auth-validators";
-import { Alert, Button } from "@niwa/ui/components";
+import { Alert, Button, FormField, PasswordInput } from "@niwa/ui/components";
 import { AuthCardLayout } from "../components/auth-card-layout";
-import { FormField, TextInput } from "../components/form-controls";
 import { useAuth } from "../context/auth-context";
 import {
   authApi,
@@ -59,7 +58,10 @@ export default function ResetPasswordRoute() {
     } catch (err) {
       setFieldErrors(extractApiFieldErrors(err));
       setErrorMessage(
-        getErrorMessage(err, "Unable to reset password. The link may have expired.")
+        getErrorMessage(
+          err,
+          "Unable to reset password. The link may have expired."
+        )
       );
     } finally {
       setSubmitting(false);
@@ -75,7 +77,7 @@ export default function ResetPasswordRoute() {
           Need a new link?{" "}
           <Link
             to="/forgot-password"
-            className="font-medium text-emerald-400 hover:text-emerald-300"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
           >
             Request another reset
           </Link>
@@ -86,7 +88,7 @@ export default function ResetPasswordRoute() {
         <div className="space-y-4">
           <Alert variant="success">{successMessage}</Alert>
           <Link to="/login" className="block">
-            <Button variant="primary" size="md" className="w-full py-2 text-sm">
+            <Button variant="primary" size="lg" className="w-full">
               Sign in with new password
             </Button>
           </Link>
@@ -100,14 +102,17 @@ export default function ResetPasswordRoute() {
             htmlFor="reset-password"
             hint="Minimum 8 characters"
             error={fieldErrors.new_password}
+            required
           >
-            <TextInput
+            <PasswordInput
               id="reset-password"
-              type="password"
+              name="new_password"
               autoComplete="new-password"
+              enterKeyHint="next"
               placeholder="Enter a new password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              invalid={Boolean(fieldErrors.new_password)}
               disabled={submitting || !token}
               required
             />
@@ -117,14 +122,17 @@ export default function ResetPasswordRoute() {
             label="Confirm new password"
             htmlFor="reset-password-confirm"
             error={fieldErrors.confirm_password}
+            required
           >
-            <TextInput
+            <PasswordInput
               id="reset-password-confirm"
-              type="password"
+              name="confirm_password"
               autoComplete="new-password"
+              enterKeyHint="done"
               placeholder="Re-enter your new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              invalid={Boolean(fieldErrors.confirm_password)}
               disabled={submitting || !token}
               required
             />
@@ -133,8 +141,8 @@ export default function ResetPasswordRoute() {
           <Button
             type="submit"
             variant="primary"
-            size="md"
-            className="w-full py-2 text-sm"
+            size="lg"
+            className="w-full"
             disabled={submitting || !token}
           >
             {submitting ? "Updating password..." : "Reset password"}

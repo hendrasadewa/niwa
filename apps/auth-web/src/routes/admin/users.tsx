@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Alert, Badge, Button, EmptyState } from "@niwa/ui/components";
 import {
+  Alert,
+  Badge,
+  Button,
   Card,
+  Checkbox,
+  EmptyState,
   FormField,
+  PageHeader,
   SelectInput,
   TextInput,
-} from "../../components/form-controls";
+} from "@niwa/ui/components";
 import { useAuth } from "../../context/auth-context";
 import {
   authApi,
@@ -165,92 +170,98 @@ export default function AdminUsersRoute() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight text-neutral-100">
-          Users Directory
-        </h1>
-        <p className="mt-1 text-xs text-neutral-400">
-          Search accounts, activate or suspend users, and manage per-application
-          role assignments.
-        </p>
-      </div>
+      <PageHeader
+        kicker="Admin ACL"
+        title="Users Directory"
+        description="Search accounts, activate or suspend users, and manage per-application role assignments."
+      />
 
       {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
       {feedbackMessage && <Alert variant="success">{feedbackMessage}</Alert>}
 
       {/* Filter Bar */}
       <Card>
-        <form
-          onSubmit={handleFilterSubmit}
-          className="grid gap-3 sm:grid-cols-12 sm:items-end"
-        >
-          <div className="sm:col-span-5">
-            <FormField label="Search" htmlFor="users-search">
-              <TextInput
-                id="users-search"
-                type="search"
-                placeholder="Name, email, or WhatsApp..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </FormField>
-          </div>
+        <search>
+          <form
+            aria-label="Filter users"
+            onSubmit={handleFilterSubmit}
+            className="grid gap-3 sm:grid-cols-12 sm:items-end"
+          >
+            <div className="sm:col-span-5">
+              <FormField label="Search" htmlFor="users-search">
+                <TextInput
+                  id="users-search"
+                  name="search"
+                  type="search"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="Name, email, or WhatsApp..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </FormField>
+            </div>
 
-          <div className="sm:col-span-3">
-            <FormField label="App" htmlFor="users-filter-app">
-              <SelectInput
-                id="users-filter-app"
-                value={filterAppId}
-                onChange={(e) => setFilterAppId(e.target.value)}
-              >
-                <option value="">All apps</option>
-                {apps.map((app) => (
-                  <option key={app.id} value={app.id}>
-                    {app.name}
-                  </option>
-                ))}
-              </SelectInput>
-            </FormField>
-          </div>
+            <div className="sm:col-span-3">
+              <FormField label="App" htmlFor="users-filter-app">
+                <SelectInput
+                  id="users-filter-app"
+                  name="app_id"
+                  value={filterAppId}
+                  onChange={(e) => setFilterAppId(e.target.value)}
+                >
+                  <option value="">All apps</option>
+                  {apps.map((app) => (
+                    <option key={app.id} value={app.id}>
+                      {app.name}
+                    </option>
+                  ))}
+                </SelectInput>
+              </FormField>
+            </div>
 
-          <div className="sm:col-span-2">
-            <FormField label="Status" htmlFor="users-filter-status">
-              <SelectInput
-                id="users-filter-status"
-                value={filterStatus}
-                onChange={(e) =>
-                  setFilterStatus(e.target.value as "" | "true" | "false")
-                }
-              >
-                <option value="">All</option>
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </SelectInput>
-            </FormField>
-          </div>
+            <div className="sm:col-span-2">
+              <FormField label="Status" htmlFor="users-filter-status">
+                <SelectInput
+                  id="users-filter-status"
+                  name="is_active"
+                  value={filterStatus}
+                  onChange={(e) =>
+                    setFilterStatus(e.target.value as "" | "true" | "false")
+                  }
+                >
+                  <option value="">All</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </SelectInput>
+              </FormField>
+            </div>
 
-          <div className="flex gap-2 sm:col-span-2">
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              className="flex-1"
-              disabled={loading}
-            >
-              Filter
-            </Button>
-            {(search || filterAppId || filterStatus) && (
+            <div className="flex gap-2 sm:col-span-2">
               <Button
-                variant="ghost"
+                type="submit"
+                variant="primary"
                 size="md"
+                className="min-h-11 flex-1"
                 disabled={loading}
-                onClick={handleResetFilters}
               >
-                Clear
+                Filter
               </Button>
-            )}
-          </div>
-        </form>
+              {(search || filterAppId || filterStatus) && (
+                <Button
+                  variant="ghost"
+                  size="md"
+                  className="min-h-11"
+                  disabled={loading}
+                  onClick={handleResetFilters}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </form>
+        </search>
       </Card>
 
       {/* Users List */}
@@ -268,7 +279,7 @@ export default function AdminUsersRoute() {
         }
       >
         {loading ? (
-          <p className="py-6 text-center text-xs text-neutral-500">
+          <p className="py-6 text-center text-xs text-muted-foreground">
             Loading users...
           </p>
         ) : users.length === 0 ? (
@@ -277,7 +288,7 @@ export default function AdminUsersRoute() {
             description="Try adjusting your search query or clearing filters."
           />
         ) : (
-          <div className="divide-y divide-neutral-800/80">
+          <div className="divide-y divide-border">
             {users.map((target) => {
               const isSelf = target.id === currentUser?.id;
               const isEditing = editingUserId === target.id;
@@ -290,7 +301,7 @@ export default function AdminUsersRoute() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-neutral-100">
+                        <p className="font-serif text-base font-medium text-foreground">
                           {target.name}
                         </p>
                         <Badge
@@ -299,19 +310,19 @@ export default function AdminUsersRoute() {
                         >
                           {target.is_active ? "Active" : "Inactive"}
                         </Badge>
-                        {isSelf && <Badge variant="info">You</Badge>}
+                        {isSelf && <Badge variant="primary">You</Badge>}
                       </div>
 
-                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-neutral-400">
-                        <span>{maskEmail(target.email)}</span>
+                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
+                        <span className="text-foreground">
+                          {maskEmail(target.email)}
+                        </span>
                         {target.whatsapp_number && (
-                          <span className="font-mono text-neutral-500">
+                          <span className="font-mono">
                             WA: {maskPhone(target.whatsapp_number)}
                           </span>
                         )}
-                        <span className="text-neutral-500">
-                          Joined {formatUnixDate(target.created_at)}
-                        </span>
+                        <span>Joined {formatUnixDate(target.created_at)}</span>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
@@ -330,7 +341,7 @@ export default function AdminUsersRoute() {
                             ))
                           )
                         ) : (
-                          <span className="text-[11px] text-neutral-500">
+                          <span className="text-[11px] text-muted-foreground">
                             No app roles assigned
                           </span>
                         )}
@@ -375,7 +386,7 @@ export default function AdminUsersRoute() {
 
                   {/* Inline Per-App Role Editor */}
                   {isEditing && (
-                    <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-950/70 p-4 space-y-3">
+                    <div className="mt-4 space-y-3 rounded-[var(--radius-xl)] border border-border bg-surface-muted/70 p-4">
                       <div className="flex flex-wrap items-end justify-between gap-3">
                         <div className="w-60">
                           <FormField
@@ -401,13 +412,13 @@ export default function AdminUsersRoute() {
                             </SelectInput>
                           </FormField>
                         </div>
-                        <p className="text-[11px] text-neutral-500">
+                        <p className="text-[11px] text-muted-foreground">
                           Replaces all roles for{" "}
-                          <span className="text-neutral-300">
+                          <span className="font-medium text-foreground">
                             {maskEmail(target.email)}
                           </span>{" "}
                           in{" "}
-                          <span className="font-mono text-neutral-300">
+                          <span className="font-mono text-primary">
                             {roleEditorAppId}
                           </span>
                           .
@@ -417,38 +428,21 @@ export default function AdminUsersRoute() {
                       {selectedAppForEditor &&
                       selectedAppForEditor.roles.length > 0 ? (
                         <div className="grid gap-2 sm:grid-cols-2">
-                          {selectedAppForEditor.roles.map((role) => {
-                            const checked = draftRoles.has(role.name);
-                            return (
-                              <label
-                                key={role.id}
-                                className={`flex items-start gap-2.5 rounded-md border p-2.5 text-xs cursor-pointer transition-colors ${
-                                  checked
-                                    ? "border-emerald-500/40 bg-emerald-500/10"
-                                    : "border-neutral-800/80 bg-neutral-900/40 hover:border-neutral-700"
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => toggleDraftRole(role.name)}
-                                  disabled={savingRoles}
-                                  className="mt-0.5 h-3.5 w-3.5 rounded accent-emerald-500"
-                                />
-                                <span className="min-w-0">
-                                  <span className="block font-mono font-medium text-neutral-200">
-                                    {role.name}
-                                  </span>
-                                  <span className="block text-[11px] text-neutral-500">
-                                    {role.description}
-                                  </span>
-                                </span>
-                              </label>
-                            );
-                          })}
+                          {selectedAppForEditor.roles.map((role) => (
+                            <Checkbox
+                              key={role.id}
+                              card
+                              monoLabel
+                              checked={draftRoles.has(role.name)}
+                              onChange={() => toggleDraftRole(role.name)}
+                              disabled={savingRoles}
+                              label={role.name}
+                              description={role.description}
+                            />
+                          ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-xs text-muted-foreground">
                           No roles configured for this app.
                         </p>
                       )}
