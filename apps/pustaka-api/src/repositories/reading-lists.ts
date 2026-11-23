@@ -23,6 +23,7 @@ export function createReadingListRepo(db: Database) {
             total_pages: books.total_pages,
             cover_image_key: books.cover_image_key,
             bookshelf_id: books.bookshelf_id,
+            created_at: books.created_at,
           },
         })
         .from(readingLists)

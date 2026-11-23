@@ -9,7 +9,6 @@ import {
   BookOpen,
   CheckCircle2,
   Library,
-  Loader2,
   Sparkles,
 } from "lucide-react";
 import type { Book, ReadingListItem } from "@/types/api";
@@ -24,13 +23,7 @@ import {
 } from "@/components/books/book-card-skeleton";
 import { ReadingListBookRow } from "@/components/books/reading-list-book-row";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -67,7 +60,10 @@ export default function DashboardPage() {
   );
 
   const recentAdditions = React.useMemo(
-    () => allBooks.slice(0, 5),
+    () =>
+      [...allBooks]
+        .sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0))
+        .slice(0, 5),
     [allBooks]
   );
 
@@ -95,52 +91,6 @@ export default function DashboardPage() {
             </Button>
           }
         />
-
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between">
-                <span>Currently Reading</span>
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {currentlyReading.length}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between">
-                <span>Want to Read</span>
-                <Bookmark className="h-4 w-4 text-muted-foreground" />
-              </CardDescription>
-              <CardTitle className="text-2xl">{wantToRead.length}</CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between">
-                <span>Completed</span>
-                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {completedBooks.length}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between">
-                <span>Library Collection</span>
-                <Library className="h-4 w-4 text-muted-foreground" />
-              </CardDescription>
-              <CardTitle className="text-2xl">{allBooks.length}</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -173,13 +123,70 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {currentlyReading.map((item) => (
                 <ReadingListBookRow key={item.id} item={item} />
               ))}
             </div>
           )}
         </section>
+
+        <div
+          aria-label="Reading summary"
+          className="grid grid-cols-4 divide-x divide-border rounded-[var(--radius-2xl)] border border-border bg-surface py-3 shadow-[var(--shadow-card)]"
+        >
+          {[
+            {
+              label: "Currently Reading",
+              count: currentlyReading.length,
+              icon: BookOpen,
+              accent: true,
+            },
+            {
+              label: "Want to Read",
+              count: wantToRead.length,
+              icon: Bookmark,
+              accent: false,
+            },
+            {
+              label: "Completed",
+              count: completedBooks.length,
+              icon: CheckCircle2,
+              accent: false,
+            },
+            {
+              label: "Library Collection",
+              count: allBooks.length,
+              icon: Library,
+              accent: false,
+            },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={stat.label}
+                title={stat.label}
+                aria-label={`${stat.label}: ${stat.count}`}
+                className="flex flex-col items-center justify-center gap-1 px-2 text-center"
+              >
+                <Icon
+                  aria-hidden="true"
+                  className={
+                    stat.accent
+                      ? "h-4 w-4 text-primary"
+                      : "h-4 w-4 text-muted-foreground"
+                  }
+                />
+                <span className="font-serif text-lg font-medium leading-none tabular-nums text-foreground sm:text-xl">
+                  {stat.count}
+                </span>
+                <span className="sr-only sm:not-sr-only sm:text-[11px] sm:text-muted-foreground">
+                  {stat.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
         {wantToRead.length > 0 && (
           <section className="space-y-4">

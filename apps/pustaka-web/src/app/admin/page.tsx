@@ -61,23 +61,23 @@ export default function AdminDashboardPage() {
   return (
     <AdminShell>
       <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Card className="min-w-0">
             <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between">
+              <CardDescription className="flex items-center justify-between gap-2">
                 <span>Total Books</span>
-                <BookCopy className="h-4 w-4 text-muted-foreground" />
+                <BookCopy className="h-4 w-4 shrink-0 text-muted-foreground" />
               </CardDescription>
               <CardTitle className="text-3xl">{books.length}</CardTitle>
             </CardHeader>
-            <CardContent className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+            <CardContent className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
-                <ImageIcon className="h-3.5 w-3.5" />
+                <ImageIcon className="h-3.5 w-3.5 shrink-0" />
                 {booksWithCoverCount} with R2 cover
               </span>
               <Link
                 href="/admin/books"
-                className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                className="inline-flex shrink-0 items-center gap-1 font-medium text-primary hover:underline"
               >
                 Manage
                 <ArrowRight className="h-3 w-3" />
@@ -85,19 +85,19 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="min-w-0">
             <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between">
+              <CardDescription className="flex items-center justify-between gap-2">
                 <span>Total Bookshelves</span>
-                <LibraryBig className="h-4 w-4 text-muted-foreground" />
+                <LibraryBig className="h-4 w-4 shrink-0 text-muted-foreground" />
               </CardDescription>
               <CardTitle className="text-3xl">{bookshelves.length}</CardTitle>
             </CardHeader>
-            <CardContent className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+            <CardContent className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
               <span>Physical storage locations</span>
               <Link
                 href="/admin/bookshelves"
-                className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                className="inline-flex shrink-0 items-center gap-1 font-medium text-primary hover:underline"
               >
                 Manage
                 <ArrowRight className="h-3 w-3" />
@@ -105,19 +105,19 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="min-w-0">
             <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between">
+              <CardDescription className="flex items-center justify-between gap-2">
                 <span>Household Users</span>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
               </CardDescription>
               <CardTitle className="text-3xl">{usersList.length}</CardTitle>
             </CardHeader>
-            <CardContent className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+            <CardContent className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
               <span>Registered members</span>
               <Link
                 href="/admin/users"
-                className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                className="inline-flex shrink-0 items-center gap-1 font-medium text-primary hover:underline"
               >
                 Roles
                 <ArrowRight className="h-3 w-3" />

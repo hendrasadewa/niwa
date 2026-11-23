@@ -12,9 +12,9 @@ export interface AppShellProps {
 export function AppShell({ children, requireAdmin = false }: AppShellProps) {
   return (
     <AuthGuard requireAdmin={requireAdmin}>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col overflow-x-clip">
         <Navbar />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+        <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-8 sm:px-6">
           {children}
         </main>
         <footer className="border-t py-6 text-center text-xs text-muted-foreground">

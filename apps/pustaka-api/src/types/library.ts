@@ -12,6 +12,7 @@ export type BookWithShelf = {
   total_pages: number;
   cover_image_key: string | null;
   bookshelf_id: string;
+  created_at: number;
   bookshelf: BookshelfSummary | null;
 };
 
@@ -38,6 +39,7 @@ export type ReadingListWithBook = {
     total_pages: number;
     cover_image_key: string | null;
     bookshelf_id: string;
+    created_at: number;
   };
 };
 

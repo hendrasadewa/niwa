@@ -8,6 +8,13 @@
       "when": 1795217315218,
       "tag": "0000_sloppy_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1795444602468,
+      "tag": "0001_bent_rhino",
+      "breakpoints": true
     }
   ]
 }

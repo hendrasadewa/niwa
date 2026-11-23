@@ -44,6 +44,7 @@ export interface Book {
   total_pages: number;
   cover_image_key: string | null;
   bookshelf_id: string;
+  created_at?: number;
   bookshelf?: Bookshelf | null;
 }
 

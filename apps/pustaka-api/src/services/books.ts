@@ -62,6 +62,7 @@ export function createBookService({
         total_pages: input.total_pages,
         cover_image_key: input.cover_image_key ?? null,
         bookshelf_id: input.bookshelf_id,
+        created_at: Math.floor(Date.now() / 1000),
       });
     },
 

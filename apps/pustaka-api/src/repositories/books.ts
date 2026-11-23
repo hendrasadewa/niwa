@@ -1,4 +1,4 @@
-import { and, eq, like, or, type SQL } from "drizzle-orm";
+import { and, desc, eq, like, or, sql, type SQL } from "drizzle-orm";
 import { books, bookshelves, type Database } from "../db";
 import type { BookWithShelf } from "../types/library";
 
@@ -13,6 +13,7 @@ const bookWithShelfSelection = {
   total_pages: books.total_pages,
   cover_image_key: books.cover_image_key,
   bookshelf_id: books.bookshelf_id,
+  created_at: books.created_at,
   bookshelf: {
     id: bookshelves.id,
     name: bookshelves.name,
@@ -49,9 +50,9 @@ export function createBookRepo(db: Database) {
         .from(books)
         .leftJoin(bookshelves, eq(books.bookshelf_id, bookshelves.id));
 
-      return conditions.length > 0
-        ? baseQuery.where(and(...conditions))
-        : baseQuery;
+      return (
+        conditions.length > 0 ? baseQuery.where(and(...conditions)) : baseQuery
+      ).orderBy(desc(books.created_at), desc(sql`${books}.rowid`));
     },
 
     async findByIdWithShelf(id: string): Promise<BookWithShelf | null> {
@@ -87,6 +88,7 @@ export function createBookRepo(db: Database) {
       return {
         ...input,
         cover_image_key: input.cover_image_key ?? null,
+        created_at: input.created_at ?? 0,
       };
     },
 

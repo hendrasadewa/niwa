@@ -49,12 +49,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <AppShell requireAdmin>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] border border-border bg-primary-soft text-primary-soft-foreground shadow-[var(--shadow-card)]">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-primary-soft text-primary-soft-foreground shadow-[var(--shadow-card)]">
               <Shield className="h-5 w-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="font-serif text-2xl font-medium tracking-[-0.015em] text-foreground">
                   Admin Console
                 </h1>
@@ -78,11 +78,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-12">
-          <aside className="lg:col-span-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <aside className="min-w-0 lg:col-span-3">
             <nav
               aria-label="Admin sections"
-              className="flex gap-1 overflow-x-auto rounded-[var(--radius-2xl)] border border-border bg-surface p-2 shadow-[var(--shadow-card)] lg:flex-col"
+              className="flex w-full gap-1 overflow-x-auto rounded-[var(--radius-2xl)] border border-border bg-surface p-2 shadow-[var(--shadow-card)] lg:flex-col"
             >
               {ADMIN_NAV_ITEMS.map((item) => {
                 const Icon = item.icon;

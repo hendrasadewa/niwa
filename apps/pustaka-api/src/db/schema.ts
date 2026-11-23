@@ -21,6 +21,7 @@ export const books = sqliteTable("books", {
   bookshelf_id: text("bookshelf_id")
     .notNull()
     .references(() => bookshelves.id, { onDelete: "restrict" }),
+  created_at: integer("created_at").notNull().default(0),
 });
 
 export const readingLists = sqliteTable(
