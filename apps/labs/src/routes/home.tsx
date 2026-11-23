@@ -14,6 +14,21 @@ export default function HomePage() {
         <ul className="space-y-2">
           <li>
             <Link
+              to="/demos/design-tokens"
+              className="block rounded-lg border border-neutral-800 bg-neutral-900/50 p-4 hover:border-neutral-700 hover:bg-neutral-900 transition-colors"
+            >
+              <div className="text-sm font-medium text-neutral-100">
+                Niwa Design Tokens
+              </div>
+              <p className="text-xs text-neutral-400 mt-1">
+                Interactive study of @niwa/ui botanical Sage base, Auth
+                Terracotta accent, Playfair Display + Open Sans typography, and
+                light/dark themes.
+              </p>
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/demos/sqlite"
               className="block rounded-lg border border-neutral-800 bg-neutral-900/50 p-4 hover:border-neutral-700 hover:bg-neutral-900 transition-colors"
             >

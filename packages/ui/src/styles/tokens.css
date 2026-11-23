@@ -1,0 +1,851 @@
+/* ==========================================================================
+   Niwa Design Tokens — Botanical Calm + Editorial Warmth
+   --------------------------------------------------------------------------
+   Base brand   : Niwa (Sage #6B7F6E, Moss #A7B8A7, Mist #D9E1D9,
+                  Ivory #F4EFE8, Sand #C9BDAF)
+   App override : [data-brand="auth"] (Terracotta #B85535 / #AD4D2E)
+   Typography   : Playfair Display (serif headings) + Open Sans (UI/body)
+   Color scheme : System-first via `color-scheme: light dark`, <meta> sync,
+                  and `.dark` / `[data-theme="dark" | "light"]` support.
+   ========================================================================== */
+
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *), :root:has(> head > meta[name="color-scheme"][content="dark"]) &);
+
+:root {
+  /* ------------------------------------------------------------------------
+     1. Primitive Palette
+     ------------------------------------------------------------------------ */
+
+  /* Botanical Sage scale (Niwa base) */
+  --niwa-sage-50: #f3f6f3;
+  --niwa-sage-100: #e3eae3;
+  --niwa-sage-200: #d9e1d9; /* Mist */
+  --niwa-sage-300: #a7b8a7; /* Moss */
+  --niwa-sage-400: #92ad96; /* Dark-mode primary */
+  --niwa-sage-500: #6b7f6e; /* Sage signature */
+  --niwa-sage-600: #556b59; /* Light-mode primary action (5.45:1 on paper) */
+  --niwa-sage-700: #475b4b; /* Light-mode primary hover (6.91:1 on paper) */
+  --niwa-sage-800: #2d3d30;
+  --niwa-sage-900: #1f2b21;
+  --niwa-sage-950: #141a15;
+
+  /* Named botanical aliases */
+  --niwa-sage: var(--niwa-sage-500);
+  --niwa-moss: var(--niwa-sage-300);
+  --niwa-mist: var(--niwa-sage-200);
+
+  /* Terracotta scale (Auth per-app accent) */
+  --niwa-terracotta-50: #fbf3ef;
+  --niwa-terracotta-100: #f4e4dc;
+  --niwa-terracotta-200: #e8c7b7;
+  --niwa-terracotta-300: #de8262; /* Dark-mode primary (6.53:1 with #1D120E) */
+  --niwa-terracotta-400: #e8967a; /* Dark-mode hover (7.92:1) */
+  --niwa-terracotta-500: #b85535; /* Terracotta signature */
+  --niwa-terracotta-600: #ad4d2e; /* Light-mode primary action (5.11:1) */
+  --niwa-terracotta-700: #943f24; /* Light-mode primary hover (6.61:1) */
+  --niwa-terracotta-800: #6e2e19;
+  --niwa-terracotta-900: #33201a;
+  --niwa-terracotta-950: #1d120e;
+
+  --niwa-terracotta: var(--niwa-terracotta-500);
+
+  /* Warm Paper & Sand Neutrals (Light) */
+  --niwa-paper: #fcfbf8;
+  --niwa-canvas: #f7f3ec;
+  --niwa-ivory: #f4efe8;
+  --niwa-parchment: #ebe5da;
+  --niwa-sand-200: #e5ddd2;
+  --niwa-sand-300: #d8cfc2;
+  --niwa-sand-400: #c9bdaf; /* Sand signature */
+  --niwa-stone-500: #8b8175;
+  --niwa-stone-600: #5c5852;
+  --niwa-ink-900: #1e2420;
+
+  --niwa-sand: var(--niwa-sand-400);
+
+  /* Warm Botanical Charcoal Neutrals (Dark) */
+  --niwa-night-950: #161816;
+  --niwa-night-900: #1e211e;
+  --niwa-night-850: #252925;
+  --niwa-night-800: #2e332e;
+  --niwa-night-700: #3c423c;
+  --niwa-night-500: #6c716b;
+  --niwa-night-300: #aba69d;
+  --niwa-night-50: #f2efe9;
+
+  /* Semantic Status Primitives */
+  --niwa-success-light-bg: #e4ede5;
+  --niwa-success-light-fg: #2c5536;
+  --niwa-success-light-border: #bfd2c2;
+  --niwa-success-light-solid: #4b7353;
+
+  --niwa-success-dark-bg: #1b2a1e;
+  --niwa-success-dark-fg: #9bc7a4;
+  --niwa-success-dark-border: #2f4a34;
+  --niwa-success-dark-solid: #7fb38a;
+
+  --niwa-warning-light-bg: #f7ecd8;
+  --niwa-warning-light-fg: #704910;
+  --niwa-warning-light-border: #e3cba0;
+  --niwa-warning-light-solid: #b47b26;
+
+  --niwa-warning-dark-bg: #2c2314;
+  --niwa-warning-dark-fg: #e6bf7a;
+  --niwa-warning-dark-border: #4d3c20;
+  --niwa-warning-dark-solid: #d9ab5b;
+
+  --niwa-danger-light-bg: #f8e5e3;
+  --niwa-danger-light-fg: #8f2822;
+  --niwa-danger-light-border: #e5beb9;
+  --niwa-danger-light-solid: #b43c35;
+
+  --niwa-danger-dark-bg: #301a19;
+  --niwa-danger-dark-fg: #f09b95;
+  --niwa-danger-dark-border: #562c2a;
+  --niwa-danger-dark-solid: #e0766e;
+
+  --niwa-info-light-bg: #e2eef4;
+  --niwa-info-light-fg: #1e4e68;
+  --niwa-info-light-border: #bad3e0;
+  --niwa-info-light-solid: #3a7596;
+
+  --niwa-info-dark-bg: #172730;
+  --niwa-info-dark-fg: #8fc4df;
+  --niwa-info-dark-border: #284556;
+  --niwa-info-dark-solid: #6daecc;
+
+  /* ------------------------------------------------------------------------
+     2. Typography, Radii & Motion Tokens
+     ------------------------------------------------------------------------ */
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  --tracking-display: -0.02em;
+  --tracking-kicker: 0.16em;
+
+  --radius-xs: 0.25rem;   /* 4px */
+  --radius-sm: 0.375rem;  /* 6px — checkboxes, micro badges */
+  --radius-md: 0.75rem;   /* 12px — small cards, book covers */
+  --radius-lg: 1rem;      /* 16px — alerts, notifications */
+  --radius-xl: 1.25rem;   /* 20px — cards */
+  --radius-2xl: 1.5rem;   /* 24px — showcase sheets & containers */
+  --radius-pill: 9999px;  /* Pill buttons, chips, toggles, search inputs */
+
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+  --ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Reusable checkbox icons */
+  --niwa-icon-check: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'></polyline></svg>");
+  --niwa-icon-dash: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><line x1='5' y1='12' x2='19' y2='12'></line></svg>");
+
+  /* ------------------------------------------------------------------------
+     3. Light / Dark Semantic Pairs (Base: Niwa Sage)
+     ------------------------------------------------------------------------ */
+  --background-light: var(--niwa-canvas);
+  --background-dark: var(--niwa-night-950);
+
+  --foreground-light: var(--niwa-ink-900);
+  --foreground-dark: var(--niwa-night-50);
+
+  --surface-light: var(--niwa-paper);
+  --surface-dark: var(--niwa-night-900);
+
+  --surface-muted-light: var(--niwa-ivory);
+  --surface-muted-dark: var(--niwa-night-850);
+
+  --surface-subtle-light: var(--niwa-parchment);
+  --surface-subtle-dark: var(--niwa-night-800);
+
+  --muted-foreground-light: var(--niwa-stone-600);
+  --muted-foreground-dark: var(--niwa-night-300);
+
+  --border-light: var(--niwa-sand-200);
+  --border-dark: var(--niwa-night-800);
+
+  --border-input-light: var(--niwa-sand-300);
+  --border-input-dark: var(--niwa-night-700);
+
+  --border-strong-light: var(--niwa-stone-500);
+  --border-strong-dark: var(--niwa-night-500);
+
+  /* Brand-driven semantic pairs (Niwa Sage default) */
+  --primary-light: var(--niwa-sage-600);
+  --primary-dark: var(--niwa-sage-400);
+
+  --primary-hover-light: var(--niwa-sage-700);
+  --primary-hover-dark: #a7bfa9;
+
+  --primary-foreground-light: #faf8f5;
+  --primary-foreground-dark: var(--niwa-sage-950);
+
+  --primary-soft-light: var(--niwa-sage-100);
+  --primary-soft-dark: #212e23;
+
+  --primary-soft-foreground-light: var(--niwa-sage-800);
+  --primary-soft-foreground-dark: #c7d9c9;
+
+  --primary-swatch-light: var(--niwa-sage-500);
+  --primary-swatch-dark: var(--niwa-sage-400);
+
+  --secondary-accent-light: var(--niwa-moss);
+  --secondary-accent-dark: #6f8472;
+
+  --track-light: var(--niwa-parchment);
+  --track-dark: #2c312c;
+
+  --ring-light: var(--niwa-sage-600);
+  --ring-dark: var(--niwa-sage-400);
+
+  /* Elevation shadows */
+  --shadow-card-light:
+    0 1px 2px rgba(45, 39, 31, 0.04),
+    0 8px 24px -10px rgba(45, 39, 31, 0.08);
+  --shadow-card-dark:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 10px 28px -12px rgba(0, 0, 0, 0.55);
+
+  --shadow-elevated-light:
+    0 2px 6px rgba(45, 39, 31, 0.05),
+    0 16px 36px -14px rgba(45, 39, 31, 0.12);
+  --shadow-elevated-dark:
+    0 2px 8px rgba(0, 0, 0, 0.45),
+    0 18px 40px -14px rgba(0, 0, 0, 0.65);
+
+  --shadow-inset-light: inset 0 1px 2px rgba(45, 39, 31, 0.06);
+  --shadow-inset-dark: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  /* Scrollbar pairs */
+  --scrollbar-thumb-light: #9b9184;
+  --scrollbar-thumb-dark: #5b615b;
+  --scrollbar-track-light: var(--niwa-ivory);
+  --scrollbar-track-dark: var(--niwa-night-950);
+
+  /* ------------------------------------------------------------------------
+     4. Resolved Active Semantic Tokens (Fallback: Light default)
+     ------------------------------------------------------------------------ */
+  --background: var(--background-light);
+  --foreground: var(--foreground-light);
+  --surface: var(--surface-light);
+  --surface-muted: var(--surface-muted-light);
+  --surface-subtle: var(--surface-subtle-light);
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --muted: var(--surface-muted);
+  --muted-foreground: var(--muted-foreground-light);
+  --border: var(--border-light);
+  --input: var(--border-input-light);
+  --border-strong: var(--border-strong-light);
+
+  --primary: var(--primary-light);
+  --primary-hover: var(--primary-hover-light);
+  --primary-foreground: var(--primary-foreground-light);
+  --primary-soft: var(--primary-soft-light);
+  --primary-soft-foreground: var(--primary-soft-foreground-light);
+  --primary-swatch: var(--primary-swatch-light);
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--primary-soft);
+  --accent-foreground: var(--primary-soft-foreground);
+  --secondary-accent: var(--secondary-accent-light);
+  --track: var(--track-light);
+  --ring: var(--ring-light);
+
+  --success: var(--niwa-success-light-solid);
+  --success-soft: var(--niwa-success-light-bg);
+  --success-foreground: var(--niwa-success-light-fg);
+  --success-border: var(--niwa-success-light-border);
+
+  --warning: var(--niwa-warning-light-solid);
+  --warning-soft: var(--niwa-warning-light-bg);
+  --warning-foreground: var(--niwa-warning-light-fg);
+  --warning-border: var(--niwa-warning-light-border);
+
+  --danger: var(--niwa-danger-light-solid);
+  --danger-soft: var(--niwa-danger-light-bg);
+  --danger-foreground: var(--niwa-danger-light-fg);
+  --danger-border: var(--niwa-danger-light-border);
+  --destructive: var(--danger);
+  --destructive-foreground: #faf8f5;
+
+  --info: var(--niwa-info-light-solid);
+  --info-soft: var(--niwa-info-light-bg);
+  --info-foreground: var(--niwa-info-light-fg);
+  --info-border: var(--niwa-info-light-border);
+
+  --shadow-card: var(--shadow-card-light);
+  --shadow-elevated: var(--shadow-elevated-light);
+  --shadow-inset: var(--shadow-inset-light);
+
+  --scrollbar-thumb: var(--scrollbar-thumb-light);
+  --scrollbar-track: var(--scrollbar-track-light);
+
+  /* System-first viewport color-scheme */
+  color-scheme: light dark;
+  accent-color: var(--primary);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+
+  /* Reflect <meta name="color-scheme"> overrides back into author CSS */
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+}
+
+/* Fallback for browsers without light-dark() when OS prefers dark */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]):not(:has(> head > meta[name="color-scheme"][content="light"])) {
+    --background: var(--background-dark);
+    --foreground: var(--foreground-dark);
+    --surface: var(--surface-dark);
+    --surface-muted: var(--surface-muted-dark);
+    --surface-subtle: var(--surface-subtle-dark);
+    --muted-foreground: var(--muted-foreground-dark);
+    --border: var(--border-dark);
+    --input: var(--border-input-dark);
+    --border-strong: var(--border-strong-dark);
+
+    --primary: var(--primary-dark);
+    --primary-hover: var(--primary-hover-dark);
+    --primary-foreground: var(--primary-foreground-dark);
+    --primary-soft: var(--primary-soft-dark);
+    --primary-soft-foreground: var(--primary-soft-foreground-dark);
+    --primary-swatch: var(--primary-swatch-dark);
+    --secondary-accent: var(--secondary-accent-dark);
+    --track: var(--track-dark);
+    --ring: var(--ring-dark);
+
+    --success: var(--niwa-success-dark-solid);
+    --success-soft: var(--niwa-success-dark-bg);
+    --success-foreground: var(--niwa-success-dark-fg);
+    --success-border: var(--niwa-success-dark-border);
+
+    --warning: var(--niwa-warning-dark-solid);
+    --warning-soft: var(--niwa-warning-dark-bg);
+    --warning-foreground: var(--niwa-warning-dark-fg);
+    --warning-border: var(--niwa-warning-dark-border);
+
+    --danger: var(--niwa-danger-dark-solid);
+    --danger-soft: var(--niwa-danger-dark-bg);
+    --danger-foreground: var(--niwa-danger-dark-fg);
+    --danger-border: var(--niwa-danger-dark-border);
+
+    --info: var(--niwa-info-dark-solid);
+    --info-soft: var(--niwa-info-dark-bg);
+    --info-foreground: var(--niwa-info-dark-fg);
+    --info-border: var(--niwa-info-dark-border);
+
+    --shadow-card: var(--shadow-card-dark);
+    --shadow-elevated: var(--shadow-elevated-dark);
+    --shadow-inset: var(--shadow-inset-dark);
+
+    --scrollbar-thumb: var(--scrollbar-thumb-dark);
+    --scrollbar-track: var(--scrollbar-track-dark);
+  }
+}
+
+/* Explicit dark override (works on :root OR any scoped preview container) */
+.dark,
+[data-theme="dark"],
+:root:has(> head > meta[name="color-scheme"][content="dark"]) {
+  color-scheme: dark;
+  --shadow-card: var(--shadow-card-dark);
+  --shadow-elevated: var(--shadow-elevated-dark);
+  --shadow-inset: var(--shadow-inset-dark);
+}
+
+.dark,
+[data-theme="dark"] {
+  --background: var(--background-dark);
+  --foreground: var(--foreground-dark);
+  --surface: var(--surface-dark);
+  --surface-muted: var(--surface-muted-dark);
+  --surface-subtle: var(--surface-subtle-dark);
+  --muted-foreground: var(--muted-foreground-dark);
+  --border: var(--border-dark);
+  --input: var(--border-input-dark);
+  --border-strong: var(--border-strong-dark);
+
+  --primary: var(--primary-dark);
+  --primary-hover: var(--primary-hover-dark);
+  --primary-foreground: var(--primary-foreground-dark);
+  --primary-soft: var(--primary-soft-dark);
+  --primary-soft-foreground: var(--primary-soft-foreground-dark);
+  --primary-swatch: var(--primary-swatch-dark);
+  --secondary-accent: var(--secondary-accent-dark);
+  --track: var(--track-dark);
+  --ring: var(--ring-dark);
+
+  --success: var(--niwa-success-dark-solid);
+  --success-soft: var(--niwa-success-dark-bg);
+  --success-foreground: var(--niwa-success-dark-fg);
+  --success-border: var(--niwa-success-dark-border);
+
+  --warning: var(--niwa-warning-dark-solid);
+  --warning-soft: var(--niwa-warning-dark-bg);
+  --warning-foreground: var(--niwa-warning-dark-fg);
+  --warning-border: var(--niwa-warning-dark-border);
+
+  --danger: var(--niwa-danger-dark-solid);
+  --danger-soft: var(--niwa-danger-dark-bg);
+  --danger-foreground: var(--niwa-danger-dark-fg);
+  --danger-border: var(--niwa-danger-dark-border);
+
+  --info: var(--niwa-info-dark-solid);
+  --info-soft: var(--niwa-info-dark-bg);
+  --info-foreground: var(--niwa-info-dark-fg);
+  --info-border: var(--niwa-info-dark-border);
+
+  --scrollbar-thumb: var(--scrollbar-thumb-dark);
+  --scrollbar-track: var(--scrollbar-track-dark);
+  accent-color: var(--primary);
+}
+
+/* Explicit light override (works on :root OR any scoped preview container) */
+.light,
+[data-theme="light"],
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+  color-scheme: light;
+  --shadow-card: var(--shadow-card-light);
+  --shadow-elevated: var(--shadow-elevated-light);
+  --shadow-inset: var(--shadow-inset-light);
+}
+
+.light,
+[data-theme="light"] {
+  --background: var(--background-light);
+  --foreground: var(--foreground-light);
+  --surface: var(--surface-light);
+  --surface-muted: var(--surface-muted-light);
+  --surface-subtle: var(--surface-subtle-light);
+  --muted-foreground: var(--muted-foreground-light);
+  --border: var(--border-light);
+  --input: var(--border-input-light);
+  --border-strong: var(--border-strong-light);
+
+  --primary: var(--primary-light);
+  --primary-hover: var(--primary-hover-light);
+  --primary-foreground: var(--primary-foreground-light);
+  --primary-soft: var(--primary-soft-light);
+  --primary-soft-foreground: var(--primary-soft-foreground-light);
+  --primary-swatch: var(--primary-swatch-light);
+  --secondary-accent: var(--secondary-accent-light);
+  --track: var(--track-light);
+  --ring: var(--ring-light);
+
+  --success: var(--niwa-success-light-solid);
+  --success-soft: var(--niwa-success-light-bg);
+  --success-foreground: var(--niwa-success-light-fg);
+  --success-border: var(--niwa-success-light-border);
+
+  --warning: var(--niwa-warning-light-solid);
+  --warning-soft: var(--niwa-warning-light-bg);
+  --warning-foreground: var(--niwa-warning-light-fg);
+  --warning-border: var(--niwa-warning-light-border);
+
+  --danger: var(--niwa-danger-light-solid);
+  --danger-soft: var(--niwa-danger-light-bg);
+  --danger-foreground: var(--niwa-danger-light-fg);
+  --danger-border: var(--niwa-danger-light-border);
+
+  --info: var(--niwa-info-light-solid);
+  --info-soft: var(--niwa-info-light-bg);
+  --info-foreground: var(--niwa-info-light-fg);
+  --info-border: var(--niwa-info-light-border);
+
+  --scrollbar-thumb: var(--scrollbar-thumb-light);
+  --scrollbar-track: var(--scrollbar-track-light);
+  accent-color: var(--primary);
+}
+
+/* Progressive enhancement with CSS light-dark() for all color tokens */
+@supports (color: light-dark(white, black)) {
+  :root,
+  .dark,
+  .light,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --background: light-dark(var(--background-light), var(--background-dark));
+    --foreground: light-dark(var(--foreground-light), var(--foreground-dark));
+    --surface: light-dark(var(--surface-light), var(--surface-dark));
+    --surface-muted: light-dark(var(--surface-muted-light), var(--surface-muted-dark));
+    --surface-subtle: light-dark(var(--surface-subtle-light), var(--surface-subtle-dark));
+    --muted-foreground: light-dark(var(--muted-foreground-light), var(--muted-foreground-dark));
+    --border: light-dark(var(--border-light), var(--border-dark));
+    --input: light-dark(var(--border-input-light), var(--border-input-dark));
+    --border-strong: light-dark(var(--border-strong-light), var(--border-strong-dark));
+
+    --primary: light-dark(var(--primary-light), var(--primary-dark));
+    --primary-hover: light-dark(var(--primary-hover-light), var(--primary-hover-dark));
+    --primary-foreground: light-dark(var(--primary-foreground-light), var(--primary-foreground-dark));
+    --primary-soft: light-dark(var(--primary-soft-light), var(--primary-soft-dark));
+    --primary-soft-foreground: light-dark(var(--primary-soft-foreground-light), var(--primary-soft-foreground-dark));
+    --primary-swatch: light-dark(var(--primary-swatch-light), var(--primary-swatch-dark));
+    --secondary-accent: light-dark(var(--secondary-accent-light), var(--secondary-accent-dark));
+    --track: light-dark(var(--track-light), var(--track-dark));
+    --ring: light-dark(var(--ring-light), var(--ring-dark));
+
+    --success: light-dark(var(--niwa-success-light-solid), var(--niwa-success-dark-solid));
+    --success-soft: light-dark(var(--niwa-success-light-bg), var(--niwa-success-dark-bg));
+    --success-foreground: light-dark(var(--niwa-success-light-fg), var(--niwa-success-dark-fg));
+    --success-border: light-dark(var(--niwa-success-light-border), var(--niwa-success-dark-border));
+
+    --warning: light-dark(var(--niwa-warning-light-solid), var(--niwa-warning-dark-solid));
+    --warning-soft: light-dark(var(--niwa-warning-light-bg), var(--niwa-warning-dark-bg));
+    --warning-foreground: light-dark(var(--niwa-warning-light-fg), var(--niwa-warning-dark-fg));
+    --warning-border: light-dark(var(--niwa-warning-light-border), var(--niwa-warning-dark-border));
+
+    --danger: light-dark(var(--niwa-danger-light-solid), var(--niwa-danger-dark-solid));
+    --danger-soft: light-dark(var(--niwa-danger-light-bg), var(--niwa-danger-dark-bg));
+    --danger-foreground: light-dark(var(--niwa-danger-light-fg), var(--niwa-danger-dark-fg));
+    --danger-border: light-dark(var(--niwa-danger-light-border), var(--niwa-danger-dark-border));
+
+    --info: light-dark(var(--niwa-info-light-solid), var(--niwa-info-dark-solid));
+    --info-soft: light-dark(var(--niwa-info-light-bg), var(--niwa-info-dark-bg));
+    --info-foreground: light-dark(var(--niwa-info-light-fg), var(--niwa-info-dark-fg));
+    --info-border: light-dark(var(--niwa-info-light-border), var(--niwa-info-dark-border));
+
+    --scrollbar-thumb: light-dark(var(--scrollbar-thumb-light), var(--scrollbar-thumb-dark));
+    --scrollbar-track: light-dark(var(--scrollbar-track-light), var(--scrollbar-track-dark));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. Per-App Brand Override: Auth (Terracotta)
+   Apply `data-brand="auth"` on <html> or any scoped subtree.
+   Re-declares resolved semantic tokens so nested subtrees inherit cleanly.
+   -------------------------------------------------------------------------- */
+[data-brand="auth"] {
+  --primary-light: var(--niwa-terracotta-600);
+  --primary-dark: var(--niwa-terracotta-300);
+
+  --primary-hover-light: var(--niwa-terracotta-700);
+  --primary-hover-dark: var(--niwa-terracotta-400);
+
+  --primary-foreground-light: #faf8f5;
+  --primary-foreground-dark: var(--niwa-terracotta-950);
+
+  --primary-soft-light: var(--niwa-terracotta-100);
+  --primary-soft-dark: var(--niwa-terracotta-900);
+
+  --primary-soft-foreground-light: var(--niwa-terracotta-800);
+  --primary-soft-foreground-dark: #f0b19b;
+
+  --primary-swatch-light: var(--niwa-terracotta-500);
+  --primary-swatch-dark: var(--niwa-terracotta-300);
+
+  --secondary-accent-light: #d68566;
+  --secondary-accent-dark: #9c553c;
+
+  --ring-light: var(--niwa-terracotta-600);
+  --ring-dark: var(--niwa-terracotta-300);
+
+  /* Fallback resolution when light-dark() is unsupported */
+  --primary: var(--primary-light);
+  --primary-hover: var(--primary-hover-light);
+  --primary-foreground: var(--primary-foreground-light);
+  --primary-soft: var(--primary-soft-light);
+  --primary-soft-foreground: var(--primary-soft-foreground-light);
+  --primary-swatch: var(--primary-swatch-light);
+  --secondary-accent: var(--secondary-accent-light);
+  --ring: var(--ring-light);
+
+  accent-color: var(--primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-brand="auth"]:not(.light):not([data-theme="light"]) {
+    --primary: var(--primary-dark);
+    --primary-hover: var(--primary-hover-dark);
+    --primary-foreground: var(--primary-foreground-dark);
+    --primary-soft: var(--primary-soft-dark);
+    --primary-soft-foreground: var(--primary-soft-foreground-dark);
+    --primary-swatch: var(--primary-swatch-dark);
+    --secondary-accent: var(--secondary-accent-dark);
+    --ring: var(--ring-dark);
+  }
+}
+
+.dark [data-brand="auth"],
+[data-theme="dark"] [data-brand="auth"],
+[data-brand="auth"].dark,
+[data-brand="auth"][data-theme="dark"] {
+  --primary: var(--primary-dark);
+  --primary-hover: var(--primary-hover-dark);
+  --primary-foreground: var(--primary-foreground-dark);
+  --primary-soft: var(--primary-soft-dark);
+  --primary-soft-foreground: var(--primary-soft-foreground-dark);
+  --primary-swatch: var(--primary-swatch-dark);
+  --secondary-accent: var(--secondary-accent-dark);
+  --ring: var(--ring-dark);
+}
+
+@supports (color: light-dark(white, black)) {
+  [data-brand="auth"] {
+    --primary: light-dark(var(--primary-light), var(--primary-dark));
+    --primary-hover: light-dark(var(--primary-hover-light), var(--primary-hover-dark));
+    --primary-foreground: light-dark(var(--primary-foreground-light), var(--primary-foreground-dark));
+    --primary-soft: light-dark(var(--primary-soft-light), var(--primary-soft-dark));
+    --primary-soft-foreground: light-dark(var(--primary-soft-foreground-light), var(--primary-soft-foreground-dark));
+    --primary-swatch: light-dark(var(--primary-swatch-light), var(--primary-swatch-dark));
+    --secondary-accent: light-dark(var(--secondary-accent-light), var(--secondary-accent-dark));
+    --ring: light-dark(var(--ring-light), var(--ring-dark));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. Forced Colors Mode (High Contrast) Support
+   -------------------------------------------------------------------------- */
+@media (forced-colors: active) {
+  :root {
+    --background: Canvas;
+    --foreground: CanvasText;
+    --surface: Canvas;
+    --surface-muted: Canvas;
+    --surface-subtle: Canvas;
+    --muted-foreground: GrayText;
+    --border: CanvasText;
+    --input: CanvasText;
+    --border-strong: CanvasText;
+    --primary: Highlight;
+    --primary-foreground: HighlightText;
+    --ring: Highlight;
+    --shadow-card: none;
+    --shadow-elevated: none;
+    --shadow-inset: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Tailwind CSS v4 @theme inline Bridge
+   -------------------------------------------------------------------------- */
+@theme inline {
+  /* Semantic surface & ink colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+
+  /* Brand & interactive accents */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-primary-swatch: var(--primary-swatch);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-secondary-accent: var(--secondary-accent);
+  --color-track: var(--track);
+  --color-ring: var(--ring);
+
+  /* Status colors */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-border: var(--success-border);
+
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-border: var(--warning-border);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-border: var(--danger-border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-border: var(--info-border);
+
+  /* Named raw botanical & terracotta swatches */
+  --color-niwa-sage: var(--niwa-sage);
+  --color-niwa-moss: var(--niwa-moss);
+  --color-niwa-mist: var(--niwa-mist);
+  --color-niwa-ivory: var(--niwa-ivory);
+  --color-niwa-sand: var(--niwa-sand);
+  --color-niwa-terracotta: var(--niwa-terracotta);
+
+  /* Typography */
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* Radii */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-pill: var(--radius-pill);
+
+  /* Shadows */
+  --shadow-card: var(--shadow-card);
+  --shadow-elevated: var(--shadow-elevated);
+  --shadow-inset: var(--shadow-inset);
+}
+
+/* --------------------------------------------------------------------------
+   8. Token-Backed Accessible Native Control Primitives
+   -------------------------------------------------------------------------- */
+@layer components {
+  .niwa-checkbox {
+    --checkbox-size: 1.25rem;
+    --checkbox-icon-size: 0.75rem;
+
+    appearance: none;
+    display: inline-grid;
+    place-content: center;
+    inline-size: var(--checkbox-size);
+    block-size: var(--checkbox-size);
+    flex-shrink: 0;
+    margin: 0;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-strong);
+    background-color: var(--surface);
+    color: var(--primary-foreground);
+    cursor: pointer;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        background-color var(--duration-fast) var(--ease-calm),
+        border-color var(--duration-fast) var(--ease-calm);
+    }
+
+    &::before {
+      content: "";
+      inline-size: var(--checkbox-icon-size);
+      block-size: var(--checkbox-icon-size);
+      background-color: currentColor;
+      mask: var(--checkbox-icon) no-repeat center / contain;
+      scale: 0;
+
+      @media (prefers-reduced-motion: no-preference) {
+        transition: scale var(--duration-fast) var(--ease-calm);
+      }
+
+      @media (forced-colors: active) {
+        background-color: HighlightText;
+      }
+    }
+
+    &:checked {
+      --checkbox-icon: var(--niwa-icon-check);
+      border-color: var(--primary);
+      background-color: var(--primary);
+    }
+
+    &:indeterminate {
+      --checkbox-icon: var(--niwa-icon-dash);
+      border-color: var(--primary);
+      background-color: var(--primary);
+    }
+
+    &:is(:checked, :indeterminate)::before {
+      scale: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  .niwa-switch {
+    --switch-width: 2.75rem;
+    --switch-height: 1.625rem;
+    --switch-thumb: 1.25rem;
+    --switch-pad: 0.1875rem;
+
+    appearance: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    inline-size: var(--switch-width);
+    block-size: var(--switch-height);
+    flex-shrink: 0;
+    margin: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong);
+    background-color: var(--track);
+    cursor: pointer;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        background-color var(--duration-fast) var(--ease-calm),
+        border-color var(--duration-fast) var(--ease-calm);
+    }
+
+    &::before {
+      content: "";
+      inline-size: var(--switch-thumb);
+      block-size: var(--switch-thumb);
+      border-radius: var(--radius-pill);
+      background-color: var(--surface);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+      transform: translateX(var(--switch-pad));
+
+      @media (prefers-reduced-motion: no-preference) {
+        transition: transform var(--duration-fast) var(--ease-calm);
+      }
+
+      @media (forced-colors: active) {
+        background-color: CanvasText;
+      }
+    }
+
+    &:checked {
+      border-color: var(--primary);
+      background-color: var(--primary);
+
+      &::before {
+        transform: translateX(
+          calc(var(--switch-width) - var(--switch-thumb) - var(--switch-pad) - 2px)
+        );
+        background-color: var(--primary-foreground);
+
+        @media (forced-colors: active) {
+          background-color: HighlightText;
+        }
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}

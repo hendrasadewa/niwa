@@ -7,6 +7,9 @@
   "exports": {
     "./components": "./src/components/index.ts",
     "./hooks": "./src/hooks/index.ts",
+    "./tokens": "./src/tokens/index.ts",
+    "./styles/tokens.css": "./src/styles/tokens.css",
+    "./tokens.css": "./src/styles/tokens.css",
     "./types": "./src/types/index.ts",
     "./utils": "./src/utils/index.ts"
   },
