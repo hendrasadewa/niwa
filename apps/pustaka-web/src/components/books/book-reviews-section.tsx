@@ -8,7 +8,7 @@ import {
   createReviewSchema,
   type CreateReviewInput,
 } from "@niwa/pustaka-validators";
-import { Loader2, MessageSquarePlus, Star } from "lucide-react";
+import { Loader2, LogIn, MessageSquarePlus, Star } from "lucide-react";
 import type { BookReview } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
@@ -37,7 +37,7 @@ export interface BookReviewsSectionProps {
 }
 
 export function BookReviewsSection({ bookId }: BookReviewsSectionProps) {
-  const { user } = useAuth();
+  const { user, isAuthenticated, loginWithSso } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [hoveredStar, setHoveredStar] = React.useState<number | null>(null);
@@ -126,7 +126,28 @@ export function BookReviewsSection({ bookId }: BookReviewsSectionProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
+          {!isAuthenticated ? (
+            <div className="space-y-3 rounded-[var(--radius-xl)] border border-dashed border-border bg-surface-muted/40 p-5 text-center">
+              <p className="text-xs text-muted-foreground">
+                Sign in with your Niwa account to rate this book and share a
+                review with the household.
+              </p>
+              <Button
+                size="sm"
+                onClick={() =>
+                  loginWithSso(
+                    typeof window !== "undefined"
+                      ? window.location.href
+                      : undefined
+                  )
+                }
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                Sign in to Review
+              </Button>
+            </div>
+          ) : (
+            <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) =>
                 createReviewMutation.mutate(values)
@@ -205,6 +226,7 @@ export function BookReviewsSection({ bookId }: BookReviewsSectionProps) {
               </Button>
             </form>
           </Form>
+          )}
         </CardContent>
       </Card>
 

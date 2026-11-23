@@ -6,21 +6,30 @@ import { Navbar } from "@/components/layout/navbar";
 
 export interface AppShellProps {
   children: React.ReactNode;
+  requireAuth?: boolean;
   requireAdmin?: boolean;
 }
 
-export function AppShell({ children, requireAdmin = false }: AppShellProps) {
+export function AppShell({
+  children,
+  requireAuth = false,
+  requireAdmin = false,
+}: AppShellProps) {
+  const shouldGuard = requireAuth || requireAdmin;
+
   return (
-    <AuthGuard requireAdmin={requireAdmin}>
-      <div className="flex min-h-screen flex-col overflow-x-clip">
-        <Navbar />
-        <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-8 sm:px-6">
-          {children}
-        </main>
-        <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-          Pustaka — Household Mini-Library &amp; Reading Tracker
-        </footer>
-      </div>
-    </AuthGuard>
+    <div className="flex min-h-screen flex-col overflow-x-clip">
+      <Navbar />
+      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-8 sm:px-6">
+        {shouldGuard ? (
+          <AuthGuard requireAdmin={requireAdmin}>{children}</AuthGuard>
+        ) : (
+          children
+        )}
+      </main>
+      <footer className="border-t py-6 text-center text-xs text-muted-foreground">
+        Pustaka — Household Mini-Library &amp; Reading Tracker
+      </footer>
+    </div>
   );
 }

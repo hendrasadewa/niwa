@@ -47,7 +47,8 @@ import { toast } from "@/hooks/use-toast";
 import { formatUnixDate } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const { user, ownedStores, refreshProfile, isLoading } = useAuth();
+  const { user, ownedStores, refreshProfile, isLoading, loginWithSso } =
+    useAuth();
   const [isSaving, setIsSaving] = React.useState(false);
   const [isChangingPassword, setIsChangingPassword] = React.useState(false);
 
@@ -159,7 +160,33 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    return null;
+    return (
+      <div className="mx-auto flex min-h-[55vh] max-w-md items-center justify-center px-4 py-12">
+        <Card className="w-full text-center">
+          <CardHeader>
+            <CardTitle className="text-xl">Sign in required</CardTitle>
+            <CardDescription>
+              Sign in with your Niwa account to view and edit your profile and
+              default shipping address.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button
+              onClick={() =>
+                loginWithSso(
+                  typeof window !== "undefined" ? window.location.href : undefined
+                )
+              }
+            >
+              Sign In
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/">Browse Waves</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

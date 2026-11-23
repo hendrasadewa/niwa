@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const sso = useNiwaSsoSession({
     client: pustakaSsoClient,
     pathname,
-    postLogoutRedirect: "login",
+    postLogoutRedirect: "home",
     onAuthenticated: ({ user: ssoUser }) => {
       const mapped = mapSsoUser(ssoUser);
       setStoredUser(mapped);
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const activeToken = getAuthToken();
     if (!activeToken) {
       const { user: ssoUser } = await sso.syncSession({
-        redirectOnConsent: true,
+        redirectOnConsent: false,
       });
       return ssoUser ? mapSsoUser(ssoUser) : null;
     }
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return response.user;
     } catch {
       const { user: ssoUser } = await sso.syncSession({
-        redirectOnConsent: true,
+        redirectOnConsent: false,
       });
       return ssoUser ? mapSsoUser(ssoUser) : null;
     }

@@ -8,12 +8,20 @@ import {
   ExternalLink,
   KanbanSquare,
   LayoutDashboard,
+  Loader2,
   Package,
   Plus,
   Settings,
   Store as StoreIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -58,7 +66,52 @@ export default function SellerLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { ownedStores, activeStore, setActiveStoreId } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading,
+    loginWithSso,
+    ownedStores,
+    activeStore,
+    setActiveStoreId,
+  } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[55vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="mx-auto flex min-h-[55vh] max-w-md items-center justify-center px-4 py-12">
+        <Card className="w-full text-center">
+          <CardHeader>
+            <CardTitle className="text-xl">Seller Console Sign In</CardTitle>
+            <CardDescription>
+              Sign in with your Niwa account to manage your UMKM storefront,
+              waves, and orders.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button
+              onClick={() =>
+                loginWithSso(
+                  typeof window !== "undefined" ? window.location.href : undefined
+                )
+              }
+            >
+              Sign In
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/">Back to Storefronts</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">

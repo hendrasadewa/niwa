@@ -18,10 +18,9 @@ function getReviewService(c: Context<AppEnv>) {
 
 export const bookReviewsRoutes = new Hono<AppEnv>();
 
-// GET /api/v1/books/:id/reviews
+// GET /api/v1/books/:id/reviews (public read)
 bookReviewsRoutes.get(
   "/:id/reviews",
-  authMiddleware,
   validate("param", bookIdParamSchema),
   async (c) => {
     const { id } = c.req.valid("param");

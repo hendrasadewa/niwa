@@ -18,6 +18,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -31,11 +32,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiClient, ApiError } from "@/lib/api";
+import { useAuth } from "@/providers/auth-provider";
 import type { OrderItemRecord, OrderRecord } from "@/types/api";
 import { toast } from "@/hooks/use-toast";
 import { formatCurrencyIDR, formatUnixDateTime } from "@/lib/utils";
 
 export default function MemberOrdersPage() {
+  const { isAuthenticated, isLoading: authLoading, loginWithSso } = useAuth();
   const queryClient = useQueryClient();
 
   const [reviewModalTarget, setReviewModalTarget] = React.useState<{
@@ -49,6 +52,7 @@ export default function MemberOrdersPage() {
     queryKey: ["member-orders"],
     queryFn: () =>
       apiClient.get<{ orders: OrderRecord[] }>("/api/v1/me/orders"),
+    enabled: isAuthenticated,
   });
 
   const confirmReceivedMutation = useMutation({
@@ -116,6 +120,44 @@ export default function MemberOrdersPage() {
   }
 
   const orders = data?.orders ?? [];
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-[55vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="mx-auto flex min-h-[55vh] max-w-md items-center justify-center px-4 py-12">
+        <Card className="w-full text-center">
+          <CardHeader>
+            <CardTitle className="text-xl">Sign in to view your orders</CardTitle>
+            <CardDescription>
+              Sign in with your Niwa account to view your pre-order history, or
+              track a guest order by code or WhatsApp number.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button
+              onClick={() =>
+                loginWithSso(
+                  typeof window !== "undefined" ? window.location.href : undefined
+                )
+              }
+            >
+              Sign In
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/track">Track Guest Order</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">

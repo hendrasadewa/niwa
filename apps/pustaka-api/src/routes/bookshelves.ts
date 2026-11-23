@@ -15,14 +15,14 @@ function getBookshelfService(c: Context<AppEnv>) {
 
 export const bookshelvesRoutes = new Hono<AppEnv>();
 
-// GET /api/v1/bookshelves
-bookshelvesRoutes.get("/", authMiddleware, async (c) => {
+// GET /api/v1/bookshelves (public read)
+bookshelvesRoutes.get("/", async (c) => {
   const bookshelves = await getBookshelfService(c).listBookshelves();
   return c.json({ bookshelves });
 });
 
-// GET /api/v1/bookshelves/:id
-bookshelvesRoutes.get("/:id", authMiddleware, async (c) => {
+// GET /api/v1/bookshelves/:id (public read)
+bookshelvesRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");
   const bookshelf = await getBookshelfService(c).getBookshelf(id);
   return c.json({ bookshelf });

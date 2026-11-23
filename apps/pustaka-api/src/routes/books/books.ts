@@ -26,10 +26,9 @@ function getBookService(c: Context<AppEnv>) {
 
 export const booksCoreRoutes = new Hono<AppEnv>();
 
-// GET /api/v1/books
+// GET /api/v1/books (public catalog read)
 booksCoreRoutes.get(
   "/",
-  authMiddleware,
   validate("query", bookQuerySchema),
   async (c) => {
     const query = c.req.valid("query");
@@ -38,10 +37,9 @@ booksCoreRoutes.get(
   }
 );
 
-// GET /api/v1/books/:id
+// GET /api/v1/books/:id (public book detail read)
 booksCoreRoutes.get(
   "/:id",
-  authMiddleware,
   validate("param", bookIdParamSchema),
   async (c) => {
     const { id } = c.req.valid("param");

@@ -166,7 +166,7 @@ export function useNiwaSsoSession(
             15_000
           );
           refreshTimerRef.current = setTimeout(() => {
-            void syncSession({ silent: true, redirectOnConsent: true });
+            void syncSession({ silent: true, redirectOnConsent: false });
           }, refreshDelayMs);
 
           await onAuthenticatedRef.current?.({
@@ -215,7 +215,7 @@ export function useNiwaSsoSession(
     let active = true;
 
     async function hydrate() {
-      const { redirecting } = await syncSession({ redirectOnConsent: true });
+      const { redirecting } = await syncSession({ redirectOnConsent: false });
       if (active && !redirecting) {
         setIsLoading(false);
       }
@@ -251,7 +251,7 @@ export function useNiwaSsoSession(
       if (Date.now() - lastSyncAtRef.current < visibilityRecheckMinMs) {
         return;
       }
-      void syncSession({ silent: true, redirectOnConsent: true });
+      void syncSession({ silent: true, redirectOnConsent: false });
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);

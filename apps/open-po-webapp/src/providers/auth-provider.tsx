@@ -38,8 +38,6 @@ const AuthContext = React.createContext<AuthContextValue | undefined>(
   undefined
 );
 
-const PROTECTED_PREFIXES = ["/profile", "/orders", "/seller"] as const;
-
 function mapSsoUserFallback(ssoUser: SsoUserPayload): User {
   return {
     id: ssoUser.id,
@@ -129,7 +127,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const sso = useNiwaSsoSession({
     client: openPoSsoClient,
     pathname,
-    protectedPrefixes: PROTECTED_PREFIXES,
     postLogoutRedirect: "home",
     onAuthenticated: async ({ user: ssoUser }) => {
       await hydrateOpenPoProfile(mapSsoUserFallback(ssoUser));
@@ -157,14 +154,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const activeToken = getAuthToken();
       if (!activeToken) {
         const { user: ssoUser } = await sso.syncSession({
-          redirectOnConsent: true,
+          redirectOnConsent: false,
         });
         return ssoUser ? hydrateOpenPoProfile(mapSsoUserFallback(ssoUser)) : null;
       }
       const profile = await hydrateOpenPoProfile();
       if (!profile) {
         const { user: ssoUser } = await sso.syncSession({
-          redirectOnConsent: true,
+          redirectOnConsent: false,
         });
         return ssoUser ? hydrateOpenPoProfile(mapSsoUserFallback(ssoUser)) : null;
       }

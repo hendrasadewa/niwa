@@ -14,6 +14,7 @@ import {
 import type { Book, Bookshelf, ReadingListItem } from "@/types/api";
 import { PageHeader } from "@niwa/ui/components";
 import { apiClient } from "@/lib/api";
+import { useAuth } from "@/providers/auth-provider";
 import { useDebounce } from "@/hooks/use-debounce";
 import { AppShell } from "@/components/layout/app-shell";
 import { BookCard } from "@/components/books/book-card";
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/select";
 
 export default function BooksCatalogPage() {
+  const { isAuthenticated } = useAuth();
   const [searchInput, setSearchInput] = React.useState("");
   const [selectedShelfId, setSelectedShelfId] = React.useState<string>("all");
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
@@ -68,6 +70,7 @@ export default function BooksCatalogPage() {
       apiClient.get<{ reading_list: ReadingListItem[] }>(
         "/api/v1/me/reading-list"
       ),
+    enabled: isAuthenticated,
   });
 
   const statusByBookId = React.useMemo(() => {

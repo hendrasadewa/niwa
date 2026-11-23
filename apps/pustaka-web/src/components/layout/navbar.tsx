@@ -7,6 +7,7 @@ import {
   BookOpen,
   LayoutDashboard,
   Library,
+  LogIn,
   LogOut,
   Menu,
   Shield,
@@ -28,7 +29,8 @@ import {
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isLoading, loginWithSso, logout } =
+    useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -39,7 +41,7 @@ export function Navbar() {
     const items = [
       {
         href: "/",
-        label: "Dashboard",
+        label: isAuthenticated ? "Dashboard" : "Home",
         icon: LayoutDashboard,
         active: pathname === "/",
       },
@@ -49,13 +51,16 @@ export function Navbar() {
         icon: BookOpen,
         active: pathname === "/books" || pathname.startsWith("/books/"),
       },
-      {
+    ];
+
+    if (isAuthenticated) {
+      items.push({
         href: "/profile",
         label: "Profile",
         icon: UserIcon,
         active: pathname === "/profile",
-      },
-    ];
+      });
+    }
 
     if (isAdmin) {
       items.push({
@@ -67,7 +72,11 @@ export function Navbar() {
     }
 
     return items;
-  }, [isAdmin, pathname]);
+  }, [isAuthenticated, isAdmin, pathname]);
+
+  const handleSignIn = () => {
+    loginWithSso(typeof window !== "undefined" ? window.location.href : undefined);
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-surface/90 backdrop-blur-xs">
@@ -111,7 +120,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          {user && (
+          {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -186,7 +195,12 @@ export function Navbar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
+          ) : !isLoading ? (
+            <Button size="sm" onClick={handleSignIn}>
+              <LogIn className="h-3.5 w-3.5" />
+              Sign In
+            </Button>
+          ) : null}
 
           <Button
             variant="ghost"
@@ -227,14 +241,25 @@ export function Navbar() {
                 </Link>
               );
             })}
-            <button
-              type="button"
-              onClick={logout}
-              className="flex w-full items-center gap-2.5 rounded-full px-3.5 py-2 text-left text-sm font-medium text-danger-foreground transition-colors hover:bg-danger-soft cursor-pointer"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </button>
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={logout}
+                className="flex w-full items-center gap-2.5 rounded-full px-3.5 py-2 text-left text-sm font-medium text-danger-foreground transition-colors hover:bg-danger-soft cursor-pointer"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSignIn}
+                className="flex w-full items-center gap-2.5 rounded-full px-3.5 py-2 text-left text-sm font-medium text-primary transition-colors hover:bg-primary-soft cursor-pointer"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </button>
+            )}
           </nav>
         </div>
       )}

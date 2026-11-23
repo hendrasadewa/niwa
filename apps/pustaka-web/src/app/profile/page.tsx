@@ -119,7 +119,7 @@ export default function ProfilePage() {
   );
 
   return (
-    <AppShell>
+    <AppShell requireAuth>
       <div className="space-y-8">
         <PageHeader
           kicker="Pustaka / Member"

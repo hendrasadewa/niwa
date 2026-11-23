@@ -9,9 +9,10 @@ import {
   type ReadingStatus,
   type UpdateReadingProgressInput,
 } from "@niwa/pustaka-validators";
-import { BookMarked, CheckCircle2, Edit3, Loader2, Plus } from "lucide-react";
+import { BookMarked, CheckCircle2, Edit3, Loader2, LogIn, Plus } from "lucide-react";
 import type { Book, ReadingListItem, ReadingProgress } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
+import { useAuth } from "@/providers/auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { READING_STATUS_LABELS } from "@/components/books/book-card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export interface ReadingProgressCardProps {
 }
 
 export function ReadingProgressCard({ book }: ReadingProgressCardProps) {
+  const { isAuthenticated, loginWithSso } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -65,6 +67,7 @@ export function ReadingProgressCard({ book }: ReadingProgressCardProps) {
       apiClient.get<{ reading_list: ReadingListItem[] }>(
         "/api/v1/me/reading-list"
       ),
+    enabled: isAuthenticated,
   });
 
   const progressQuery = useQuery({
@@ -73,6 +76,7 @@ export function ReadingProgressCard({ book }: ReadingProgressCardProps) {
       apiClient.get<{ progress: ReadingProgress }>(
         `/api/v1/me/progress/${book.id}`
       ),
+    enabled: isAuthenticated,
   });
 
   const currentListItem = React.useMemo(
@@ -305,7 +309,45 @@ export function ReadingProgressCard({ book }: ReadingProgressCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {!isAuthenticated ? (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Sign in with your Niwa account to add this book to your wishlist
+              or start tracking your reading progress.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() =>
+                  loginWithSso(
+                    typeof window !== "undefined"
+                      ? window.location.href
+                      : undefined
+                  )
+                }
+              >
+                <Plus className="h-4 w-4" />
+                Want to Read
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  loginWithSso(
+                    typeof window !== "undefined"
+                      ? window.location.href
+                      : undefined
+                  )
+                }
+              >
+                <LogIn className="h-4 w-4" />
+                Start Reading Now
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">
               Reading List Status
@@ -437,6 +479,8 @@ export function ReadingProgressCard({ book }: ReadingProgressCardProps) {
           </div>
           <Progress value={percentage} />
         </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
