@@ -40,6 +40,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ColorSchemeToggle, PageHeader } from "@niwa/ui/components";
 import { useAuth } from "@/providers/auth-provider";
 import { apiClient, ApiError, setAuthToken, setRefreshToken } from "@/lib/api";
 import type { ChangePasswordResponse, User } from "@/types/api";
@@ -190,26 +191,22 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            My Profile & Shipping Address
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Keep your WhatsApp number and shipping address up to date for
-            one-click pre-order checkouts.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {user.roles.map((role) => (
-            <Badge key={role} variant="secondary" className="capitalize">
-              <ShieldCheck className="mr-1 h-3.5 w-3.5" />
-              {role}
-            </Badge>
-          ))}
-        </div>
-      </div>
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+      <PageHeader
+        kicker="Open-PO / Account"
+        title="My Profile & Shipping Address"
+        description="Keep your WhatsApp number, appearance preference, and shipping address up to date for one-click pre-order checkouts."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {user.roles.map((role) => (
+              <Badge key={role} variant="secondary" className="capitalize">
+                <ShieldCheck className="mr-1 h-3.5 w-3.5" />
+                {role}
+              </Badge>
+            ))}
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2">
@@ -303,6 +300,18 @@ export default function ProfilePage() {
         </Card>
 
         <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Appearance</CardTitle>
+              <CardDescription>
+                Follow your device theme or pin light or dark mode.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ColorSchemeToggle />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">

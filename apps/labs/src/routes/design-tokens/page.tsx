@@ -97,9 +97,15 @@ export default function DesignTokensPage() {
                 aria-label="Brand accent preview"
                 className="inline-flex items-center rounded-full border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
               >
-                {(["niwa", "auth"] as const).map((id) => {
+                {(["niwa", "auth", "preorder"] as const).map((id) => {
                   const item = brandThemes[id];
                   const active = brand === id;
+                  const dotColor =
+                    id === "auth"
+                      ? "#B85535"
+                      : id === "preorder"
+                        ? "#D48C9E"
+                        : "#6B7F6E";
                   return (
                     <button
                       key={id}
@@ -116,11 +122,7 @@ export default function DesignTokensPage() {
                         aria-hidden="true"
                         className="h-2 w-2 rounded-full"
                         style={{
-                          backgroundColor: active
-                            ? "currentColor"
-                            : id === "auth"
-                              ? "#B85535"
-                              : "#6B7F6E",
+                          backgroundColor: active ? "currentColor" : dotColor,
                         }}
                       />
                       <span>

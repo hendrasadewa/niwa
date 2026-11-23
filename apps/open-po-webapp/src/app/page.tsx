@@ -66,47 +66,49 @@ export default function HomePage() {
 
   return (
     <div className="space-y-12 pb-16">
-      <section className="border-b bg-gradient-to-b from-secondary/50 to-background py-14">
+      <section className="border-b border-border bg-gradient-to-b from-primary-soft/60 via-surface-subtle/40 to-background py-14 sm:py-16">
         <div className="mx-auto max-w-5xl px-4 text-center space-y-6">
-          <Badge variant="secondary" className="px-3 py-1 text-xs gap-1.5">
+          <Badge variant="secondary" className="px-3.5 py-1 text-xs gap-1.5">
             <Sparkles className="h-3.5 w-3.5" />
             Built for UMKM Pre-Order Batches & Manual WhatsApp Workflows
           </Badge>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+          <h1 className="font-serif text-3xl sm:text-5xl font-medium tracking-[-0.02em] text-foreground">
             Seamless Pre-Orders for{" "}
-            <span className="underline decoration-primary/30 underline-offset-8">
+            <span className="italic text-primary underline decoration-primary/35 underline-offset-8">
               Local UMKM Stores
             </span>
           </h1>
-          <p className="mx-auto max-w-2xl text-sm sm:text-base text-muted-foreground">
+          <p className="mx-auto max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
             Browse live pre-order waves with locked batch prices and real-time
             quotas, checkout as a Guest or Member, upload manual transfer
             receipts, and track every stage of fulfillment.
           </p>
 
-          <form
-            onSubmit={handleTrackSubmit}
-            className="mx-auto flex max-w-lg flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2"
-          >
-            <div className="relative flex-1">
-              <PackageSearch className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Enter Order Code (e.g. DAPU-261118-YVLP) to track..."
-                value={trackingIdInput}
-                onChange={(e) => setTrackingIdInput(e.target.value)}
-                className="pl-9 bg-background font-mono text-sm"
-              />
-            </div>
-            <Button type="submit" className="gap-1.5 shrink-0">
-              Track Order
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </form>
+          <search>
+            <form
+              onSubmit={handleTrackSubmit}
+              className="mx-auto flex max-w-lg flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-2"
+            >
+              <div className="relative flex-1">
+                <PackageSearch className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Enter Order Code (e.g. DAPU-261118-YVLP) to track..."
+                  value={trackingIdInput}
+                  onChange={(e) => setTrackingIdInput(e.target.value)}
+                  className="pl-10 bg-surface font-mono text-sm"
+                />
+              </div>
+              <Button type="submit" className="gap-1.5 shrink-0">
+                Track Order
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </form>
+          </search>
           <p className="text-xs text-muted-foreground">
             Ordered as a guest?{" "}
             <Link
               href="/track?phone="
-              className="font-medium text-foreground underline underline-offset-4"
+              className="font-medium text-primary underline decoration-primary/40 underline-offset-4 hover:text-primary-hover"
             >
               Find your orders by WhatsApp number
             </Link>
@@ -118,11 +120,11 @@ export default function HomePage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                <CalendarClock className="h-5 w-5" />
+              <h2 className="font-serif text-2xl font-medium tracking-[-0.015em] flex items-center gap-2 text-foreground">
+                <CalendarClock className="h-5 w-5 text-primary" />
                 Live Pre-Order Waves
               </h2>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Reserve items from currently open campaign batches before their
                 quotas run out.
               </p>
@@ -130,9 +132,9 @@ export default function HomePage() {
           </div>
 
           {wavesLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-52 w-full rounded-xl" />
+                <Skeleton key={i} className="h-56 w-full rounded-[var(--radius-2xl)]" />
               ))}
             </div>
           ) : activeWaves.length === 0 ? (
@@ -159,7 +161,7 @@ export default function HomePage() {
                 return (
                   <Card
                     key={wave.id}
-                    className="flex flex-col justify-between hover:shadow-md transition-shadow"
+                    className="flex flex-col justify-between transition-shadow hover:shadow-[var(--shadow-elevated)]"
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between gap-2">
@@ -186,7 +188,7 @@ export default function HomePage() {
                           No products attached yet.
                         </p>
                       ) : (
-                        <div className="rounded-lg bg-muted/50 p-3 space-y-1.5 text-xs">
+                        <div className="rounded-[var(--radius-xl)] border border-border/70 bg-surface-muted/60 p-3 space-y-1.5 text-xs">
                           {wave.products.slice(0, 3).map((wp) => (
                             <div
                               key={wp.id}
@@ -202,7 +204,7 @@ export default function HomePage() {
                                 {wp.remaining_quota !== null && (
                                   <Badge
                                     variant="secondary"
-                                    className="text-[10px] px-1.5 py-0"
+                                    className="text-[10px] px-2 py-0"
                                   >
                                     {wp.remaining_quota} left
                                   </Badge>
@@ -237,20 +239,20 @@ export default function HomePage() {
 
         <section className="space-y-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <StoreIcon className="h-5 w-5" />
+            <h2 className="font-serif text-2xl font-medium tracking-[-0.015em] flex items-center gap-2 text-foreground">
+              <StoreIcon className="h-5 w-5 text-primary" />
               UMKM Stores Directory
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Explore verified local sellers and browse their product catalogs &
               active waves.
             </p>
           </div>
 
           {storesLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-36 w-full rounded-xl" />
+                <Skeleton key={i} className="h-40 w-full rounded-[var(--radius-2xl)]" />
               ))}
             </div>
           ) : stores.length === 0 ? (
@@ -264,10 +266,10 @@ export default function HomePage() {
               {stores.map((store) => (
                 <Card
                   key={store.id}
-                  className="flex flex-col justify-between hover:shadow-md transition-shadow"
+                  className="flex flex-col justify-between transition-shadow hover:shadow-[var(--shadow-elevated)]"
                 >
                   <CardHeader className="flex flex-row items-start gap-3.5 space-y-0">
-                    <div className="h-12 w-12 rounded-xl border bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="h-12 w-12 rounded-[var(--radius-lg)] border border-border bg-surface-muted overflow-hidden shrink-0 flex items-center justify-center">
                       {store.logo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

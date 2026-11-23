@@ -115,13 +115,16 @@ export default function SellerLayout({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border pb-5">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-primary-soft text-primary-soft-foreground shadow-[var(--shadow-card)]">
             <StoreIcon className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Open-PO / Seller
+            </p>
+            <h1 className="font-serif text-2xl font-medium tracking-[-0.015em] text-foreground">
               UMKM Seller Console
             </h1>
             <p className="text-xs text-muted-foreground">
@@ -150,7 +153,7 @@ export default function SellerLayout({
                 </SelectContent>
               </Select>
             ) : (
-              <div className="rounded-md border bg-secondary/40 px-3 py-1.5 text-xs font-medium">
+              <div className="rounded-full border border-border bg-surface-subtle/80 px-3.5 py-1.5 text-xs font-medium text-foreground">
                 {activeStore.name}{" "}
                 <span className="text-muted-foreground">
                   (/{activeStore.slug})
@@ -176,7 +179,10 @@ export default function SellerLayout({
       </div>
 
       {ownedStores.length > 0 && (
-        <nav className="flex items-center gap-1 overflow-x-auto border-b pb-2">
+        <nav
+          aria-label="Seller navigation"
+          className="flex min-w-0 items-center gap-1.5 overflow-x-auto border-b border-border pb-3"
+        >
           {SELLER_LINKS.map((link) => {
             const Icon = link.icon;
             const isActive = link.exact
@@ -187,14 +193,15 @@ export default function SellerLayout({
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors",
+                  "inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-ring",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
+                    : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5" />
                 {link.label}
               </Link>
             );
@@ -202,7 +209,7 @@ export default function SellerLayout({
         </nav>
       )}
 
-      <div>{children}</div>
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

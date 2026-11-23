@@ -197,7 +197,7 @@ export default function OrderTrackingTimelinePage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-[-0.015em]">
               Order{" "}
               <span className="font-mono text-primary">{orderCode}</span>
             </h1>
@@ -209,7 +209,7 @@ export default function OrderTrackingTimelinePage() {
               </Badge>
             ) : (
               <Badge variant="secondary" className="gap-1 text-xs">
-                <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                <ShieldCheck className="h-3 w-3 text-success" />
                 Verified — PII Unlocked
               </Badge>
             )}
@@ -239,14 +239,14 @@ export default function OrderTrackingTimelinePage() {
       </div>
 
       {isPiiMasked && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="rounded-[var(--radius-xl)] border border-warning-border bg-warning-soft p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-2.5 text-xs">
-            <Lock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+            <Lock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-foreground">
+              <p className="font-semibold text-warning-foreground">
                 Customer PII Masked for Privacy
               </p>
-              <p className="text-muted-foreground">
+              <p className="text-warning-foreground/85">
                 Name, WhatsApp number, shipping address, and transfer receipt
                 preview are masked in public guest view. Log in as the order
                 owner to unlock full details.
@@ -328,16 +328,16 @@ export default function OrderTrackingTimelinePage() {
             {tracking.timeline.map((step) => (
               <div
                 key={step.status}
-                className={`rounded-xl border p-3 flex sm:flex-col items-center sm:text-center gap-2.5 ${
+                className={`rounded-[var(--radius-lg)] border p-3 flex sm:flex-col items-center sm:text-center gap-2.5 ${
                   step.is_current
-                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    ? "border-primary bg-primary-soft/70 ring-1 ring-primary"
                     : step.is_completed
-                      ? "border-emerald-500/40 bg-emerald-500/5"
-                      : "opacity-50"
+                      ? "border-success-border bg-success-soft/70"
+                      : "opacity-55"
                 }`}
               >
                 {step.is_completed ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                 ) : (
                   <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
                 )}

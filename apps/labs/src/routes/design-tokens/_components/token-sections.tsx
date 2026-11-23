@@ -17,6 +17,7 @@ import {
   authAccentSwatches,
   neutralSwatches,
   niwaCoreSwatches,
+  preorderAccentSwatches,
   radiusTokens,
   semanticTokens,
   shadowTokens,
@@ -131,6 +132,33 @@ export function PaletteSection({
           </div>
           <div className="grid grid-cols-5 gap-2 sm:gap-3">
             {authAccentSwatches.map((swatch) => (
+              <SwatchCircle
+                key={swatch.cssVar}
+                swatch={swatch}
+                copiedKey={copiedKey}
+                onCopy={onCopy}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-border pt-5">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-xs font-medium text-foreground">
+              Preorder Per-App Accent — Waterlily Pink
+            </span>
+            <span
+              className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-medium ${
+                brand === "preorder"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-surface-subtle text-muted-foreground"
+              }`}
+            >
+              data-brand=&quot;preorder&quot;
+            </span>
+          </div>
+          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+            {preorderAccentSwatches.map((swatch) => (
               <SwatchCircle
                 key={swatch.cssVar}
                 swatch={swatch}
@@ -779,11 +807,15 @@ export function SemanticReferenceSection({
                 const lightVal =
                   brand === "auth" && token.authLightHex
                     ? token.authLightHex
-                    : token.lightHex;
+                    : brand === "preorder" && token.preorderLightHex
+                      ? token.preorderLightHex
+                      : token.lightHex;
                 const darkVal =
                   brand === "auth" && token.authDarkHex
                     ? token.authDarkHex
-                    : token.darkHex;
+                    : brand === "preorder" && token.preorderDarkHex
+                      ? token.preorderDarkHex
+                      : token.darkHex;
                 const isCopied = copiedKey === `sem-${token.cssVar}`;
                 return (
                   <tr key={token.cssVar} className="hover:bg-surface-muted/40">
@@ -868,15 +900,17 @@ export function SemanticReferenceSection({
         {/* Side-by-side Brand x Mode Scoped Preview */}
         <div>
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Scoped Theme Matrix (Niwa Sage Base vs. Auth Terracotta × Light / Dark)
+            Scoped Theme Matrix (Niwa Sage · Auth Terracotta · Preorder Waterlily × Light / Dark)
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {(
               [
                 { label: "Niwa · Light", theme: "light", brandAttr: undefined },
-                { label: "Niwa · Dark", theme: "dark", brandAttr: undefined },
                 { label: "Auth · Light", theme: "light", brandAttr: "auth" },
+                { label: "Preorder · Light", theme: "light", brandAttr: "preorder" },
+                { label: "Niwa · Dark", theme: "dark", brandAttr: undefined },
                 { label: "Auth · Dark", theme: "dark", brandAttr: "auth" },
+                { label: "Preorder · Dark", theme: "dark", brandAttr: "preorder" },
               ] as const
             ).map((cell) => (
               <div

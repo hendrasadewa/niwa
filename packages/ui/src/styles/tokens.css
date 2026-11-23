@@ -49,6 +49,21 @@
 
   --niwa-terracotta: var(--niwa-terracotta-500);
 
+  /* Waterlily Pink scale (Preorder / Open-PO per-app accent) */
+  --niwa-waterlily-50: #fdf5f7;
+  --niwa-waterlily-100: #f6e6ea; /* Light soft petal surface */
+  --niwa-waterlily-200: #ebd0d7;
+  --niwa-waterlily-300: #e5a4b4; /* Dark-mode primary (8.83:1 with #221217) */
+  --niwa-waterlily-400: #eebac7; /* Dark-mode hover (10.70:1) */
+  --niwa-waterlily-500: #d48c9e; /* Waterlily Pink signature swatch */
+  --niwa-waterlily-600: #a8546c; /* Light-mode primary action (4.77:1) */
+  --niwa-waterlily-700: #8f4258; /* Light-mode primary hover (6.41:1) */
+  --niwa-waterlily-800: #6f2f42; /* Light soft foreground (8.06:1) */
+  --niwa-waterlily-900: #301e24; /* Dark soft petal surface */
+  --niwa-waterlily-950: #221217; /* Dark primary foreground */
+
+  --niwa-waterlily: var(--niwa-waterlily-500);
+
   /* Warm Paper & Sand Neutrals (Light) */
   --niwa-paper: #fcfbf8;
   --niwa-canvas: #f7f3ec;
@@ -600,6 +615,88 @@
 }
 
 /* --------------------------------------------------------------------------
+   5b. Per-App Brand Override: Preorder / Open-PO (Waterlily Pink)
+   Apply `data-brand="preorder"` on <html> or any scoped subtree.
+   -------------------------------------------------------------------------- */
+[data-brand="preorder"] {
+  --primary-light: var(--niwa-waterlily-600);
+  --primary-dark: var(--niwa-waterlily-300);
+
+  --primary-hover-light: var(--niwa-waterlily-700);
+  --primary-hover-dark: var(--niwa-waterlily-400);
+
+  --primary-foreground-light: #faf8f5;
+  --primary-foreground-dark: var(--niwa-waterlily-950);
+
+  --primary-soft-light: var(--niwa-waterlily-100);
+  --primary-soft-dark: var(--niwa-waterlily-900);
+
+  --primary-soft-foreground-light: var(--niwa-waterlily-800);
+  --primary-soft-foreground-dark: #f3c6d1;
+
+  --primary-swatch-light: var(--niwa-waterlily-500);
+  --primary-swatch-dark: var(--niwa-waterlily-300);
+
+  --secondary-accent-light: var(--niwa-waterlily-500);
+  --secondary-accent-dark: #9e6675;
+
+  --ring-light: var(--niwa-waterlily-600);
+  --ring-dark: var(--niwa-waterlily-300);
+
+  /* Fallback resolution when light-dark() is unsupported */
+  --primary: var(--primary-light);
+  --primary-hover: var(--primary-hover-light);
+  --primary-foreground: var(--primary-foreground-light);
+  --primary-soft: var(--primary-soft-light);
+  --primary-soft-foreground: var(--primary-soft-foreground-light);
+  --primary-swatch: var(--primary-swatch-light);
+  --secondary-accent: var(--secondary-accent-light);
+  --ring: var(--ring-light);
+
+  accent-color: var(--primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-brand="preorder"]:not(.light):not([data-theme="light"]) {
+    --primary: var(--primary-dark);
+    --primary-hover: var(--primary-hover-dark);
+    --primary-foreground: var(--primary-foreground-dark);
+    --primary-soft: var(--primary-soft-dark);
+    --primary-soft-foreground: var(--primary-soft-foreground-dark);
+    --primary-swatch: var(--primary-swatch-dark);
+    --secondary-accent: var(--secondary-accent-dark);
+    --ring: var(--ring-dark);
+  }
+}
+
+.dark [data-brand="preorder"],
+[data-theme="dark"] [data-brand="preorder"],
+[data-brand="preorder"].dark,
+[data-brand="preorder"][data-theme="dark"] {
+  --primary: var(--primary-dark);
+  --primary-hover: var(--primary-hover-dark);
+  --primary-foreground: var(--primary-foreground-dark);
+  --primary-soft: var(--primary-soft-dark);
+  --primary-soft-foreground: var(--primary-soft-foreground-dark);
+  --primary-swatch: var(--primary-swatch-dark);
+  --secondary-accent: var(--secondary-accent-dark);
+  --ring: var(--ring-dark);
+}
+
+@supports (color: light-dark(white, black)) {
+  [data-brand="preorder"] {
+    --primary: light-dark(var(--primary-light), var(--primary-dark));
+    --primary-hover: light-dark(var(--primary-hover-light), var(--primary-hover-dark));
+    --primary-foreground: light-dark(var(--primary-foreground-light), var(--primary-foreground-dark));
+    --primary-soft: light-dark(var(--primary-soft-light), var(--primary-soft-dark));
+    --primary-soft-foreground: light-dark(var(--primary-soft-foreground-light), var(--primary-soft-foreground-dark));
+    --primary-swatch: light-dark(var(--primary-swatch-light), var(--primary-swatch-dark));
+    --secondary-accent: light-dark(var(--secondary-accent-light), var(--secondary-accent-dark));
+    --ring: light-dark(var(--ring-light), var(--ring-dark));
+  }
+}
+
+/* --------------------------------------------------------------------------
    6. Forced Colors Mode (High Contrast) Support
    -------------------------------------------------------------------------- */
 @media (forced-colors: active) {
@@ -687,6 +784,7 @@
   --color-niwa-ivory: var(--niwa-ivory);
   --color-niwa-sand: var(--niwa-sand);
   --color-niwa-terracotta: var(--niwa-terracotta);
+  --color-niwa-waterlily: var(--niwa-waterlily);
 
   /* Typography */
   --font-serif: var(--font-serif);

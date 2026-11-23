@@ -262,7 +262,7 @@ export default function SellerWaveDetailPage() {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold">{wave.name}</h2>
+              <h2 className="font-serif text-xl font-medium tracking-[-0.015em]">{wave.name}</h2>
               <Badge
                 variant={
                   wave.status === "Active"

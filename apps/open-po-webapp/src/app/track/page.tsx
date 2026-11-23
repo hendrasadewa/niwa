@@ -93,12 +93,12 @@ function TrackOrderLookupContent() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
-      <Card className="shadow-sm">
+      <Card>
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
+          <div className="mx-auto h-12 w-12 rounded-[var(--radius-lg)] border border-border bg-primary-soft text-primary-soft-foreground flex items-center justify-center shadow-[var(--shadow-card)]">
             <PackageSearch className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-2xl font-medium">
             Track Your Pre-Order
           </CardTitle>
           <CardDescription>
@@ -111,14 +111,14 @@ function TrackOrderLookupContent() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+          <div className="grid grid-cols-2 gap-1.5 rounded-full border border-border bg-surface-muted p-1">
             <button
               type="button"
               onClick={() => setMode("code")}
               className={cn(
-                "flex items-center justify-center gap-2 rounded-md py-2 text-xs sm:text-sm font-medium transition-all",
+                "flex items-center justify-center gap-2 rounded-full py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer",
                 mode === "code"
-                  ? "bg-background text-foreground shadow-xs"
+                  ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -129,9 +129,9 @@ function TrackOrderLookupContent() {
               type="button"
               onClick={() => setMode("phone")}
               className={cn(
-                "flex items-center justify-center gap-2 rounded-md py-2 text-xs sm:text-sm font-medium transition-all",
+                "flex items-center justify-center gap-2 rounded-full py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer",
                 mode === "phone"
-                  ? "bg-background text-foreground shadow-xs"
+                  ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -244,7 +244,7 @@ function TrackOrderLookupContent() {
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="gap-1 text-xs">
-                      <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                      <ShieldCheck className="h-3 w-3 text-success" />
                       PII Unlocked
                     </Badge>
                   )}
@@ -258,14 +258,14 @@ function TrackOrderLookupContent() {
               </div>
 
               {lookupData?.is_pii_masked && matchedOrders.length > 0 && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="rounded-[var(--radius-xl)] border border-warning-border bg-warning-soft p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-2.5 text-xs">
-                    <Lock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                    <Lock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-foreground">
+                      <p className="font-semibold text-warning-foreground">
                         Personal Information Masked for Privacy
                       </p>
-                      <p className="text-muted-foreground">
+                      <p className="text-warning-foreground/85">
                         Names, phone numbers, and shipping addresses are masked
                         in guest lookup mode. Sign in to unlock your full order
                         details.

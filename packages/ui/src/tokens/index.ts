@@ -1,4 +1,4 @@
-export type NiwaBrand = "niwa" | "auth";
+export type NiwaBrand = "niwa" | "auth" | "preorder";
 export type ColorSchemePreference = "system" | "light" | "dark";
 export type ResolvedColorScheme = "light" | "dark";
 
@@ -17,6 +17,8 @@ export interface SemanticTokenMeta {
   darkHex: string;
   authLightHex?: string;
   authDarkHex?: string;
+  preorderLightHex?: string;
+  preorderDarkHex?: string;
   usage: string;
 }
 
@@ -64,6 +66,17 @@ export const authAccentSwatches: readonly PaletteSwatch[] = [
   { name: "Clay Light", cssVar: "--niwa-terracotta-300", hex: "#DE8262", role: "Dark primary CTA (6.53:1)" },
   { name: "Blush Wash", cssVar: "--niwa-terracotta-100", hex: "#F4E4DC", role: "Light soft pill & highlight" },
   { name: "Umber Deep", cssVar: "--niwa-terracotta-900", hex: "#33201A", role: "Dark soft surface" },
+] as const;
+
+/**
+ * Waterlily Pink accent swatches for the Preorder / Open-PO app.
+ */
+export const preorderAccentSwatches: readonly PaletteSwatch[] = [
+  { name: "Waterlily", cssVar: "--niwa-waterlily-500", hex: "#D48C9E", role: "Preorder signature soft pink" },
+  { name: "Rose Action", cssVar: "--niwa-waterlily-600", hex: "#A8546C", role: "Light primary CTA (4.77:1)" },
+  { name: "Petal Light", cssVar: "--niwa-waterlily-300", hex: "#E5A4B4", role: "Dark primary CTA (8.83:1)" },
+  { name: "Blossom Wash", cssVar: "--niwa-waterlily-100", hex: "#F6E6EA", role: "Light soft pill & highlight" },
+  { name: "Plum Dusk", cssVar: "--niwa-waterlily-900", hex: "#301E24", role: "Dark soft petal surface" },
 ] as const;
 
 /**
@@ -129,6 +142,8 @@ export const semanticTokens: readonly SemanticTokenMeta[] = [
     darkHex: "#92AD96",
     authLightHex: "#AD4D2E",
     authDarkHex: "#DE8262",
+    preorderLightHex: "#A8546C",
+    preorderDarkHex: "#E5A4B4",
     usage: "Primary CTA, active segment, checked controls",
   },
   {
@@ -139,6 +154,8 @@ export const semanticTokens: readonly SemanticTokenMeta[] = [
     darkHex: "#212E23",
     authLightHex: "#F4E4DC",
     authDarkHex: "#33201A",
+    preorderLightHex: "#F6E6EA",
+    preorderDarkHex: "#301E24",
     usage: "Tinted notifications, badges, soft callouts",
   },
   {
@@ -256,6 +273,15 @@ export const brandThemes: Record<
     dataBrandAttr: "auth",
     primaryLight: "#AD4D2E",
     primaryDark: "#DE8262",
+  },
+  preorder: {
+    id: "preorder",
+    label: "Preorder",
+    subtitle: 'Per-app override via data-brand="preorder"',
+    accentName: "Waterlily Pink",
+    dataBrandAttr: "preorder",
+    primaryLight: "#A8546C",
+    primaryDark: "#E5A4B4",
   },
 };
 

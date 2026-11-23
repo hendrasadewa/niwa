@@ -61,7 +61,7 @@ export default function ProductDetailPage() {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-3">
         <Package className="mx-auto h-10 w-10 text-muted-foreground" />
-        <h1 className="text-xl font-bold">Product Not Found</h1>
+        <h1 className="font-serif text-2xl font-medium">Product Not Found</h1>
         <Button variant="outline" asChild>
           <Link href="/">Back to Explore</Link>
         </Button>
@@ -104,12 +104,12 @@ export default function ProductDetailPage() {
             {product.is_archived && <Badge variant="outline">Archived</Badge>}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-[-0.015em]">
             {product.name}
           </h1>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-amber-500">
+            <div className="flex items-center gap-1 text-warning">
               <Star className="h-4 w-4 fill-current" />
               <span className="font-bold text-sm text-foreground">
                 {summary.average_rating.toFixed(1)}
@@ -172,7 +172,7 @@ export default function ProductDetailPage() {
                       {formatUnixDate(rev.created_at)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-0.5 text-amber-500">
+                  <div className="flex items-center gap-0.5 text-warning">
                     {Array.from({ length: 5 }).map((_, idx) => (
                       <Star
                         key={idx}

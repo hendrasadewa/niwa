@@ -165,12 +165,12 @@ export default function CheckoutPage() {
     const orderCode = order.slug || order.id;
     return (
       <div className="mx-auto max-w-2xl px-4 py-10 space-y-6">
-        <Card className="border-primary/30 shadow-sm">
+        <Card className="border-primary/30">
           <CardHeader className="text-center space-y-2">
-            <div className="mx-auto h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+            <div className="mx-auto h-12 w-12 rounded-full border border-success-border bg-success-soft text-success-foreground flex items-center justify-center">
               <CheckCircle2 className="h-7 w-7" />
             </div>
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className="text-2xl font-medium">
               Pre-Order Reserved!
             </CardTitle>
             <CardDescription>
@@ -303,7 +303,7 @@ export default function CheckoutPage() {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center space-y-4">
         <ShoppingBag className="mx-auto h-10 w-10 text-muted-foreground" />
-        <h1 className="text-xl font-bold">Your Pre-Order Cart is Empty</h1>
+        <h1 className="font-serif text-2xl font-medium">Your Pre-Order Cart is Empty</h1>
         <p className="text-sm text-muted-foreground">
           Browse an active UMKM pre-order wave and add products before checking
           out.
@@ -318,10 +318,13 @@ export default function CheckoutPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Open-PO / Checkout
+        </p>
+        <h1 className="font-serif text-3xl font-medium tracking-[-0.015em] mt-1">
           Pre-Order Checkout
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground mt-1">
           Store:{" "}
           <span className="font-medium text-foreground">{cart.storeName}</span>{" "}
           • Wave:{" "}

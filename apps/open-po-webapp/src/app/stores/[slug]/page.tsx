@@ -77,7 +77,7 @@ function StorefrontContent() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center space-y-3">
         <StoreIcon className="mx-auto h-10 w-10 text-muted-foreground" />
-        <h1 className="text-xl font-bold">Store not found</h1>
+        <h1 className="font-serif text-2xl font-medium">Store not found</h1>
         <p className="text-sm text-muted-foreground">
           The UMKM store you are looking for does not exist or may have changed
           its slug.
@@ -100,9 +100,9 @@ function StorefrontContent() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-10">
-      <div className="rounded-2xl border bg-card p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="rounded-[var(--radius-2xl)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-start sm:items-center gap-4">
-          <div className="h-20 w-20 rounded-2xl border bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+          <div className="h-20 w-20 rounded-[var(--radius-xl)] border border-border bg-surface-muted overflow-hidden shrink-0 flex items-center justify-center">
             {store.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -116,7 +116,7 @@ function StorefrontContent() {
           </div>
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-[-0.015em]">
                 {store.name}
               </h1>
               <Badge variant="secondary" className="text-xs">
@@ -142,8 +142,8 @@ function StorefrontContent() {
       <section className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <CalendarClock className="h-5 w-5" />
+            <h2 className="font-serif text-2xl font-medium tracking-[-0.015em] flex items-center gap-2">
+              <CalendarClock className="h-5 w-5 text-primary" />
               Active Pre-Order Waves
             </h2>
             <p className="text-xs text-muted-foreground">
@@ -338,9 +338,9 @@ function StorefrontContent() {
       </section>
 
       {catalogProducts.length > 0 && (
-        <section className="space-y-4 pt-4 border-t">
+        <section className="space-y-4 pt-4 border-t border-border">
           <div>
-            <h2 className="text-lg font-bold tracking-tight">
+            <h2 className="font-serif text-xl font-medium tracking-[-0.015em]">
               Store Master Catalog ({catalogProducts.length})
             </h2>
             <p className="text-xs text-muted-foreground">

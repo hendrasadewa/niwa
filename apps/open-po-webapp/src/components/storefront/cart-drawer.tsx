@@ -126,7 +126,7 @@ export function CartDrawer() {
                         {formatCurrencyIDR(item.lockedPrice)} / item
                       </p>
                       {item.remainingQuota !== null && (
-                        <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                        <p className="text-[11px] font-medium text-warning">
                           Remaining quota: {item.remainingQuota}
                         </p>
                       )}
@@ -134,13 +134,13 @@ export function CartDrawer() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="flex items-center border rounded-md">
+                    <div className="flex items-center overflow-hidden rounded-full border border-border-strong/70 bg-surface-muted/60">
                       <button
                         type="button"
                         onClick={() =>
                           updateQuantity(item.waveProductId, item.quantity - 1)
                         }
-                        className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                        className="p-1.5 hover:bg-surface-subtle text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="h-3.5 w-3.5" />
@@ -157,7 +157,7 @@ export function CartDrawer() {
                         onClick={() =>
                           updateQuantity(item.waveProductId, item.quantity + 1)
                         }
-                        className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
+                        className="p-1.5 hover:bg-surface-subtle text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors cursor-pointer"
                         aria-label="Increase quantity"
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -166,7 +166,7 @@ export function CartDrawer() {
                     <button
                       type="button"
                       onClick={() => removeItem(item.waveProductId)}
-                      className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                      className="rounded-full p-1.5 text-muted-foreground hover:bg-danger-soft hover:text-danger-foreground transition-colors cursor-pointer"
                       aria-label="Remove item"
                     >
                       <Trash2 className="h-4 w-4" />

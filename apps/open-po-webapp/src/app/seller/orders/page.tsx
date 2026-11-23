@@ -151,7 +151,7 @@ export default function SellerKanbanOrdersPage() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold tracking-tight">
+          <h2 className="font-serif text-xl font-medium tracking-[-0.015em]">
             Kanban Order Fulfillment Dashboard
           </h2>
           <p className="text-xs text-muted-foreground">
@@ -318,7 +318,7 @@ export default function SellerKanbanOrdersPage() {
                               ) : (
                                 <Badge
                                   variant="outline"
-                                  className="text-[10px] text-amber-600"
+                                  className="border-warning-border bg-warning-soft text-[10px] text-warning-foreground"
                                 >
                                   No Receipt Yet
                                 </Badge>

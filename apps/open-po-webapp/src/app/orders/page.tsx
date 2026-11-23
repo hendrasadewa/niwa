@@ -31,6 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@niwa/ui/components";
 import { apiClient, ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 import type { OrderItemRecord, OrderRecord } from "@/types/api";
@@ -161,15 +162,11 @@ export default function MemberOrdersPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          My Pre-Order History
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Track active pre-orders, confirm package receipt, and leave 1–5 star
-          reviews once delivered.
-        </p>
-      </div>
+      <PageHeader
+        kicker="Open-PO / Member"
+        title="My Pre-Order History"
+        description="Track active pre-orders, confirm package receipt, and leave 1–5 star reviews once delivered."
+      />
 
       {isLoading ? (
         <div className="py-16 flex justify-center">
@@ -293,7 +290,7 @@ export default function MemberOrdersPage() {
                             onClick={() => openReviewModal(orderCode, item)}
                             className="h-8 text-xs gap-1.5 shrink-0"
                           >
-                            <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                            <Star className="h-3.5 w-3.5 text-warning fill-warning" />
                             Write Product Review
                           </Button>
                         )}
@@ -375,7 +372,7 @@ export default function MemberOrdersPage() {
                     <Star
                       className={`h-6 w-6 ${
                         starValue <= rating
-                          ? "text-amber-500 fill-amber-500"
+                          ? "text-warning fill-warning"
                           : "text-muted-foreground/40"
                       }`}
                     />
