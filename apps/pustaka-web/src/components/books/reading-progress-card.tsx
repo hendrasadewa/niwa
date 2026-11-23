@@ -297,7 +297,7 @@ export function ReadingProgressCard({ book }: ReadingProgressCardProps) {
             </CardDescription>
           </div>
           {percentage === 100 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600">
+            <span className="inline-flex items-center gap-1 rounded-full border border-success-border bg-success-soft px-2.5 py-1 text-xs font-medium text-success-foreground">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Finished
             </span>

@@ -18,7 +18,9 @@ export { Divider, type DividerProps } from "./divider";
 export { EmptyState, type EmptyStateProps } from "./empty-state";
 export { FormField, type FormFieldProps } from "./form-field";
 export { PageHeader, type PageHeaderProps } from "./page-header";
+export { Progress, type ProgressProps } from "./progress";
 export { SelectInput, type SelectInputProps } from "./select-input";
+export { Skeleton, type SkeletonProps } from "./skeleton";
 export {
   FullPageLoader,
   Spinner,

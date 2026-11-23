@@ -25,6 +25,7 @@ import {
   setAuthToken,
   setRefreshToken,
 } from "@/lib/api";
+import { ColorSchemeToggle, PageHeader } from "@niwa/ui/components";
 import { useAuth } from "@/providers/auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { AppShell } from "@/components/layout/app-shell";
@@ -120,12 +121,11 @@ export default function ProfilePage() {
   return (
     <AppShell>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
-          <p className="text-sm text-muted-foreground">
-            Your household member account, assigned roles, and reading summary.
-          </p>
-        </div>
+        <PageHeader
+          kicker="Pustaka / Member"
+          title="My Profile"
+          description="Your household member account, appearance preference, assigned roles, and reading summary."
+        />
 
         <div className="grid gap-6 md:grid-cols-12">
           <Card className="md:col-span-5">
@@ -207,21 +207,33 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-3 gap-4">
-                <div className="rounded-xl border bg-muted/30 p-4 text-center">
-                  <BookCheck className="mx-auto mb-1.5 h-5 w-5 text-emerald-600" />
-                  <p className="text-2xl font-bold">{completedItems.length}</p>
+                <div className="rounded-[var(--radius-xl)] border border-border bg-surface-muted/60 p-4 text-center">
+                  <BookCheck className="mx-auto mb-1.5 h-5 w-5 text-success" />
+                  <p className="font-serif text-2xl font-medium text-foreground">{completedItems.length}</p>
                   <p className="text-xs text-muted-foreground">Books Read</p>
                 </div>
-                <div className="rounded-xl border bg-muted/30 p-4 text-center">
+                <div className="rounded-[var(--radius-xl)] border border-border bg-surface-muted/60 p-4 text-center">
                   <BookOpen className="mx-auto mb-1.5 h-5 w-5 text-primary" />
-                  <p className="text-2xl font-bold">{readingItems.length}</p>
+                  <p className="font-serif text-2xl font-medium text-foreground">{readingItems.length}</p>
                   <p className="text-xs text-muted-foreground">Reading Now</p>
                 </div>
-                <div className="rounded-xl border bg-muted/30 p-4 text-center">
+                <div className="rounded-[var(--radius-xl)] border border-border bg-surface-muted/60 p-4 text-center">
                   <BookOpen className="mx-auto mb-1.5 h-5 w-5 text-muted-foreground" />
-                  <p className="text-2xl font-bold">{wantToReadItems.length}</p>
+                  <p className="font-serif text-2xl font-medium text-foreground">{wantToReadItems.length}</p>
                   <p className="text-xs text-muted-foreground">Want to Read</p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Appearance</CardTitle>
+                <CardDescription>
+                  Follow your device theme or pin light or dark mode.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ColorSchemeToggle />
               </CardContent>
             </Card>
 
@@ -301,7 +313,7 @@ export default function ProfilePage() {
         </div>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold tracking-tight">
+          <h2 className="font-serif text-xl font-medium tracking-[-0.01em]">
             Completed Books ({completedItems.length})
           </h2>
           {completedItems.length === 0 ? (

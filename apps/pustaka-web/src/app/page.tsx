@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { Book, ReadingListItem } from "@/types/api";
+import { PageHeader } from "@niwa/ui/components";
 import { apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -81,23 +82,19 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-8">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Welcome back, {user?.username}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Track your active reading progress and discover books from the
-              household shelves.
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/books">
-              <Library className="h-4 w-4" />
-              Browse Full Catalog
-            </Link>
-          </Button>
-        </div>
+        <PageHeader
+          kicker="Pustaka / Library"
+          title={`Welcome back, ${user?.username ?? ""}`}
+          description="Track your active reading progress and discover books from the household shelves."
+          actions={
+            <Button asChild>
+              <Link href="/books">
+                <Library className="h-4 w-4" />
+                Browse Full Catalog
+              </Link>
+            </Button>
+          }
+        />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Card>
@@ -148,7 +145,7 @@ export default function DashboardPage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight">
+              <h2 className="font-serif text-xl font-medium tracking-[-0.01em]">
                 Active Reading List
               </h2>
               <p className="text-xs text-muted-foreground">
@@ -188,7 +185,7 @@ export default function DashboardPage() {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight">
+                <h2 className="font-serif text-xl font-medium tracking-[-0.01em]">
                   Want to Read ({wantToRead.length})
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -207,7 +204,7 @@ export default function DashboardPage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+              <h2 className="flex items-center gap-2 font-serif text-xl font-medium tracking-[-0.01em]">
                 <Sparkles className="h-4 w-4 text-primary" />
                 Recent Additions to the Library
               </h2>

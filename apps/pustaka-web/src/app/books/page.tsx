@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import type { Book, Bookshelf, ReadingListItem } from "@/types/api";
+import { PageHeader } from "@niwa/ui/components";
 import { apiClient } from "@/lib/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { AppShell } from "@/components/layout/app-shell";
@@ -85,50 +86,52 @@ export default function BooksCatalogPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Book Catalog</h1>
-            <p className="text-sm text-muted-foreground">
-              Browse the household physical collection by title, author, ISBN,
-              or bookshelf location.
-            </p>
-          </div>
-          <div className="flex items-center gap-1 self-start rounded-lg border bg-card p-1">
-            <Button
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-7 px-2.5"
-              onClick={() => setViewMode("grid")}
-            >
-              <LayoutGrid className="h-4 w-4" />
-              Grid
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-7 px-2.5"
-              onClick={() => setViewMode("list")}
-            >
-              <List className="h-4 w-4" />
-              List
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          kicker="Pustaka / Catalog"
+          title="Book Catalog"
+          description="Browse the household physical collection by title, author, ISBN, or bookshelf location."
+          actions={
+            <div className="flex items-center gap-1 rounded-full border border-border bg-surface p-1 shadow-[var(--shadow-card)]">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                className="h-7 px-3"
+                onClick={() => setViewMode("grid")}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Grid
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                className="h-7 px-3"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="h-3.5 w-3.5" />
+                List
+              </Button>
+            </div>
+          }
+        />
 
-        <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-xs sm:flex-row sm:items-center">
+        <search className="flex flex-col gap-3 rounded-[var(--radius-2xl)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              type="search"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search by title, author, or ISBN..."
-              className="pl-9 pr-8"
+              className="rounded-full pl-10 pr-9"
             />
             {searchInput && (
               <button
                 type="button"
                 onClick={() => setSearchInput("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 aria-label="Clear search"
               >
                 <X className="h-4 w-4" />
@@ -168,7 +171,7 @@ export default function BooksCatalogPage() {
               Reset
             </Button>
           )}
-        </div>
+        </search>
 
         {booksQuery.isLoading ? (
           viewMode === "grid" ? (

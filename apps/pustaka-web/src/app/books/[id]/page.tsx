@@ -108,7 +108,7 @@ export default function BookDetailPage() {
                       </Badge>
                     )}
                     <Badge variant="outline" className="gap-1">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="h-3 w-3 fill-warning text-warning" />
                       {averageRating
                         ? `${averageRating} / 5 (${reviews.length} ${
                             reviews.length === 1 ? "review" : "reviews"
@@ -117,20 +117,20 @@ export default function BookDetailPage() {
                     </Badge>
                   </div>
 
-                  <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  <h1 className="font-serif text-3xl font-medium tracking-[-0.02em] text-foreground sm:text-4xl">
                     {book.title}
                   </h1>
                   <p className="text-base text-muted-foreground">
                     by <span className="font-medium text-foreground">{book.author}</span>
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-4 pt-2 text-sm text-muted-foreground">
-                    <span className="inline-flex items-center gap-1.5 rounded-md border bg-card px-3 py-1.5">
-                      <BookText className="h-4 w-4" />
-                      <strong>{book.total_pages}</strong> pages
+                  <div className="flex flex-wrap items-center gap-3 pt-2 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-1.5 shadow-[var(--shadow-card)]">
+                      <BookText className="h-4 w-4 text-primary" />
+                      <strong className="text-foreground">{book.total_pages}</strong> pages
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-md border bg-card px-3 py-1.5 font-mono text-xs">
-                      <Barcode className="h-4 w-4" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-1.5 font-mono text-xs shadow-[var(--shadow-card)]">
+                      <Barcode className="h-4 w-4 text-primary" />
                       ISBN: {book.isbn}
                     </span>
                   </div>

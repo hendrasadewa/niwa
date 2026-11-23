@@ -160,7 +160,7 @@ export function ReadingListBookRow({ item }: ReadingListBookRowProps) {
           />
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate font-semibold hover:underline">
+              <h3 className="truncate font-serif text-base font-medium text-foreground hover:underline">
                 {book.title}
               </h3>
               <Badge variant="secondary" className="text-[11px]">

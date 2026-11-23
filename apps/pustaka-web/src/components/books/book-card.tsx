@@ -40,7 +40,7 @@ export function BookCard({
             />
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate font-semibold leading-tight group-hover:underline">
+                <h3 className="truncate font-serif text-base font-medium leading-tight text-foreground group-hover:underline">
                   {book.title}
                 </h3>
                 {readingStatus && (
@@ -89,7 +89,7 @@ export function BookCard({
         </div>
         <CardContent className="flex flex-1 flex-col justify-between space-y-3 p-4">
           <div className="space-y-1">
-            <h3 className="line-clamp-2 font-semibold leading-snug group-hover:underline">
+            <h3 className="line-clamp-2 font-serif text-base font-medium leading-snug text-foreground group-hover:underline">
               {book.title}
             </h3>
             <p className="line-clamp-1 text-xs text-muted-foreground">

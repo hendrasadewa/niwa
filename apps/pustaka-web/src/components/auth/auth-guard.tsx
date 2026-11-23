@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { FullPageLoader } from "@niwa/ui/components";
 import { useAuth } from "@/providers/auth-provider";
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,12 +40,7 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
   }, [isAdmin, isAuthenticated, isLoading, pathname, requireAdmin, router, toast]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-2">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        <p className="text-xs text-muted-foreground">Verifying session...</p>
-      </div>
-    );
+    return <FullPageLoader label="Verifying session..." />;
   }
 
   if (!isAuthenticated) {

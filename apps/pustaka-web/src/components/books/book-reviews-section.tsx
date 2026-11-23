@@ -158,7 +158,7 @@ export function BookReviewsSection({ bookId }: BookReviewsSectionProps) {
                                 className={cn(
                                   "h-6 w-6 transition-colors",
                                   active
-                                    ? "fill-amber-400 text-amber-400"
+                                    ? "fill-warning text-warning"
                                     : "text-muted-foreground/40"
                                 )}
                               />
@@ -249,7 +249,7 @@ export function BookReviewsSection({ bookId }: BookReviewsSectionProps) {
                           className={cn(
                             "h-4 w-4",
                             s <= review.rating
-                              ? "fill-amber-400 text-amber-400"
+                              ? "fill-warning text-warning"
                               : "text-muted-foreground/30"
                           )}
                         />
