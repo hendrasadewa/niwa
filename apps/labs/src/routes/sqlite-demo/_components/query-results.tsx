@@ -1,4 +1,4 @@
-import { Alert, DataTable, EmptyState } from "@niwa/ui/components";
+import { Alert, Badge, DataTable, EmptyState } from "@niwa/ui/components";
 import type {
   SqliteCellValue,
   SqliteQueryResult,
@@ -33,18 +33,24 @@ interface QueryResultsProps {
 
 export function QueryResults({ lastResult, error }: QueryResultsProps) {
   return (
-    <section className="flex-1 p-4 flex flex-col gap-3 min-h-[300px] overflow-hidden">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+    <section className="flex-1 p-5 flex flex-col gap-3 min-h-[300px] overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Results
         </h2>
         {lastResult && !error && (
-          <div className="flex items-center gap-3 text-xs font-mono text-neutral-400">
-            <span>{lastResult.rows.length} rows</span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge variant="neutral" mono>
+              {lastResult.rows.length} rows
+            </Badge>
             {lastResult.changes > 0 && (
-              <span>{lastResult.changes} affected</span>
+              <Badge variant="primary" mono>
+                {lastResult.changes} affected
+              </Badge>
             )}
-            <span>{lastResult.durationMs} ms</span>
+            <Badge variant="neutral" mono>
+              {lastResult.durationMs} ms
+            </Badge>
           </div>
         )}
       </div>
@@ -53,7 +59,8 @@ export function QueryResults({ lastResult, error }: QueryResultsProps) {
 
       {!error && !lastResult && (
         <EmptyState
-          title="Execute a SQL statement above to inspect results."
+          title="No query results yet"
+          description="Execute a SQL statement above to inspect rows and execution timing."
           className="flex-1 p-8"
         />
       )}
@@ -61,11 +68,11 @@ export function QueryResults({ lastResult, error }: QueryResultsProps) {
       {!error && lastResult && lastResult.columns.length === 0 && (
         <Alert variant="info" className="p-4">
           Statement executed in{" "}
-          <span className="font-mono text-neutral-100">
+          <span className="font-mono font-semibold">
             {lastResult.durationMs} ms
           </span>
           . Rows affected:{" "}
-          <span className="font-mono text-neutral-100">
+          <span className="font-mono font-semibold">
             {lastResult.changes}
           </span>
           .
@@ -79,8 +86,8 @@ export function QueryResults({ lastResult, error }: QueryResultsProps) {
           renderCell={(cell) => formatCellValue(cell).text}
           getCellClassName={(cell) => {
             const formatted = formatCellValue(cell);
-            if (formatted.isNull) return "italic text-neutral-500";
-            if (formatted.isBlob) return "text-sky-300";
+            if (formatted.isNull) return "italic text-muted-foreground";
+            if (formatted.isBlob) return "text-info";
             return undefined;
           }}
         />

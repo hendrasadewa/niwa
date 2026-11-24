@@ -29,7 +29,7 @@ function BookScannerContent() {
   } = useBookScanner();
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col">
+    <div className="min-h-screen bg-background text-foreground font-sans antialiased flex flex-col">
       <BookScannerMeta />
 
       <ScannerHeader
@@ -38,7 +38,7 @@ function BookScannerContent() {
         onClearHistory={handleClearHistory}
       />
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px] divide-y lg:divide-y-0 lg:divide-x divide-neutral-800">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_330px] divide-y lg:divide-y-0 lg:divide-x divide-border">
         <main className="flex flex-col min-w-0">
           <CameraViewport
             cameraStatus={scanner.cameraStatus}

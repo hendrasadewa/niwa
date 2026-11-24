@@ -29,7 +29,7 @@ export default function SqliteDemoPage() {
   } = useSqliteDemo();
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col">
+    <div className="min-h-screen bg-background text-foreground font-sans antialiased flex flex-col">
       <SqliteDemoMeta />
       <SqliteHeader
         status={status}
@@ -39,7 +39,7 @@ export default function SqliteDemoPage() {
         onResetDatabase={() => void resetDatabase()}
       />
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[280px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-neutral-800">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[290px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-border">
         <SchemaSidebar
           status={status}
           schema={schema}
@@ -48,7 +48,7 @@ export default function SqliteDemoPage() {
           onInspectTable={handleInspectTable}
         />
 
-        <main className="flex flex-col divide-y divide-neutral-800 min-w-0">
+        <main className="flex flex-col divide-y divide-border min-w-0">
           <QueryEditor
             sql={sql}
             status={status}

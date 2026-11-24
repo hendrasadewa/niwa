@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  COLOR_SCHEME_CHANGE_EVENT,
   COLOR_SCHEME_STORAGE_KEY,
   applyColorScheme,
   getStoredColorScheme,
@@ -41,8 +42,18 @@ export function ColorSchemeToggle({
       setPreference(next);
       applyColorScheme(next);
     };
+    const onSchemeChange = (event: Event) => {
+      const next = (event as CustomEvent<ColorSchemePreference>).detail;
+      if (next === "system" || next === "light" || next === "dark") {
+        setPreference(next);
+      }
+    };
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    window.addEventListener(COLOR_SCHEME_CHANGE_EVENT, onSchemeChange);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(COLOR_SCHEME_CHANGE_EVENT, onSchemeChange);
+    };
   }, []);
 
   const handleSelect = useCallback((next: ColorSchemePreference) => {

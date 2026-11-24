@@ -1,4 +1,4 @@
-import { Button, EmptyState } from "@niwa/ui/components";
+import { Badge, Button, EmptyState, Skeleton } from "@niwa/ui/components";
 import type { SqliteTableSchema } from "../../../features/sqlite/types";
 
 interface SchemaSidebarProps {
@@ -17,59 +17,64 @@ export function SchemaSidebar({
   onInspectTable,
 }: SchemaSidebarProps) {
   return (
-    <aside className="bg-neutral-900/30 p-4 flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-57px)]">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+    <aside className="bg-surface-muted/35 p-4 flex flex-col gap-3 overflow-y-auto lg:max-h-[calc(100vh-61px)]">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Schema Explorer
         </h2>
-        <span className="text-xs font-mono text-neutral-500">
+        <Badge variant="neutral" mono>
           {schema.length} {schema.length === 1 ? "object" : "objects"}
-        </span>
+        </Badge>
       </div>
 
       {status === "initializing" && (
-        <p className="text-xs text-neutral-500 py-4">
-          Initializing SQLite WASM worker…
-        </p>
+        <div className="space-y-2 py-2" aria-label="Initializing SQLite WASM worker">
+          <Skeleton className="h-9 w-full rounded-[var(--radius-lg)]" />
+          <Skeleton className="h-24 w-full rounded-[var(--radius-lg)]" />
+          <p className="text-xs text-muted-foreground pt-1">
+            Initializing SQLite WASM worker…
+          </p>
+        </div>
       )}
 
       {status === "ready" && schema.length === 0 && (
         <EmptyState
-          title="No tables found."
+          title="No tables found"
           description={
             <>
-              Run a <code className="text-neutral-300">CREATE TABLE</code> query
-              in the editor to get started.
+              Run a <code className="font-mono text-foreground">CREATE TABLE</code>{" "}
+              query in the editor to get started.
             </>
           }
-          className="p-4"
+          className="p-5"
         />
       )}
 
-      <ul className="space-y-1.5">
+      <ul className="space-y-2">
         {schema.map((table) => {
           const isExpanded = expandedTables[table.name] ?? true;
           return (
             <li
               key={table.name}
-              className="rounded-md border border-neutral-800/80 bg-neutral-900/60 overflow-hidden"
+              className="rounded-[var(--radius-xl)] border border-border bg-surface shadow-[var(--shadow-card)] overflow-hidden"
             >
-              <div className="flex items-center justify-between px-2.5 py-2 hover:bg-neutral-800/50 transition-colors">
+              <div className="flex items-center justify-between px-3 py-2 hover:bg-surface-muted/60 transition-colors">
                 <button
                   type="button"
                   onClick={() => onToggleTable(table.name)}
-                  className="flex items-center gap-2 text-left text-xs font-medium text-neutral-200 truncate flex-1 cursor-pointer"
+                  aria-expanded={isExpanded}
+                  className="flex items-center gap-2 text-left text-xs font-medium text-foreground truncate flex-1 cursor-pointer focus-visible:outline-2 focus-visible:outline-ring rounded"
                 >
-                  <span className="text-[10px] text-neutral-500">
+                  <span className="text-[10px] text-muted-foreground">
                     {isExpanded ? "▾" : "▸"}
                   </span>
                   <span className="truncate font-mono">{table.name}</span>
-                  <span className="text-[10px] font-mono text-neutral-500">
+                  <span className="text-[10px] font-mono text-muted-foreground">
                     ({table.rowCount})
                   </span>
                 </button>
                 <Button
-                  variant="ghost"
+                  variant="soft"
                   size="xs"
                   onClick={() => onInspectTable(table.name)}
                   title={`Query ${table.name}`}
@@ -79,24 +84,25 @@ export function SchemaSidebar({
               </div>
 
               {isExpanded && table.columns.length > 0 && (
-                <ul className="border-t border-neutral-800/60 bg-neutral-950/50 px-3 py-1.5 space-y-1">
+                <ul className="border-t border-border bg-surface-muted/40 px-3 py-2 space-y-1.5">
                   {table.columns.map((col) => (
                     <li
                       key={col.cid}
                       className="flex items-center justify-between gap-2 text-[11px] font-mono"
                     >
-                      <span className="flex items-center gap-1.5 text-neutral-300 truncate">
+                      <span className="flex items-center gap-1.5 text-foreground truncate">
                         {col.pk && (
-                          <span
-                            className="text-[9px] font-sans font-semibold px-1 rounded bg-amber-500/20 text-amber-300"
+                          <Badge
+                            variant="warning"
+                            className="px-1.5 py-0 text-[9px]"
                             title="Primary Key"
                           >
                             PK
-                          </span>
+                          </Badge>
                         )}
                         <span className="truncate">{col.name}</span>
                       </span>
-                      <span className="text-neutral-500 shrink-0">
+                      <span className="text-muted-foreground shrink-0">
                         {col.type}
                       </span>
                     </li>

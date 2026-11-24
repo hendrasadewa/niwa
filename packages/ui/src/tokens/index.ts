@@ -259,7 +259,7 @@ export const brandThemes: Record<
   niwa: {
     id: "niwa",
     label: "Niwa Base",
-    subtitle: "Default across web, labs, pustaka, open-po",
+    subtitle: "Default across web, labs, pustaka",
     accentName: "Sage",
     dataBrandAttr: undefined,
     primaryLight: "#556B59",
@@ -312,6 +312,8 @@ export function resolveColorScheme(
   return preference;
 }
 
+export const COLOR_SCHEME_CHANGE_EVENT = "niwa:color-scheme-change";
+
 /**
  * Syncs the document's <meta name="color-scheme">, root attributes, and localStorage.
  */
@@ -345,5 +347,13 @@ export function applyColorScheme(preference: ColorSchemePreference): void {
     }
   } catch {
     // Theme still applies even if storage cannot persist
+  }
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent<ColorSchemePreference>(COLOR_SCHEME_CHANGE_EVENT, {
+        detail: preference,
+      })
+    );
   }
 }

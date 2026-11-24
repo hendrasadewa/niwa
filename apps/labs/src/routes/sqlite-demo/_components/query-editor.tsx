@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from "react";
-import { Button, CodeTextarea } from "@niwa/ui/components";
+import { Button, CodeTextarea, Spinner } from "@niwa/ui/components";
 
 interface QueryEditorProps {
   sql: string;
@@ -23,30 +23,31 @@ export function QueryEditor({
   onClearSql,
 }: QueryEditorProps) {
   return (
-    <section className="p-4 flex flex-col gap-3">
+    <section className="p-5 flex flex-col gap-3 bg-surface/50">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             SQL Query Editor
-          </span>
-          <span className="text-[11px] text-neutral-500">
+          </h2>
+          <span className="text-[11px] text-muted-foreground/80">
             (Cmd/Ctrl + Enter to run)
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" size="sm" onClick={onLoadSampleSql}>
             Sample SQL
           </Button>
-          <Button variant="secondary" size="sm" onClick={onClearSql}>
+          <Button variant="ghost" size="sm" onClick={onClearSql}>
             Clear
           </Button>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             onClick={onRunQuery}
             disabled={status !== "ready" || isExecuting || !sql.trim().length}
           >
+            {isExecuting && <Spinner size="sm" />}
             {isExecuting ? "Running…" : "Run Query"}
           </Button>
         </div>
@@ -57,6 +58,7 @@ export function QueryEditor({
         onChange={(e) => onChangeSql(e.target.value)}
         onKeyDown={onKeyDown}
         rows={8}
+        aria-label="SQL query editor"
         placeholder="SELECT sqlite_version();"
       />
     </section>

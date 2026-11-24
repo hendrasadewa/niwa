@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
+import { ColorSchemeToggle } from "@niwa/ui/components";
 import {
+  COLOR_SCHEME_CHANGE_EVENT,
   COLOR_SCHEME_STORAGE_KEY,
   applyColorScheme,
   brandThemes,
@@ -44,7 +46,7 @@ export default function DesignTokensPage() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  // Sync color-scheme changes made in other browser tabs
+  // Sync color-scheme changes made in other components or browser tabs
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key !== COLOR_SCHEME_STORAGE_KEY) return;
@@ -52,13 +54,18 @@ export default function DesignTokensPage() {
       setSchemePref(next);
       applyColorScheme(next);
     };
+    const onSchemeChange = (event: Event) => {
+      const next = (event as CustomEvent<ColorSchemePreference>).detail;
+      if (next === "system" || next === "light" || next === "dark") {
+        setSchemePref(next);
+      }
+    };
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  const handleSelectScheme = useCallback((next: ColorSchemePreference) => {
-    setSchemePref(next);
-    applyColorScheme(next);
+    window.addEventListener(COLOR_SCHEME_CHANGE_EVENT, onSchemeChange);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(COLOR_SCHEME_CHANGE_EVENT, onSchemeChange);
+    };
   }, []);
 
   const handleCopy = useCallback((key: string, value: string) => {
@@ -134,39 +141,7 @@ export default function DesignTokensPage() {
               </div>
 
               {/* 3-State Color Scheme Switcher */}
-              <div
-                role="group"
-                aria-label="Color scheme preference"
-                className="inline-flex items-center rounded-full border border-border bg-surface p-1 shadow-[var(--shadow-card)]"
-              >
-                {(
-                  [
-                    {
-                      id: "system",
-                      label: `System (${systemDark ? "Dark" : "Light"})`,
-                    },
-                    { id: "light", label: "Light" },
-                    { id: "dark", label: "Dark" },
-                  ] as const
-                ).map((option) => {
-                  const active = schemePref === option.id;
-                  return (
-                    <button
-                      key={option.id}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => handleSelectScheme(option.id)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring cursor-pointer ${
-                        active
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <ColorSchemeToggle />
             </div>
           </div>
 
@@ -184,6 +159,8 @@ export default function DesignTokensPage() {
               Niwa base,{" "}
               <strong className="font-semibold text-foreground">Terracotta</strong> for{" "}
               <code className="font-mono text-xs text-foreground">auth</code>,{" "}
+              <strong className="font-semibold text-foreground">Waterlily Pink</strong>{" "}
+              for <code className="font-mono text-xs text-foreground">preorder</code>,{" "}
               <span className="font-serif italic text-foreground">Playfair Display</span>{" "}
               headings, and Open Sans UI copy.
             </p>

@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Badge, Button } from "@niwa/ui/components";
+import { Badge, Button, ColorSchemeToggle } from "@niwa/ui/components";
 import type { ScannerCameraStatus } from "../_types";
 
 interface ScannerHeaderProps {
@@ -13,7 +13,7 @@ const cameraBadgeConfig: Record<
   { label: string; variant: "neutral" | "success" | "warning" | "danger" | "info" }
 > = {
   idle: { label: "Camera Idle", variant: "neutral" },
-  starting: { label: "Starting Camera...", variant: "info" },
+  starting: { label: "Starting Camera…", variant: "info" },
   scanning: { label: "Live EAN-13 Scanner", variant: "success" },
   unsupported: { label: "Manual / Preset Mode", variant: "warning" },
   "permission-denied": { label: "Camera Blocked", variant: "danger" },
@@ -28,16 +28,16 @@ export function ScannerHeader({
   const badge = cameraBadgeConfig[cameraStatus];
 
   return (
-    <header className="border-b border-neutral-800 bg-neutral-900/60 px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+    <header className="sticky top-0 z-20 border-b border-border bg-surface/90 backdrop-blur-xs px-5 py-3 flex flex-wrap items-center justify-between gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <Link
           to="/"
-          className="text-xs font-medium text-neutral-400 hover:text-neutral-200 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-muted/70 px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
         >
-          ← Labs
+          <span aria-hidden="true">←</span>
+          <span>Labs</span>
         </Link>
-        <span className="text-neutral-700">/</span>
-        <h1 className="text-sm font-semibold tracking-tight text-neutral-100">
+        <h1 className="font-serif text-lg font-medium tracking-[-0.01em] text-foreground">
           Book Barcode (ISBN) Scanner
         </h1>
         <Badge variant={badge.variant} dot>
@@ -52,7 +52,8 @@ export function ScannerHeader({
         </Badge>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <ColorSchemeToggle className="hidden sm:inline-flex" />
         {historyCount > 0 && (
           <Button variant="danger" size="sm" onClick={onClearHistory}>
             Clear History ({historyCount})

@@ -3,11 +3,19 @@ import {
   Alert,
   Badge,
   Button,
+  Card,
   Checkbox,
+  CodeTextarea,
+  ColorSchemeToggle,
+  DataTable,
   Divider,
+  EmptyState,
   FormField,
+  PageHeader,
   PasswordInput,
+  Progress,
   SelectInput,
+  Skeleton,
   Spinner,
   Switch,
   TextArea,
@@ -283,36 +291,34 @@ export function ButtonsSection() {
   return (
     <StudyCard index="03" title="Buttons & Filter Chips">
       <div className="space-y-5">
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer"
-          >
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button variant="primary" size="md">
             <span>Primary</span>
             <span aria-hidden="true">→</span>
-          </button>
-
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full border border-border-strong bg-surface px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer"
-          >
+          </Button>
+          <Button variant="secondary" size="md">
             Secondary
-          </button>
-
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-5 py-2.5 text-sm font-medium text-primary-soft-foreground transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer"
-          >
+          </Button>
+          <Button variant="soft" size="md">
             Soft Tint
-          </button>
-
-          <button
-            type="button"
-            disabled
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground opacity-45 cursor-not-allowed"
-          >
+          </Button>
+          <Button variant="ghost" size="md">
+            Ghost
+          </Button>
+          <Button variant="danger" size="md">
+            Danger
+          </Button>
+          <Button variant="primary" size="md" disabled>
             Disabled
-          </button>
+          </Button>
+        </div>
+
+        <div className="border-t border-border pt-4 flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-xs font-medium text-muted-foreground">Sizes:</span>
+          <Button variant="secondary" size="xs">xs</Button>
+          <Button variant="secondary" size="sm">sm</Button>
+          <Button variant="secondary" size="md">md</Button>
+          <Button variant="secondary" size="lg">lg</Button>
         </div>
 
         <div className="border-t border-border pt-4">
@@ -573,26 +579,18 @@ export function ProgressAndBadgesSection() {
       <div className="space-y-5">
         <div className="space-y-2.5">
           <div className="flex items-center gap-4">
-            <div
-              role="progressbar"
-              aria-valuenow={progress}
-              aria-valuemin={0}
-              aria-valuemax={100}
+            <Progress
+              value={progress}
               aria-label="Completion progress"
-              className="h-3.5 flex-1 overflow-hidden rounded-full bg-track shadow-[var(--shadow-inset)]"
-            >
-              <div
-                className="h-full rounded-full bg-primary transition-[width] duration-200"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+              className="h-3.5 flex-1"
+            />
             <span className="w-10 text-right text-sm font-semibold tabular-nums text-foreground">
               {progress}%
             </span>
           </div>
           <div className="flex items-center justify-between gap-3">
             <label htmlFor="niwa-progress-range" className="text-xs text-muted-foreground">
-              Adjust live progress
+              Adjust live progress (<code className="font-mono text-foreground">&lt;Progress /&gt;</code>)
             </label>
             <input
               id="niwa-progress-range"
@@ -607,18 +605,12 @@ export function ProgressAndBadgesSection() {
         </div>
 
         <div className="border-t border-border pt-4 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-success-border bg-success-soft px-3 py-1 text-xs font-medium text-success-foreground">
-            <span aria-hidden="true">✓</span> Success
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-warning-border bg-warning-soft px-3 py-1 text-xs font-medium text-warning-foreground">
-            <span aria-hidden="true">!</span> Warning
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-danger-border bg-danger-soft px-3 py-1 text-xs font-medium text-danger-foreground">
-            <span aria-hidden="true">×</span> Danger
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-info-border bg-info-soft px-3 py-1 text-xs font-medium text-info-foreground">
-            <span aria-hidden="true">i</span> Info
-          </span>
+          <Badge variant="primary" dot>Primary</Badge>
+          <Badge variant="success" dot>Success</Badge>
+          <Badge variant="warning" dot>Warning</Badge>
+          <Badge variant="danger" dot>Danger</Badge>
+          <Badge variant="info" dot>Info</Badge>
+          <Badge variant="neutral" mono>v1.0.0</Badge>
         </div>
       </div>
     </StudyCard>
@@ -951,96 +943,194 @@ export function SharedComponentsSection() {
   const [role, setRole] = useState("member");
   const [consent, setConsent] = useState(true);
   const [passkeysOnly, setPasskeysOnly] = useState(false);
+  const [sqlPreview, setSqlPreview] = useState(
+    "SELECT app, brand, accent\nFROM niwa_apps\nORDER BY app ASC;"
+  );
+
+  const sampleColumns = ["App", "Brand Scope", "Accent", "Status"];
+  const sampleRows = [
+    ["pustaka-web", "default", "Botanical Sage", "Live"],
+    ["auth-web", 'data-brand="auth"', "Terracotta", "Live"],
+    ["open-po-webapp", 'data-brand="preorder"', "Waterlily Pink", "Live"],
+    ["labs", "default", "Botanical Sage", "Live"],
+  ];
 
   return (
-    <StudyCard index="12" title="@niwa/ui Shared Components" className="lg:col-span-2">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <FormField
-            label="Email address"
-            htmlFor="showcase-email"
-            hint="FormField + TextInput"
-            required
-          >
-            <TextInput
-              id="showcase-email"
-              type="email"
-              placeholder="you@hendrasadewa.com"
-            />
-          </FormField>
-
-          <FormField
-            label="Password"
-            htmlFor="showcase-password"
-            hint="PasswordInput with unmask toggle"
-            required
-          >
-            <PasswordInput
-              id="showcase-password"
-              defaultValue="niwa-garden-2026"
-            />
-          </FormField>
-
-          <FormField label="Default role" htmlFor="showcase-role">
-            <SelectInput
-              id="showcase-role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="member">Member (default)</option>
-              <option value="editor">Editor</option>
-              <option value="admin">Administrator</option>
-            </SelectInput>
-          </FormField>
-
-          <FormField label="Allowed origins" htmlFor="showcase-origins" hint="TextArea (mono)">
-            <TextArea
-              id="showcase-origins"
-              mono
-              defaultValue={"https://hendrasadewa.com\nhttps://auth.hendrasadewa.com"}
-            />
-          </FormField>
+    <StudyCard index="12" title="@niwa/ui Component Library" className="lg:col-span-2">
+      <div className="space-y-8">
+        {/* PageHeader + ColorSchemeToggle */}
+        <div className="rounded-[var(--radius-xl)] border border-border bg-surface-muted/40 p-5">
+          <PageHeader
+            kicker="PageHeader · @niwa/ui/components"
+            title="Shared primitives across every Niwa app"
+            description="Drop-in React 19 components styled with semantic tokens and responsive to both brand scopes and color schemes."
+            actions={<ColorSchemeToggle />}
+          />
         </div>
 
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="primary" size="md">Primary</Button>
-            <Button variant="secondary" size="md">Secondary</Button>
-            <Button variant="soft" size="md">Soft</Button>
-            <Button variant="ghost" size="md">Ghost</Button>
-            <Button variant="danger" size="md">Danger</Button>
+        {/* Inputs, Forms & Controls */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <FormField
+              label="Email address"
+              htmlFor="showcase-email"
+              hint="FormField + TextInput"
+              required
+            >
+              <TextInput
+                id="showcase-email"
+                type="email"
+                placeholder="you@hendrasadewa.com"
+              />
+            </FormField>
+
+            <FormField
+              label="Password"
+              htmlFor="showcase-password"
+              hint="PasswordInput with unmask toggle"
+              required
+            >
+              <PasswordInput
+                id="showcase-password"
+                defaultValue="niwa-garden-2026"
+              />
+            </FormField>
+
+            <FormField label="Default role" htmlFor="showcase-role">
+              <SelectInput
+                id="showcase-role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="member">Member (default)</option>
+                <option value="editor">Editor</option>
+                <option value="admin">Administrator</option>
+              </SelectInput>
+            </FormField>
+
+            <FormField label="Allowed origins" htmlFor="showcase-origins" hint="TextArea (mono)">
+              <TextArea
+                id="showcase-origins"
+                mono
+                rows={2}
+                defaultValue={"https://hendrasadewa.com\nhttps://auth.hendrasadewa.com"}
+              />
+            </FormField>
+
+            <FormField label="SQL snippet" htmlFor="showcase-code" hint="CodeTextarea">
+              <CodeTextarea
+                id="showcase-code"
+                rows={3}
+                value={sqlPreview}
+                onChange={(e) => setSqlPreview(e.target.value)}
+              />
+            </FormField>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="primary" dot>Primary</Badge>
-            <Badge variant="success" dot>Active</Badge>
-            <Badge variant="warning">Pending</Badge>
-            <Badge variant="danger">Revoked</Badge>
-            <Badge variant="info" mono>auth-web</Badge>
-            <Badge variant="neutral" mono>v1</Badge>
-            <Spinner size="sm" />
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="primary" size="md">Primary</Button>
+              <Button variant="secondary" size="md">Secondary</Button>
+              <Button variant="soft" size="md">Soft</Button>
+              <Button variant="ghost" size="md">Ghost</Button>
+              <Button variant="danger" size="md">Danger</Button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="primary" dot>Primary</Badge>
+              <Badge variant="success" dot>Active</Badge>
+              <Badge variant="warning">Pending</Badge>
+              <Badge variant="danger">Revoked</Badge>
+              <Badge variant="info" mono>preorder</Badge>
+              <Badge variant="neutral" mono>v1</Badge>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Spinner size="sm" />
+                <span>sm</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Spinner size="md" />
+                <span>md</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Spinner size="lg" />
+                <span>lg</span>
+              </div>
+            </div>
+
+            <Divider label="controls" />
+
+            <Checkbox
+              card
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              label="Require explicit first-time consent"
+              description="Built with @niwa/ui Checkbox (card mode)."
+            />
+
+            <Switch
+              checked={passkeysOnly}
+              onChange={(e) => setPasskeysOnly(e.target.checked)}
+              label="Prefer passkey sign-in"
+              description="Built with @niwa/ui Switch."
+            />
+
+            <div className="space-y-2">
+              <Alert variant="success">Profile and passkey settings synchronized.</Alert>
+              <Alert variant="info">Open-PO uses Waterlily Pink via data-brand=&quot;preorder&quot;.</Alert>
+              <Alert variant="warning">Quota is almost full — 2 items remaining in this batch.</Alert>
+              <Alert variant="error">Invalid credentials. Check your email and password.</Alert>
+            </div>
           </div>
+        </div>
 
-          <Divider label="controls" />
+        <Divider label="surfaces, data & states" />
 
-          <Checkbox
-            card
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            label="Require explicit first-time consent"
-            description="Built with @niwa/ui Checkbox (card mode)."
-          />
+        {/* Card, DataTable, Skeleton & EmptyState */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card
+            title="Card & DataTable"
+            description="Structured elevated card with sticky-header tabular output."
+            actions={<Badge variant="primary" mono>4 apps</Badge>}
+            contentClassName="p-4"
+          >
+            <DataTable
+              columns={sampleColumns}
+              rows={sampleRows}
+              renderCell={(cell, _r, colIdx) =>
+                colIdx === 3 ? (
+                  <Badge variant="success" dot>
+                    {cell}
+                  </Badge>
+                ) : (
+                  cell
+                )
+              }
+            />
+          </Card>
 
-          <Switch
-            checked={passkeysOnly}
-            onChange={(e) => setPasskeysOnly(e.target.checked)}
-            label="Prefer passkey sign-in"
-            description="Built with @niwa/ui Switch."
-          />
+          <div className="space-y-4 flex flex-col justify-between">
+            <Card
+              title="Skeleton Loading"
+              description="Warm pulsing placeholders built with @niwa/ui Skeleton."
+              contentClassName="space-y-3"
+            >
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-11 w-11 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-2/5" />
+                  <Skeleton className="h-3 w-3/4" />
+                </div>
+              </div>
+              <Skeleton className="h-2.5 w-full rounded-full" />
+            </Card>
 
-          <div className="space-y-2.5">
-            <Alert variant="success">Profile and passkey settings synchronized.</Alert>
-            <Alert variant="error">Invalid credentials. Check your email and password.</Alert>
+            <EmptyState
+              title="EmptyState Placeholder"
+              description="Used across SQLite Explorer, Book Scanner, and Pustaka when a list or query returns zero items."
+            />
           </div>
         </div>
       </div>
