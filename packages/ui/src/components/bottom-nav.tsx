@@ -46,7 +46,7 @@ export function BottomNav({
 
 export function bottomNavItemClasses(active = false, className?: string) {
   return cn(
-    "relative flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-[var(--radius-xl)] px-1.5 py-1.5 text-[11px] leading-none transition-colors focus-visible:outline-2 focus-visible:outline-ring cursor-pointer select-none",
+    "relative flex min-h-13 min-w-0 flex-col items-center justify-center gap-1 rounded-[var(--radius-xl)] px-1.5 py-2 text-[11px] leading-tight transition-colors focus-visible:outline-2 focus-visible:outline-ring cursor-pointer select-none",
     active
       ? "bg-primary-soft/75 font-semibold text-primary"
       : "font-medium text-muted-foreground hover:bg-surface-subtle/70 hover:text-foreground",
@@ -69,7 +69,7 @@ export function BottomNavItemContent({
 }: BottomNavItemContentProps) {
   return (
     <>
-      <span className="relative flex h-5 w-5 items-center justify-center">
+      <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
         {icon}
         {badge !== undefined && badge !== null && badge !== false && (
           <span className="absolute -top-1.5 -right-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground shadow-[var(--shadow-card)]">
@@ -77,11 +77,13 @@ export function BottomNavItemContent({
           </span>
         )}
       </span>
-      <span className="max-w-full truncate">{label}</span>
+      <span className="block max-w-full truncate px-0.5 leading-[1.35]">
+        {label}
+      </span>
       <span
         aria-hidden="true"
         className={cn(
-          "h-1 w-1 rounded-full transition-opacity",
+          "h-1 w-1 shrink-0 rounded-full transition-opacity",
           active ? "bg-primary opacity-100" : "opacity-0"
         )}
       />
