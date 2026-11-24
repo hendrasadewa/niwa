@@ -64,7 +64,6 @@ export interface BottomNavItemContentProps {
 export function BottomNavItemContent({
   icon,
   label,
-  active = false,
   badge,
 }: BottomNavItemContentProps) {
   return (
@@ -80,13 +79,6 @@ export function BottomNavItemContent({
       <span className="block max-w-full truncate px-0.5 leading-[1.35]">
         {label}
       </span>
-      <span
-        aria-hidden="true"
-        className={cn(
-          "h-1 w-1 shrink-0 rounded-full transition-opacity",
-          active ? "bg-primary opacity-100" : "opacity-0"
-        )}
-      />
     </>
   );
 }

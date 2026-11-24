@@ -20,7 +20,7 @@ export function AppShell({
   return (
     <div className="flex min-h-screen flex-col overflow-x-clip">
       <Navbar />
-      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-8">
         {shouldGuard ? (
           <AuthGuard requireAdmin={requireAdmin}>{children}</AuthGuard>
         ) : (

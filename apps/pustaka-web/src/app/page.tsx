@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Library,
   LogIn,
-  Sparkles,
 } from "lucide-react";
 import type { Book, ReadingListItem } from "@/types/api";
 import { PageHeader } from "@niwa/ui/components";
@@ -25,9 +24,15 @@ import {
 import { ReadingListBookRow } from "@/components/books/reading-list-book-row";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+type DashboardTab = "reading" | "want_to_read" | "completed" | "recent";
+
+const TOP_ITEMS_LIMIT = 10;
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, loginWithSso } = useAuth();
+  const { isAuthenticated, loginWithSso } = useAuth();
+  const [activeTab, setActiveTab] = React.useState<DashboardTab>("reading");
 
   const readingListQuery = useQuery({
     queryKey: ["reading-list"],
@@ -43,8 +48,15 @@ export default function DashboardPage() {
     queryFn: () => apiClient.get<{ books: Book[] }>("/api/v1/books"),
   });
 
-  const readingList = readingListQuery.data?.reading_list ?? [];
-  const allBooks = booksQuery.data?.books ?? [];
+  const readingList = React.useMemo(
+    () => readingListQuery.data?.reading_list ?? [],
+    [readingListQuery.data?.reading_list]
+  );
+
+  const allBooks = React.useMemo(
+    () => booksQuery.data?.books ?? [],
+    [booksQuery.data?.books]
+  );
 
   const currentlyReading = React.useMemo(
     () => readingList.filter((item) => item.status === "reading"),
@@ -65,7 +77,7 @@ export default function DashboardPage() {
     () =>
       [...allBooks]
         .sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0))
-        .slice(0, 5),
+        .slice(0, TOP_ITEMS_LIMIT),
     [allBooks]
   );
 
@@ -83,205 +95,271 @@ export default function DashboardPage() {
     );
   };
 
+  const tabs: {
+    id: DashboardTab;
+    label: string;
+    fullLabel: string;
+    count: number;
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
+    {
+      id: "reading",
+      label: "Reading",
+      fullLabel: "Currently Reading",
+      count: currentlyReading.length,
+      icon: BookOpen,
+    },
+    {
+      id: "want_to_read",
+      label: "Wishlist",
+      fullLabel: "Want to Read",
+      count: wantToRead.length,
+      icon: Bookmark,
+    },
+    {
+      id: "completed",
+      label: "Done",
+      fullLabel: "Completed",
+      count: completedBooks.length,
+      icon: CheckCircle2,
+    },
+    {
+      id: "recent",
+      label: "Recent",
+      fullLabel: "Library Collection",
+      count: allBooks.length,
+      icon: Library,
+    },
+  ];
+
+  const activeReadingItems =
+    activeTab === "reading"
+      ? currentlyReading.slice(0, TOP_ITEMS_LIMIT)
+      : activeTab === "want_to_read"
+        ? wantToRead.slice(0, TOP_ITEMS_LIMIT)
+        : activeTab === "completed"
+          ? completedBooks.slice(0, TOP_ITEMS_LIMIT)
+          : [];
+
+  const activeReadingTotal =
+    activeTab === "reading"
+      ? currentlyReading.length
+      : activeTab === "want_to_read"
+        ? wantToRead.length
+        : activeTab === "completed"
+          ? completedBooks.length
+          : 0;
+
   return (
     <AppShell>
-      <div className="space-y-8">
-        <PageHeader
-          kicker="Pustaka / Library"
-          title={
-            isAuthenticated && user
-              ? `Welcome back, ${user.username}`
-              : "Welcome to Pustaka"
-          }
-          description={
-            isAuthenticated
-              ? "Track your active reading progress and discover books from the household shelves."
-              : "Browse our household library collection. Sign in to save books to your reading list, track page progress, and leave reviews."
-          }
-          actions={
-            <div className="flex flex-wrap items-center gap-2">
-              {!isAuthenticated && (
+      {isAuthenticated ? (
+        <div className="space-y-5">
+          {/* Summary Tabs */}
+          <div
+            role="tablist"
+            aria-label="Library views"
+            className="grid grid-cols-4 gap-1 rounded-[var(--radius-2xl)] border border-border bg-surface p-1.5 shadow-[var(--shadow-card)]"
+          >
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  id={`tab-${tab.id}`}
+                  aria-selected={isActive}
+                  aria-controls={`panel-${tab.id}`}
+                  title={`${tab.fullLabel} (${tab.count})`}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex min-w-0 flex-col items-center justify-center gap-1 rounded-[var(--radius-xl)] px-1 py-2 text-center transition-colors focus-visible:outline-2 focus-visible:outline-ring cursor-pointer select-none",
+                    isActive
+                      ? "bg-primary-soft text-primary"
+                      : "text-muted-foreground hover:bg-surface-subtle/70 hover:text-foreground"
+                  )}
+                >
+                  <span className="flex items-center justify-center gap-1">
+                    <Icon
+                      aria-hidden="true"
+                      className={cn(
+                        "h-4 w-4 shrink-0",
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "font-serif text-base font-medium leading-none tabular-nums sm:text-lg",
+                        isActive ? "text-primary" : "text-foreground"
+                      )}
+                    >
+                      {tab.count}
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "whitespace-nowrap text-[11px] leading-[1.35] sm:text-xs",
+                      isActive ? "font-semibold" : "font-medium"
+                    )}
+                  >
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Tab Panel */}
+          <section
+            id={`panel-${activeTab}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
+            className="space-y-3"
+          >
+            {activeTab === "recent" ? (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <h1 className="font-serif text-xl font-medium tracking-[-0.01em] text-foreground">
+                    Recent
+                  </h1>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/books">
+                      View all
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+
+                {booksQuery.isLoading ? (
+                  <BookGridSkeleton count={6} />
+                ) : recentAdditions.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                      No books have been added to the library yet.
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {recentAdditions.map((book) => (
+                      <BookCard
+                        key={book.id}
+                        book={book}
+                        readingStatus={statusByBookId.get(book.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <h1 className="font-serif text-xl font-medium tracking-[-0.01em] text-foreground">
+                    {activeTab === "reading"
+                      ? "Reading"
+                      : activeTab === "want_to_read"
+                        ? "Wishlist"
+                        : "Completed"}
+                  </h1>
+                  {activeReadingTotal > TOP_ITEMS_LIMIT && (
+                    <span className="text-xs text-muted-foreground">
+                      Top {TOP_ITEMS_LIMIT} of {activeReadingTotal}
+                    </span>
+                  )}
+                </div>
+
+                {readingListQuery.isLoading ? (
+                  <BookRowSkeleton count={3} />
+                ) : activeReadingItems.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                      {activeTab === "reading" ? (
+                        <BookOpen className="mb-3 h-8 w-8 text-muted-foreground/60" />
+                      ) : activeTab === "want_to_read" ? (
+                        <Bookmark className="mb-3 h-8 w-8 text-muted-foreground/60" />
+                      ) : (
+                        <CheckCircle2 className="mb-3 h-8 w-8 text-muted-foreground/60" />
+                      )}
+                      <p className="text-sm font-medium text-foreground">
+                        {activeTab === "reading"
+                          ? "Nothing in progress right now"
+                          : activeTab === "want_to_read"
+                            ? "Your wishlist is empty"
+                            : "No completed books yet"}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        asChild
+                      >
+                        <Link href="/books">Explore Catalog</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-2.5">
+                    {activeReadingItems.map((item) => (
+                      <ReadingListBookRow key={item.id} item={item} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          <PageHeader
+            kicker="Pustaka / Library"
+            title="Welcome to Pustaka"
+            description="Browse our household library collection. Sign in to save books to your reading list, track page progress, and leave reviews."
+            actions={
+              <div className="flex flex-wrap items-center gap-2">
                 <Button variant="outline" onClick={handleSignIn}>
                   <LogIn className="h-4 w-4" />
                   Sign In
                 </Button>
-              )}
-              <Button asChild>
+                <Button asChild>
+                  <Link href="/books">
+                    <Library className="h-4 w-4" />
+                    Browse Catalog
+                  </Link>
+                </Button>
+              </div>
+            }
+          />
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-serif text-xl font-medium tracking-[-0.01em] text-foreground">
+                Recent
+              </h2>
+              <Button variant="ghost" size="sm" asChild>
                 <Link href="/books">
-                  <Library className="h-4 w-4" />
-                  Browse Full Catalog
+                  View all
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
             </div>
-          }
-        />
 
-        {isAuthenticated && (
-          <>
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-serif text-xl font-medium tracking-[-0.01em]">
-                    Active Reading List
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    Books you are currently reading and your page progress.
-                  </p>
-                </div>
+            {booksQuery.isLoading ? (
+              <BookGridSkeleton count={5} />
+            ) : recentAdditions.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                  No books have been added to the library yet.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {recentAdditions.slice(0, 5).map((book) => (
+                  <BookCard key={book.id} book={book} />
+                ))}
               </div>
-
-              {readingListQuery.isLoading ? (
-                <BookRowSkeleton count={2} />
-              ) : currentlyReading.length === 0 ? (
-                <Card className="border-dashed">
-                  <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-                    <BookOpen className="mb-3 h-9 w-9 text-muted-foreground/60" />
-                    <h3 className="text-sm font-semibold">
-                      No active books in your reading list
-                    </h3>
-                    <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-                      Explore the household catalog and mark a book as
-                      &ldquo;Reading&rdquo; to track your page progress here.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-4"
-                      asChild
-                    >
-                      <Link href="/books">Explore Catalog</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-2.5">
-                  {currentlyReading.map((item) => (
-                    <ReadingListBookRow key={item.id} item={item} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <div
-              aria-label="Reading summary"
-              className="grid grid-cols-4 divide-x divide-border rounded-[var(--radius-2xl)] border border-border bg-surface py-3 shadow-[var(--shadow-card)]"
-            >
-              {[
-                {
-                  label: "Currently Reading",
-                  count: currentlyReading.length,
-                  icon: BookOpen,
-                  accent: true,
-                },
-                {
-                  label: "Want to Read",
-                  count: wantToRead.length,
-                  icon: Bookmark,
-                  accent: false,
-                },
-                {
-                  label: "Completed",
-                  count: completedBooks.length,
-                  icon: CheckCircle2,
-                  accent: false,
-                },
-                {
-                  label: "Library Collection",
-                  count: allBooks.length,
-                  icon: Library,
-                  accent: false,
-                },
-              ].map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <div
-                    key={stat.label}
-                    title={stat.label}
-                    aria-label={`${stat.label}: ${stat.count}`}
-                    className="flex flex-col items-center justify-center gap-1 px-2 text-center"
-                  >
-                    <Icon
-                      aria-hidden="true"
-                      className={
-                        stat.accent
-                          ? "h-4 w-4 text-primary"
-                          : "h-4 w-4 text-muted-foreground"
-                      }
-                    />
-                    <span className="font-serif text-lg font-medium leading-none tabular-nums text-foreground sm:text-xl">
-                      {stat.count}
-                    </span>
-                    <span className="sr-only sm:not-sr-only sm:text-[11px] sm:text-muted-foreground">
-                      {stat.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {wantToRead.length > 0 && (
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="font-serif text-xl font-medium tracking-[-0.01em]">
-                      Want to Read ({wantToRead.length})
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      Saved on your personal wishlist for next reading.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2.5">
-                  {wantToRead.map((item) => (
-                    <ReadingListBookRow key={item.id} item={item} />
-                  ))}
-                </div>
-              </section>
             )}
-          </>
-        )}
+          </section>
 
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="flex items-center gap-2 font-serif text-xl font-medium tracking-[-0.01em]">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Recent Additions to the Library
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Latest books cataloged on the household shelves.
-              </p>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/books">
-                View all
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          {booksQuery.isLoading ? (
-            <BookGridSkeleton count={5} />
-          ) : recentAdditions.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                No books have been added to the library yet.
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {recentAdditions.map((book) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  readingStatus={statusByBookId.get(book.id)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {!isAuthenticated && (
           <Card>
             <CardContent className="flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
               <div className="space-y-1">
@@ -299,8 +377,8 @@ export default function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
-        )}
-      </div>
+        </div>
+      )}
     </AppShell>
   );
 }
