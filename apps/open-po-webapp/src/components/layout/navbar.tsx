@@ -5,15 +5,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  LogIn,
   LogOut,
-  Menu,
   PackageSearch,
   Receipt,
   ShoppingBag,
   Store,
   User as UserIcon,
-  X,
 } from "lucide-react";
+import {
+  BottomNav,
+  BottomNavItem,
+  BottomNavItemContent,
+  bottomNavItemClasses,
+} from "@niwa/ui/components";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,23 +38,33 @@ export function Navbar() {
   const pathname = usePathname();
   const { user, isAuthenticated, ownedStores, logout } = useAuth();
   const { totalItems, setIsDrawerOpen } = useCart();
-  const [mobileMenuPath, setMobileMenuPath] = React.useState<string | null>(
-    null
-  );
-  const mobileMenuOpen = mobileMenuPath === pathname;
-  const setMobileMenuOpen = (open: boolean) =>
-    setMobileMenuPath(open ? pathname : null);
 
   const navItems = [
-    { href: "/", label: "Explore Pre-Orders", icon: Store },
-    { href: "/track", label: "Track Order", icon: PackageSearch },
+    {
+      href: "/",
+      label: "Explore Pre-Orders",
+      mobileLabel: "Explore",
+      icon: Store,
+    },
+    {
+      href: "/track",
+      label: "Track Order",
+      mobileLabel: "Track",
+      icon: PackageSearch,
+    },
     ...(isAuthenticated
       ? [
-          { href: "/orders", label: "My Orders", icon: Receipt },
+          {
+            href: "/orders",
+            label: "My Orders",
+            mobileLabel: "Orders",
+            icon: Receipt,
+          },
           {
             href: "/seller",
             label:
               ownedStores.length > 0 ? "Seller Console" : "Open My Store",
+            mobileLabel: ownedStores.length > 0 ? "Seller" : "Store",
             icon: LayoutDashboard,
           },
         ]
@@ -75,7 +90,10 @@ export function Navbar() {
               </div>
             </Link>
 
-            <nav aria-label="Primary" className="hidden md:flex items-center gap-1">
+            <nav
+              aria-label="Primary"
+              className="hidden md:flex items-center gap-1"
+            >
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -110,6 +128,9 @@ export function Navbar() {
               size="sm"
               onClick={() => setIsDrawerOpen(true)}
               className="relative gap-2"
+              aria-label={
+                totalItems > 0 ? `Open cart (${totalItems} items)` : "Open cart"
+              }
             >
               <ShoppingBag className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Cart</span>
@@ -126,7 +147,7 @@ export function Navbar() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2 rounded-full pl-2 pr-3 font-medium"
+                    className="gap-2 rounded-full pl-2 pr-2.5 sm:pr-3 font-medium"
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                       {user.name.slice(0, 1).toUpperCase()}
@@ -151,7 +172,7 @@ export function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
                       <UserIcon className="h-4 w-4" />
-                      My Profile & Address
+                      My Profile &amp; Address
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -179,86 +200,57 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
                   <Link href="/login">Sign In</Link>
                 </Button>
-                <Button size="sm" asChild>
+                <Button size="sm" className="hidden sm:inline-flex" asChild>
                   <Link href="/register">Register</Link>
                 </Button>
-              </div>
-            )}
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-expanded={mobileMenuOpen}
-              aria-label="Toggle navigation menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-surface px-4 py-3 shadow-[var(--shadow-card)] space-y-2">
-            <nav aria-label="Mobile" className="flex flex-col space-y-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname === item.href ||
-                      pathname.startsWith(`${item.href}/`);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-            {!isAuthenticated && (
-              <div className="pt-2 border-t border-border flex items-center gap-2">
-                <Button variant="outline" size="sm" className="flex-1" asChild>
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                <Button size="sm" className="sm:hidden gap-1.5" asChild>
+                  <Link href="/login">
+                    <LogIn className="h-3.5 w-3.5" />
                     Sign In
                   </Link>
                 </Button>
-                <Button size="sm" className="flex-1" asChild>
-                  <Link
-                    href="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Register
-                  </Link>
-                </Button>
               </div>
             )}
           </div>
-        )}
+        </div>
       </header>
+
+      <BottomNav label="Open-PO mobile navigation">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              className={bottomNavItemClasses(isActive)}
+            >
+              <BottomNavItemContent
+                icon={<Icon className="h-5 w-5" />}
+                label={item.mobileLabel}
+                active={isActive}
+              />
+            </Link>
+          );
+        })}
+        {!isAuthenticated && (
+          <BottomNavItem
+            icon={<ShoppingBag className="h-5 w-5" />}
+            label="Cart"
+            badge={totalItems > 0 ? totalItems : undefined}
+            onClick={() => setIsDrawerOpen(true)}
+          />
+        )}
+      </BottomNav>
+
       <CartDrawer />
     </>
   );

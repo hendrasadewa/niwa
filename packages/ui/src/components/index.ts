@@ -1,6 +1,15 @@
 export { Alert, type AlertProps, type AlertVariant } from "./alert";
 export { Badge, type BadgeProps, type BadgeVariant } from "./badge";
 export {
+  BottomNav,
+  BottomNavItem,
+  BottomNavItemContent,
+  bottomNavItemClasses,
+  type BottomNavItemContentProps,
+  type BottomNavItemProps,
+  type BottomNavProps,
+} from "./bottom-nav";
+export {
   Button,
   type ButtonProps,
   type ButtonSize,

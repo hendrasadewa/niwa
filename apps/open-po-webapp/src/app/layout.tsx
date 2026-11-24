@@ -54,7 +54,7 @@ export default function RootLayout({
             <CartProvider>
               <Navbar />
               <main className="min-w-0 flex-1">{children}</main>
-              <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+              <footer className="border-t border-border py-6 pb-24 text-center text-xs text-muted-foreground md:pb-6">
                 <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 sm:flex-row">
                   <span>
                     Open-PO — Micro-Ecommerce Pre-Order Platform for UMKM

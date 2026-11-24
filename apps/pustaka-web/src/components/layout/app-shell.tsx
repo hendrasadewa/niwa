@@ -27,7 +27,7 @@ export function AppShell({
           children
         )}
       </main>
-      <footer className="border-t py-6 text-center text-xs text-muted-foreground">
+      <footer className="border-t border-border py-6 pb-24 text-center text-xs text-muted-foreground md:pb-6">
         Pustaka — Household Mini-Library &amp; Reading Tracker
       </footer>
     </div>

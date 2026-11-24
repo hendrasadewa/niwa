@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Alert,
   Badge,
+  BottomNav,
+  BottomNavItem,
   Button,
   Card,
   Checkbox,
@@ -725,47 +727,37 @@ export function SegmentedTabsSection() {
 
 export function BottomNavigationSection() {
   const items = [
-    { id: "home", label: "Home", icon: "⌂" },
-    { id: "search", label: "Search", icon: "⌕" },
-    { id: "favorites", label: "Favorites", icon: "♡" },
-    { id: "settings", label: "Settings", icon: "⚙" },
+    { id: "home", label: "Home", icon: "⌂", badge: undefined },
+    { id: "search", label: "Catalog", icon: "⌕", badge: undefined },
+    { id: "cart", label: "Orders", icon: "♡", badge: 2 },
+    { id: "settings", label: "Profile", icon: "⚙", badge: undefined },
   ] as const;
   const [active, setActive] = useState<(typeof items)[number]["id"]>("home");
 
   return (
     <StudyCard index="10" title="Bottom Navigation">
-      <nav
-        aria-label="Mobile navigation preview"
-        className="grid grid-cols-4 rounded-[var(--radius-2xl)] border border-border bg-surface-muted/70 px-2 py-2.5 shadow-[var(--shadow-elevated)]"
-      >
-        {items.map((item) => {
-          const isActive = active === item.id;
-          return (
-            <button
+      <div className="space-y-3">
+        <BottomNav fixed={false} label="Mobile navigation preview">
+          {items.map((item) => (
+            <BottomNavItem
               key={item.id}
-              type="button"
-              aria-current={isActive ? "page" : undefined}
+              active={active === item.id}
               onClick={() => setActive(item.id)}
-              className={`flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-ring cursor-pointer ${
-                isActive
-                  ? "font-semibold text-primary"
-                  : "font-normal text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span aria-hidden="true" className="text-lg leading-none">
-                {item.icon}
-              </span>
-              <span>{item.label}</span>
-              <span
-                aria-hidden="true"
-                className={`h-1 w-1 rounded-full transition-opacity ${
-                  isActive ? "bg-primary opacity-100" : "opacity-0"
-                }`}
-              />
-            </button>
-          );
-        })}
-      </nav>
+              icon={
+                <span aria-hidden="true" className="text-base leading-none">
+                  {item.icon}
+                </span>
+              }
+              label={item.label}
+              badge={item.badge}
+            />
+          ))}
+        </BottomNav>
+        <p className="text-xs text-muted-foreground">
+          Shared <code className="font-mono text-foreground">&lt;BottomNav /&gt;</code>{" "}
+          used on mobile across Pustaka and Open-PO with safe-area bottom insets.
+        </p>
+      </div>
     </StudyCard>
   );
 }
