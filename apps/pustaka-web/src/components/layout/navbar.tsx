@@ -41,9 +41,17 @@ export function Navbar() {
       {
         href: "/",
         label: isAuthenticated ? "Dashboard" : "Home",
-        mobileLabel: isAuthenticated ? "Home" : "Home",
+        mobileLabel: "Home",
         icon: LayoutDashboard,
         active: pathname === "/",
+      },
+      {
+        href: "/libraries",
+        label: "Libraries",
+        mobileLabel: "Libraries",
+        icon: Library,
+        active:
+          pathname === "/libraries" || pathname.startsWith("/libraries/"),
       },
       {
         href: "/books",
@@ -67,7 +75,7 @@ export function Navbar() {
     if (isAdmin) {
       items.push({
         href: "/admin",
-        label: "Admin Console",
+        label: "Admin",
         mobileLabel: "Admin",
         icon: Shield,
         active: pathname.startsWith("/admin"),
@@ -97,7 +105,7 @@ export function Navbar() {
                   Pustaka
                 </span>
                 <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Household Library
+                  Personal &amp; Shared Libraries
                 </span>
               </div>
             </Link>
@@ -169,6 +177,12 @@ export function Navbar() {
                     <Link href="/" className="w-full cursor-pointer">
                       <LayoutDashboard className="h-4 w-4" />
                       Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/libraries" className="w-full cursor-pointer">
+                      <Library className="h-4 w-4" />
+                      Libraries
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

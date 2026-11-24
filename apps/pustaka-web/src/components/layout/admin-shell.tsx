@@ -5,9 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowLeft,
-  BookCopy,
   LayoutDashboard,
-  LibraryBig,
+  Library,
   Shield,
   Users,
 } from "lucide-react";
@@ -23,21 +22,15 @@ const ADMIN_NAV_ITEMS = [
     exact: true,
   },
   {
-    href: "/admin/books",
-    label: "Books Inventory",
-    icon: BookCopy,
-    exact: false,
-  },
-  {
-    href: "/admin/bookshelves",
-    label: "Bookshelves",
-    icon: LibraryBig,
-    exact: false,
-  },
-  {
     href: "/admin/users",
     label: "Users & Roles",
     icon: Users,
+    exact: false,
+  },
+  {
+    href: "/libraries",
+    label: "My Libraries",
+    icon: Library,
     exact: false,
   },
 ];
@@ -56,15 +49,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="font-serif text-2xl font-medium tracking-[-0.015em] text-foreground">
-                  Admin Console
+                  Platform Admin
                 </h1>
                 <Badge variant="secondary" className="text-[11px]">
                   RBAC: Admin
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                Manage library inventory, physical bookshelves, R2 book covers,
-                and household member roles.
+                Manage Niwa Pustaka user roles. Books, bookshelves, and invites
+                are managed per-library by each library&apos;s owner.
               </p>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookText, MapPin } from "lucide-react";
+import { BookText, Library, MapPin, User as UserIcon } from "lucide-react";
 import type { Book, ReadingStatus } from "@/types/api";
 import { BookCover } from "@/components/books/book-cover";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,8 @@ export function BookCard({
   readingStatus,
   viewMode = "grid",
 }: BookCardProps) {
+  const isPrivate = book.library?.visibility === "private";
+
   if (viewMode === "list") {
     return (
       <Link href={`/books/${book.id}`} className="group block">
@@ -35,6 +37,7 @@ export function BookCard({
               bookId={book.id}
               title={book.title}
               coverImageKey={book.cover_image_key}
+              isPrivate={isPrivate}
               className="h-24 w-16 shrink-0 rounded-md"
               iconClassName="h-5 w-5"
             />
@@ -58,6 +61,18 @@ export function BookCard({
                   {book.total_pages} pages
                 </span>
                 <span className="font-mono">ISBN: {book.isbn}</span>
+                {book.owner_name && (
+                  <span className="inline-flex items-center gap-1">
+                    <UserIcon className="h-3.5 w-3.5" />
+                    {book.owner_name}
+                  </span>
+                )}
+                {book.library?.name && (
+                  <span className="inline-flex items-center gap-1">
+                    <Library className="h-3.5 w-3.5" />
+                    {book.library.name}
+                  </span>
+                )}
                 {book.bookshelf?.name && (
                   <span className="inline-flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" />
@@ -80,6 +95,7 @@ export function BookCard({
             bookId={book.id}
             title={book.title}
             coverImageKey={book.cover_image_key}
+            isPrivate={isPrivate}
           />
           {readingStatus && (
             <Badge className="absolute right-5 top-5 shadow-sm">
@@ -98,15 +114,24 @@ export function BookCard({
           </div>
 
           <div className="space-y-1.5 border-t pt-2.5 text-xs text-muted-foreground">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <span className="inline-flex items-center gap-1">
                 <BookText className="h-3.5 w-3.5" />
                 {book.total_pages}p
               </span>
-              <span className="truncate font-mono text-[11px]">
-                {book.isbn}
-              </span>
+              {book.owner_name && (
+                <span className="inline-flex min-w-0 items-center gap-1 truncate text-[11px]">
+                  <UserIcon className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{book.owner_name}</span>
+                </span>
+              )}
             </div>
+            {book.library?.name && (
+              <div className="flex items-center gap-1 truncate text-[11px]">
+                <Library className="h-3 w-3 shrink-0" />
+                <span className="truncate">{book.library.name}</span>
+              </div>
+            )}
             {book.bookshelf?.name && (
               <div className="flex items-center gap-1 truncate text-[11px]">
                 <MapPin className="h-3 w-3 shrink-0" />

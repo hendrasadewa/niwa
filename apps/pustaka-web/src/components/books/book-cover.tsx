@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { BookOpen } from "lucide-react";
-import { getBookCoverUrl } from "@/lib/api";
+import { getAuthToken, getBookCoverUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export interface BookCoverProps {
   bookId: string;
   title: string;
   coverImageKey?: string | null;
+  isPrivate?: boolean;
   className?: string;
   iconClassName?: string;
 }
@@ -17,16 +18,72 @@ export function BookCover({
   bookId,
   title,
   coverImageKey,
+  isPrivate = false,
   className,
   iconClassName,
 }: BookCoverProps) {
-  const [hasError, setHasError] = React.useState(false);
+  const coverKey = `${bookId}:${coverImageKey ?? ""}:${isPrivate}`;
+  const [failedKey, setFailedKey] = React.useState<string | null>(null);
+  const [authRetryKey, setAuthRetryKey] = React.useState<string | null>(null);
+  const [blobState, setBlobState] = React.useState<{
+    key: string;
+    url: string;
+  } | null>(null);
+
+  const shouldUseAuthFetch = isPrivate || authRetryKey === coverKey;
 
   React.useEffect(() => {
-    setHasError(false);
-  }, [bookId, coverImageKey]);
+    if (!coverImageKey || !shouldUseAuthFetch) {
+      return;
+    }
 
-  const showImage = Boolean(coverImageKey) && !hasError;
+    const token = getAuthToken();
+    if (!token) {
+      return;
+    }
+
+    let cancelled = false;
+    let createdUrl: string | null = null;
+
+    fetch(getBookCoverUrl(bookId, coverImageKey), {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Cover fetch failed");
+        return res.blob();
+      })
+      .then((blob) => {
+        if (cancelled) return;
+        createdUrl = URL.createObjectURL(blob);
+        setBlobState({ key: coverKey, url: createdUrl });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFailedKey(coverKey);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      if (createdUrl) {
+        URL.revokeObjectURL(createdUrl);
+      }
+    };
+  }, [bookId, coverImageKey, coverKey, shouldUseAuthFetch]);
+
+  const activeBlobUrl =
+    blobState && blobState.key === coverKey ? blobState.url : null;
+
+  const imgSrc = shouldUseAuthFetch
+    ? activeBlobUrl
+    : coverImageKey
+      ? getBookCoverUrl(bookId, coverImageKey)
+      : null;
+
+  const showImage =
+    Boolean(coverImageKey) && Boolean(imgSrc) && failedKey !== coverKey;
 
   return (
     <div
@@ -35,13 +92,19 @@ export function BookCover({
         className
       )}
     >
-      {showImage ? (
+      {showImage && imgSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={getBookCoverUrl(bookId, coverImageKey)}
+          src={imgSrc}
           alt={`Cover of ${title}`}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          onError={() => setHasError(true)}
+          onError={() => {
+            if (!shouldUseAuthFetch && getAuthToken()) {
+              setAuthRetryKey(coverKey);
+            } else {
+              setFailedKey(coverKey);
+            }
+          }}
           loading="lazy"
         />
       ) : (

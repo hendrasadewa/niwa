@@ -18,7 +18,7 @@ import {
   ShieldCheck,
   User as UserIcon,
 } from "lucide-react";
-import type { ChangePasswordResponse, ReadingListItem } from "@/types/api";
+import type { Book, ChangePasswordResponse, ReadingListItem } from "@/types/api";
 import {
   ApiError,
   apiClient,
@@ -109,7 +109,13 @@ export default function ProfilePage() {
       ),
   });
 
+  const ownedBooksQuery = useQuery({
+    queryKey: ["me-owned-books"],
+    queryFn: () => apiClient.get<{ books: Book[] }>("/api/v1/me/books"),
+  });
+
   const readingList = readingListQuery.data?.reading_list ?? [];
+  const ownedBooks = ownedBooksQuery.data?.books ?? [];
   const completedItems = readingList.filter(
     (item) => item.status === "completed"
   );
@@ -182,14 +188,21 @@ export default function ProfilePage() {
 
               {isAdmin && (
                 <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
-                  You have Administrator access. Visit the{" "}
+                  You have Platform Admin access. Visit the{" "}
                   <Link
                     href="/admin"
                     className="font-medium text-primary underline underline-offset-4"
                   >
                     Admin Console
                   </Link>{" "}
-                  to manage bookshelves, inventory, and household member roles.
+                  to manage user roles, or go to{" "}
+                  <Link
+                    href="/libraries"
+                    className="font-medium text-primary underline underline-offset-4"
+                  >
+                    Libraries
+                  </Link>{" "}
+                  to manage your own bookshelves and books.
                 </div>
               )}
             </CardContent>
@@ -311,6 +324,31 @@ export default function ProfilePage() {
             </Card>
           </div>
         </div>
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-serif text-xl font-medium tracking-[-0.01em]">
+              Books I Own ({ownedBooks.length})
+            </h2>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/libraries">Manage Libraries</Link>
+            </Button>
+          </div>
+          {ownedBooks.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                No books are currently attributed to your account across your
+                accessible libraries.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {ownedBooks.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
+            </div>
+          )}
+        </section>
 
         <section className="space-y-4">
           <h2 className="font-serif text-xl font-medium tracking-[-0.01em]">
