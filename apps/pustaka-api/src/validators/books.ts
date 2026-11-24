@@ -2,6 +2,7 @@ export {
   bookIdParamSchema,
   bookQuerySchema,
   createBookSchema,
+  createBookWithLibrarySchema,
   createReviewSchema,
   updateBookLocationSchema,
   updateBookSchema,

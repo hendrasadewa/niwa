@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+const queryBooleanSchema = z
+  .enum(["true", "false", "1", "0"])
+  .transform((value) => value === "true" || value === "1");
+
 export const createBookSchema = z.object({
   title: z
     .string()
@@ -21,7 +25,18 @@ export const createBookSchema = z.object({
     .int("Total pages must be an integer")
     .positive("Total pages must be greater than 0"),
   cover_image_key: z.string().trim().min(1).nullable().optional(),
-  bookshelf_id: z.string().trim().min(1, "Bookshelf ID is required"),
+  bookshelf_id: z.string().trim().min(1).nullable().optional(),
+  owner_id: z.string().trim().min(1).nullable().optional(),
+  owner_name: z
+    .string()
+    .trim()
+    .min(1, "Owner name cannot be empty")
+    .max(100, "Owner name must be at most 100 characters")
+    .optional(),
+});
+
+export const createBookWithLibrarySchema = createBookSchema.extend({
+  library_id: z.string().trim().min(1, "Library ID is required"),
 });
 
 export const updateBookSchema = createBookSchema
@@ -29,12 +44,15 @@ export const updateBookSchema = createBookSchema
   .partial();
 
 export const updateBookLocationSchema = z.object({
-  bookshelf_id: z.string().trim().min(1, "Bookshelf ID is required"),
+  bookshelf_id: z.string().trim().min(1, "Bookshelf ID is required").nullable(),
 });
 
 export const bookQuerySchema = z.object({
   search: z.string().trim().optional(),
-  bookshelf_id: z.string().trim().optional(),
+  library_id: z.string().trim().min(1).optional(),
+  bookshelf_id: z.string().trim().min(1).optional(),
+  owner_id: z.string().trim().min(1).optional(),
+  owned_by_me: queryBooleanSchema.optional(),
 });
 
 export const bookIdParamSchema = z.object({
@@ -42,6 +60,9 @@ export const bookIdParamSchema = z.object({
 });
 
 export type CreateBookInput = z.infer<typeof createBookSchema>;
+export type CreateBookWithLibraryInput = z.infer<
+  typeof createBookWithLibrarySchema
+>;
 export type UpdateBookInput = z.infer<typeof updateBookSchema>;
 export type UpdateBookLocationInput = z.infer<typeof updateBookLocationSchema>;
 export type BookQueryInput = z.infer<typeof bookQuerySchema>;

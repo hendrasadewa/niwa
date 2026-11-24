@@ -1,11 +1,16 @@
 import { LibraryErrors } from "../errors/library";
 import type { BookRepo } from "../repositories/books";
+import type { LibraryRepo } from "../repositories/libraries";
+import type { LibraryMemberRepo } from "../repositories/library-members";
 import type { ReadingProgressRepo } from "../repositories/reading-progress";
 import type { ReadingProgressResponse } from "../types/library";
+import { createLibraryAccess } from "./library-access";
 
 export type ReadingProgressServiceDeps = {
   bookRepo: BookRepo;
   readingProgressRepo: ReadingProgressRepo;
+  libraryRepo: LibraryRepo;
+  libraryMemberRepo: LibraryMemberRepo;
 };
 
 function computePercentage(lastPageRead: number, totalPages: number): number {
@@ -15,7 +20,11 @@ function computePercentage(lastPageRead: number, totalPages: number): number {
 export function createReadingProgressService({
   bookRepo,
   readingProgressRepo,
+  libraryRepo,
+  libraryMemberRepo,
 }: ReadingProgressServiceDeps) {
+  const access = createLibraryAccess({ libraryRepo, libraryMemberRepo });
+
   return {
     async getProgress(
       userId: string,
@@ -25,6 +34,12 @@ export function createReadingProgressService({
       if (!book) {
         throw LibraryErrors.bookNotFound();
       }
+
+      await access.assertCanViewLibraryById(
+        book.library_id,
+        userId,
+        () => LibraryErrors.bookNotFound()
+      );
 
       const record = await readingProgressRepo.findByUserAndBook(
         userId,
@@ -52,6 +67,12 @@ export function createReadingProgressService({
       if (!book) {
         throw LibraryErrors.bookNotFound();
       }
+
+      await access.assertCanViewLibraryById(
+        book.library_id,
+        input.userId,
+        () => LibraryErrors.bookNotFound()
+      );
 
       if (input.lastPageRead > book.total_pages) {
         throw LibraryErrors.progressExceedsTotalPages(

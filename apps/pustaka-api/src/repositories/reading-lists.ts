@@ -1,5 +1,5 @@
-import { and, eq } from "drizzle-orm";
-import { books, readingLists, type Database } from "../db";
+import { and, eq, inArray, or, type SQL } from "drizzle-orm";
+import { books, libraries, readingLists, type Database } from "../db";
 import type { ReadingListWithBook } from "../types/library";
 
 export type ReadingListRecord = typeof readingLists.$inferSelect;
@@ -7,7 +7,18 @@ export type NewReadingListRecord = typeof readingLists.$inferInsert;
 
 export function createReadingListRepo(db: Database) {
   return {
-    async listByUserWithBook(userId: string): Promise<ReadingListWithBook[]> {
+    async listByUserWithBook(
+      userId: string,
+      memberLibraryIds: string[]
+    ): Promise<ReadingListWithBook[]> {
+      const accessParts: SQL[] = [
+        eq(libraries.visibility, "public"),
+        eq(libraries.owner_id, userId),
+      ];
+      if (memberLibraryIds.length > 0) {
+        accessParts.push(inArray(libraries.id, memberLibraryIds));
+      }
+
       return db
         .select({
           id: readingLists.id,
@@ -17,18 +28,22 @@ export function createReadingListRepo(db: Database) {
           updated_at: readingLists.updated_at,
           book: {
             id: books.id,
+            library_id: books.library_id,
             title: books.title,
             author: books.author,
             isbn: books.isbn,
             total_pages: books.total_pages,
             cover_image_key: books.cover_image_key,
             bookshelf_id: books.bookshelf_id,
+            owner_id: books.owner_id,
+            owner_name: books.owner_name,
             created_at: books.created_at,
           },
         })
         .from(readingLists)
         .innerJoin(books, eq(readingLists.book_id, books.id))
-        .where(eq(readingLists.user_id, userId));
+        .innerJoin(libraries, eq(books.library_id, libraries.id))
+        .where(and(eq(readingLists.user_id, userId), or(...accessParts)));
     },
 
     async findByUserAndBook(

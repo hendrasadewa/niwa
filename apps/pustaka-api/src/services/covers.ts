@@ -1,6 +1,10 @@
 import { LibraryErrors } from "../errors/library";
 import type { BookRecord, BookRepo } from "../repositories/books";
 import type { CoverStorageRepo } from "../repositories/cover-storage";
+import type { LibraryRepo } from "../repositories/libraries";
+import type { LibraryMemberRepo } from "../repositories/library-members";
+import type { AuthUser } from "../types/auth";
+import { createLibraryAccess } from "./library-access";
 
 const ALLOWED_IMAGE_MIME_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -16,22 +20,37 @@ const MAX_COVER_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 export type CoverServiceDeps = {
   bookRepo: BookRepo;
   coverStorageRepo: CoverStorageRepo;
+  libraryRepo: LibraryRepo;
+  libraryMemberRepo: LibraryMemberRepo;
 };
 
 export function createCoverService({
   bookRepo,
   coverStorageRepo,
+  libraryRepo,
+  libraryMemberRepo,
 }: CoverServiceDeps) {
+  const access = createLibraryAccess({ libraryRepo, libraryMemberRepo });
+
   return {
-    async uploadCover(input: {
-      bookId: string;
-      mimeType: string;
-      fileBuffer: ArrayBuffer;
-    }): Promise<{ book: BookRecord; cover_image_key: string }> {
+    async uploadCover(
+      input: {
+        bookId: string;
+        mimeType: string;
+        fileBuffer: ArrayBuffer;
+      },
+      actor: AuthUser
+    ): Promise<{ book: BookRecord; cover_image_key: string }> {
       const existingBook = await bookRepo.findById(input.bookId);
       if (!existingBook) {
         throw LibraryErrors.bookNotFound();
       }
+
+      await access.assertLibraryOwnerById(
+        existingBook.library_id,
+        actor.id,
+        () => LibraryErrors.bookNotFound()
+      );
 
       const normalizedMime = input.mimeType.toLowerCase();
       const extension = ALLOWED_IMAGE_MIME_TYPES[normalizedMime];
@@ -72,9 +91,22 @@ export function createCoverService({
       };
     },
 
-    async getCover(bookId: string): Promise<R2ObjectBody> {
+    async getCover(
+      bookId: string,
+      actor: AuthUser | null
+    ): Promise<{ object: R2ObjectBody; isPublic: boolean }> {
       const book = await bookRepo.findById(bookId);
-      if (!book || !book.cover_image_key) {
+      if (!book) {
+        throw LibraryErrors.coverNotFound("Book cover image not found");
+      }
+
+      const { library } = await access.assertCanViewLibraryById(
+        book.library_id,
+        actor?.id ?? null,
+        () => LibraryErrors.coverNotFound("Book cover image not found")
+      );
+
+      if (!book.cover_image_key) {
         throw LibraryErrors.coverNotFound("Book cover image not found");
       }
 
@@ -83,7 +115,10 @@ export function createCoverService({
         throw LibraryErrors.coverNotFound("Cover object not found in storage");
       }
 
-      return object;
+      return {
+        object,
+        isPublic: library.visibility === "public",
+      };
     },
   };
 }

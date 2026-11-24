@@ -1,1 +1,7 @@
-export { createBookshelfSchema } from "@niwa/pustaka-validators";
+export {
+  bookshelfIdParamSchema,
+  bookshelfQuerySchema,
+  createBookshelfSchema,
+  createBookshelfWithLibrarySchema,
+  updateBookshelfSchema,
+} from "@niwa/pustaka-validators";

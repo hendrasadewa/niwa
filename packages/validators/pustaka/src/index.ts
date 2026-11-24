@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export { z };
 export * from "./auth";
+export * from "./library";
 export * from "./bookshelf";
 export * from "./book";
 export * from "./reading";

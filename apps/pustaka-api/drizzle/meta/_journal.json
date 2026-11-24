@@ -15,6 +15,13 @@
       "when": 1795444602468,
       "tag": "0001_bent_rhino",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795523646508,
+      "tag": "0002_military_wraith",
+      "breakpoints": true
     }
   ]
 }

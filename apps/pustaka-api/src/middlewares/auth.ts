@@ -1,28 +1,22 @@
+import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { AppError } from "../errors/app-error";
 import { AuthErrors } from "../errors/auth";
-import type { NiwaJwtPayload, RoleName } from "../types/auth";
-import type { AppEnv } from "../types/env";
+import type { AuthUser, NiwaJwtPayload, RoleName } from "../types/auth";
+import type { AppEnv, Bindings } from "../types/env";
 import { PUSTAKA_APP_ID } from "../utils/auth";
 import { verifyNiwaToken } from "../utils/jwt";
 
-export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
-  const authHeader = c.req.header("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw AuthErrors.missingAuthHeader();
-  }
-
-  const token = authHeader.slice("Bearer ".length).trim();
-  if (!token) {
-    throw AuthErrors.missingBearerToken();
-  }
-
+async function authenticateBearerToken(
+  token: string,
+  env: Bindings
+): Promise<{ verified: NiwaJwtPayload; user: AuthUser }> {
   let verified: NiwaJwtPayload;
   try {
     verified = await verifyNiwaToken(token, {
-      authApi: c.env.AUTH_API,
-      authApiUrl: c.env.AUTH_API_URL,
-      issuer: c.env.JWT_ISSUER,
+      authApi: env.AUTH_API,
+      authApiUrl: env.AUTH_API_URL,
+      issuer: env.JWT_ISSUER,
     });
   } catch (err) {
     if (err instanceof AppError) throw err;
@@ -49,16 +43,66 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
       ? verified.app_permissions[PUSTAKA_APP_ID]
       : [];
 
+  return {
+    verified,
+    user: {
+      id: verified.sub,
+      username: verified.name,
+      email: verified.email,
+      roles: pustakaRoles,
+      permissions: pustakaPermissions,
+      created_at: verified.created_at ?? verified.iat,
+    },
+  };
+}
+
+export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw AuthErrors.missingAuthHeader();
+  }
+
+  const token = authHeader.slice("Bearer ".length).trim();
+  if (!token) {
+    throw AuthErrors.missingBearerToken();
+  }
+
+  const { verified, user } = await authenticateBearerToken(token, c.env);
+
   c.set("jwtPayload", verified);
   c.set("authToken", token);
-  c.set("user", {
-    id: verified.sub,
-    username: verified.name,
-    email: verified.email,
-    roles: pustakaRoles,
-    permissions: pustakaPermissions,
-    created_at: verified.created_at ?? verified.iat,
-  });
+  c.set("user", user);
 
   await next();
 });
+
+export const optionalAuthMiddleware = createMiddleware<AppEnv>(
+  async (c, next) => {
+    const authHeader = c.req.header("Authorization");
+    if (!authHeader) {
+      await next();
+      return;
+    }
+
+    if (!authHeader.startsWith("Bearer ")) {
+      throw AuthErrors.missingAuthHeader();
+    }
+
+    const token = authHeader.slice("Bearer ".length).trim();
+    if (!token) {
+      throw AuthErrors.missingBearerToken();
+    }
+
+    const { verified, user } = await authenticateBearerToken(token, c.env);
+
+    c.set("jwtPayload", verified);
+    c.set("authToken", token);
+    c.set("user", user);
+
+    await next();
+  }
+);
+
+export function getOptionalUser(c: Context<AppEnv>): AuthUser | null {
+  return (c.get("user") as AuthUser | undefined) ?? null;
+}

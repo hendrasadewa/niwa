@@ -1,16 +1,21 @@
 import { Hono, type Context } from "hono";
-import { authMiddleware } from "../../middlewares/auth";
-import { requireRole } from "../../middlewares/rbac";
+import {
+  authMiddleware,
+  getOptionalUser,
+  optionalAuthMiddleware,
+} from "../../middlewares/auth";
 import { createBookRepo } from "../../repositories/books";
 import { createBookshelfRepo } from "../../repositories/bookshelves";
 import { createCoverStorageRepo } from "../../repositories/cover-storage";
+import { createLibraryRepo } from "../../repositories/libraries";
+import { createLibraryMemberRepo } from "../../repositories/library-members";
 import { createBookService } from "../../services/books";
 import type { AppEnv } from "../../types/env";
 import { validate } from "../../validators";
 import {
   bookIdParamSchema,
   bookQuerySchema,
-  createBookSchema,
+  createBookWithLibrarySchema,
   updateBookLocationSchema,
   updateBookSchema,
 } from "../../validators/books";
@@ -21,29 +26,33 @@ function getBookService(c: Context<AppEnv>) {
     bookRepo: createBookRepo(db),
     bookshelfRepo: createBookshelfRepo(db),
     coverStorageRepo: createCoverStorageRepo(c.env.BUCKET),
+    libraryRepo: createLibraryRepo(db),
+    libraryMemberRepo: createLibraryMemberRepo(db),
   });
 }
 
 export const booksCoreRoutes = new Hono<AppEnv>();
 
-// GET /api/v1/books (public catalog read)
+// GET /api/v1/books (visibility-scoped catalog read)
 booksCoreRoutes.get(
   "/",
+  optionalAuthMiddleware,
   validate("query", bookQuerySchema),
   async (c) => {
     const query = c.req.valid("query");
-    const books = await getBookService(c).listBooks(query);
+    const books = await getBookService(c).listBooks(getOptionalUser(c), query);
     return c.json({ books });
   }
 );
 
-// GET /api/v1/books/:id (public book detail read)
+// GET /api/v1/books/:id (visibility-scoped book detail read)
 booksCoreRoutes.get(
   "/:id",
+  optionalAuthMiddleware,
   validate("param", bookIdParamSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const book = await getBookService(c).getBook(id);
+    const book = await getBookService(c).getBook(id, getOptionalUser(c));
     return c.json({ book });
   }
 );
@@ -52,11 +61,14 @@ booksCoreRoutes.get(
 booksCoreRoutes.post(
   "/",
   authMiddleware,
-  requireRole("admin"),
-  validate("json", createBookSchema),
+  validate("json", createBookWithLibrarySchema),
   async (c) => {
-    const payload = c.req.valid("json");
-    const book = await getBookService(c).createBook(payload);
+    const { library_id, ...payload } = c.req.valid("json");
+    const book = await getBookService(c).createBook(
+      library_id,
+      payload,
+      c.get("user")
+    );
     return c.json({ book }, 201);
   }
 );
@@ -65,13 +77,12 @@ booksCoreRoutes.post(
 booksCoreRoutes.put(
   "/:id",
   authMiddleware,
-  requireRole("admin"),
   validate("param", bookIdParamSchema),
   validate("json", updateBookSchema),
   async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    const book = await getBookService(c).updateBook(id, updates);
+    const book = await getBookService(c).updateBook(id, updates, c.get("user"));
     return c.json({ book });
   }
 );
@@ -80,13 +91,16 @@ booksCoreRoutes.put(
 booksCoreRoutes.patch(
   "/:id/location",
   authMiddleware,
-  requireRole("admin"),
   validate("param", bookIdParamSchema),
   validate("json", updateBookLocationSchema),
   async (c) => {
     const { id } = c.req.valid("param");
     const { bookshelf_id } = c.req.valid("json");
-    const book = await getBookService(c).moveBook(id, bookshelf_id);
+    const book = await getBookService(c).moveBook(
+      id,
+      bookshelf_id,
+      c.get("user")
+    );
     return c.json({ book });
   }
 );
@@ -95,11 +109,10 @@ booksCoreRoutes.patch(
 booksCoreRoutes.delete(
   "/:id",
   authMiddleware,
-  requireRole("admin"),
   validate("param", bookIdParamSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const result = await getBookService(c).deleteBook(id);
+    const result = await getBookService(c).deleteBook(id, c.get("user"));
     return c.json({
       message: "Book deleted successfully",
       id: result.id,

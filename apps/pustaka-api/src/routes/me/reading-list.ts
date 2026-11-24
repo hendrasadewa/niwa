@@ -1,5 +1,7 @@
 import { Hono, type Context } from "hono";
 import { createBookRepo } from "../../repositories/books";
+import { createLibraryRepo } from "../../repositories/libraries";
+import { createLibraryMemberRepo } from "../../repositories/library-members";
 import { createReadingListRepo } from "../../repositories/reading-lists";
 import { createReadingListService } from "../../services/reading-list";
 import type { AppEnv } from "../../types/env";
@@ -15,6 +17,8 @@ function getReadingListService(c: Context<AppEnv>) {
   return createReadingListService({
     bookRepo: createBookRepo(db),
     readingListRepo: createReadingListRepo(db),
+    libraryRepo: createLibraryRepo(db),
+    libraryMemberRepo: createLibraryMemberRepo(db),
   });
 }
 

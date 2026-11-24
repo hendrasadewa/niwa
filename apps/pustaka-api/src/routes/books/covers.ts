@@ -1,18 +1,26 @@
 import { Hono, type Context } from "hono";
 import { LibraryErrors } from "../../errors/library";
-import { authMiddleware } from "../../middlewares/auth";
-import { requireRole } from "../../middlewares/rbac";
+import {
+  authMiddleware,
+  getOptionalUser,
+  optionalAuthMiddleware,
+} from "../../middlewares/auth";
 import { createBookRepo } from "../../repositories/books";
 import { createCoverStorageRepo } from "../../repositories/cover-storage";
+import { createLibraryRepo } from "../../repositories/libraries";
+import { createLibraryMemberRepo } from "../../repositories/library-members";
 import { createCoverService } from "../../services/covers";
 import type { AppEnv } from "../../types/env";
 import { validate } from "../../validators";
 import { bookIdParamSchema } from "../../validators/books";
 
 function getCoverService(c: Context<AppEnv>) {
+  const db = c.get("db");
   return createCoverService({
-    bookRepo: createBookRepo(c.get("db")),
+    bookRepo: createBookRepo(db),
     coverStorageRepo: createCoverStorageRepo(c.env.BUCKET),
+    libraryRepo: createLibraryRepo(db),
+    libraryMemberRepo: createLibraryMemberRepo(db),
   });
 }
 
@@ -22,7 +30,6 @@ export const bookCoversRoutes = new Hono<AppEnv>();
 bookCoversRoutes.put(
   "/:id/cover",
   authMiddleware,
-  requireRole("admin"),
   validate("param", bookIdParamSchema),
   async (c) => {
     const { id } = c.req.valid("param");
@@ -43,11 +50,14 @@ bookCoversRoutes.put(
       fileBuffer = await c.req.arrayBuffer();
     }
 
-    const result = await getCoverService(c).uploadCover({
-      bookId: id,
-      mimeType,
-      fileBuffer,
-    });
+    const result = await getCoverService(c).uploadCover(
+      {
+        bookId: id,
+        mimeType,
+        fileBuffer,
+      },
+      c.get("user")
+    );
 
     return c.json(result);
   }
@@ -56,10 +66,14 @@ bookCoversRoutes.put(
 // GET /api/v1/books/:id/cover
 bookCoversRoutes.get(
   "/:id/cover",
+  optionalAuthMiddleware,
   validate("param", bookIdParamSchema),
   async (c) => {
     const { id } = c.req.valid("param");
-    const object = await getCoverService(c).getCover(id);
+    const { object, isPublic } = await getCoverService(c).getCover(
+      id,
+      getOptionalUser(c)
+    );
 
     const headers = new Headers();
     headers.set(
@@ -67,7 +81,10 @@ bookCoversRoutes.get(
       object.httpMetadata?.contentType ?? "application/octet-stream"
     );
     headers.set("ETag", object.httpEtag);
-    headers.set("Cache-Control", "public, max-age=3600");
+    headers.set(
+      "Cache-Control",
+      isPublic ? "public, max-age=3600" : "private, no-store"
+    );
 
     return new Response(object.body, {
       status: 200,

@@ -1,12 +1,54 @@
 import { AppError } from "./app-error";
 
 export const LibraryErrors = {
+  libraryNotFound: (message = "Library not found") =>
+    new AppError({
+      status: 404,
+      error: "NotFound",
+      code: "PUSTAKA_LIBRARY_NOT_FOUND",
+      message,
+    }),
+
+  librarySlugConflict: (slug: string) =>
+    new AppError({
+      status: 409,
+      error: "Conflict",
+      code: "PUSTAKA_LIBRARY_SLUG_CONFLICT",
+      message: `A library with slug '${slug}' already exists`,
+    }),
+
+  libraryForbidden: (
+    message = "Only the library owner can perform this action"
+  ) =>
+    new AppError({
+      status: 403,
+      error: "Forbidden",
+      code: "PUSTAKA_LIBRARY_FORBIDDEN",
+      message,
+    }),
+
+  libraryNotEmpty: (bookCount: number) =>
+    new AppError({
+      status: 409,
+      error: "Conflict",
+      code: "PUSTAKA_LIBRARY_NOT_EMPTY",
+      message: `Cannot delete library while it still contains ${bookCount} book(s). Remove all books first.`,
+    }),
+
   bookshelfNotFound: (message = "Bookshelf not found") =>
     new AppError({
       status: 404,
       error: "NotFound",
       code: "PUSTAKA_BOOKSHELF_NOT_FOUND",
       message,
+    }),
+
+  bookshelfWrongLibrary: () =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "PUSTAKA_BOOKSHELF_WRONG_LIBRARY",
+      message: "Target bookshelf does not belong to this library",
     }),
 
   bookNotFound: () =>
@@ -17,12 +59,90 @@ export const LibraryErrors = {
       message: "Book not found",
     }),
 
-  isbnAlreadyExists: () =>
+  ownerNotMember: (
+    message = "Assigned owner must be the library owner or a current library member"
+  ) =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "PUSTAKA_OWNER_NOT_MEMBER",
+      message,
+    }),
+
+  ownerNameRequired: () =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "PUSTAKA_OWNER_NAME_REQUIRED",
+      message:
+        "owner_name is required when owner_id is null (non-account book owner)",
+    }),
+
+  memberNotFound: () =>
+    new AppError({
+      status: 404,
+      error: "NotFound",
+      code: "PUSTAKA_LIBRARY_MEMBER_NOT_FOUND",
+      message: "Member not found in this library",
+    }),
+
+  alreadyLibraryMember: (
+    message = "You are already a member or owner of this library"
+  ) =>
     new AppError({
       status: 409,
       error: "Conflict",
-      code: "PUSTAKA_BOOK_ISBN_CONFLICT",
-      message: "A book with this ISBN already exists",
+      code: "PUSTAKA_LIBRARY_ALREADY_MEMBER",
+      message,
+    }),
+
+  cannotLeaveAsOwner: () =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "PUSTAKA_CANNOT_LEAVE_AS_OWNER",
+      message:
+        "Library owner cannot leave the library. Transfer ownership first or delete the library.",
+    }),
+
+  cannotTransferToSelf: () =>
+    new AppError({
+      status: 400,
+      error: "BadRequest",
+      code: "PUSTAKA_CANNOT_TRANSFER_TO_SELF",
+      message: "You are already the owner of this library",
+    }),
+
+  inviteNotFound: () =>
+    new AppError({
+      status: 404,
+      error: "NotFound",
+      code: "PUSTAKA_INVITE_NOT_FOUND",
+      message: "Library invite not found",
+    }),
+
+  inviteRevoked: () =>
+    new AppError({
+      status: 410,
+      error: "Gone",
+      code: "PUSTAKA_INVITE_REVOKED",
+      message: "This invite link has been revoked",
+    }),
+
+  inviteExpired: () =>
+    new AppError({
+      status: 410,
+      error: "Gone",
+      code: "PUSTAKA_INVITE_EXPIRED",
+      message: "This invite link has expired",
+    }),
+
+  inviteMaxUsesReached: () =>
+    new AppError({
+      status: 409,
+      error: "Conflict",
+      code: "PUSTAKA_INVITE_MAX_USES_REACHED",
+      message: "This invite link has reached its maximum number of uses",
     }),
 
   coverMissingFileField: () =>

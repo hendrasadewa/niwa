@@ -538,7 +538,7 @@ export default function AdminBooksPage() {
                   <FormItem>
                     <FormLabel>Bookshelf Location</FormLabel>
                     <Select
-                      value={field.value}
+                      value={field.value ?? ""}
                       onValueChange={field.onChange}
                     >
                       <FormControl>
@@ -630,7 +630,7 @@ export default function AdminBooksPage() {
                   <FormItem>
                     <FormLabel>Destination Bookshelf</FormLabel>
                     <Select
-                      value={field.value}
+                      value={field.value ?? ""}
                       onValueChange={field.onChange}
                     >
                       <FormControl>

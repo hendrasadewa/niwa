@@ -5,6 +5,8 @@ import { dbMiddleware } from "./middlewares/db";
 import { authRoutes } from "./routes/auth";
 import { booksRoutes } from "./routes/books";
 import { bookshelvesRoutes } from "./routes/bookshelves";
+import { invitesRoutes } from "./routes/invites";
+import { librariesRoutes } from "./routes/libraries";
 import { meRoutes } from "./routes/me";
 import { usersRoutes } from "./routes/users";
 import type { AppEnv } from "./types/env";
@@ -29,11 +31,15 @@ app.route("/api/v1/auth", authRoutes);
 app.route("/api/v1/users", usersRoutes);
 app.route("/api/v1", authRoutes);
 
+// Libraries & Invites (/api/v1/libraries, /api/v1/invites)
+app.route("/api/v1/libraries", librariesRoutes);
+app.route("/api/v1/invites", invitesRoutes);
+
 // Inventory & Cloudflare R2 Media (/api/v1/bookshelves, /api/v1/books)
 app.route("/api/v1/bookshelves", bookshelvesRoutes);
 app.route("/api/v1/books", booksRoutes);
 
-// Reading Lists & Reading Progress (/api/v1/me)
+// Personal Owned Books, Reading Lists & Reading Progress (/api/v1/me)
 app.route("/api/v1/me", meRoutes);
 
 export default app;
