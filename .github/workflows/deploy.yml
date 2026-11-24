@@ -54,13 +54,16 @@ jobs:
           filters: |
             auth_api:
               - 'apps/auth-api/**'
+              - 'packages/api-core/**'
               - 'packages/validators/auth/**'
             open_po_api:
               - 'apps/open-po-api/**'
+              - 'packages/api-core/**'
               - 'packages/auth/**'
               - 'packages/validators/open-po/**'
             pustaka_api:
               - 'apps/pustaka-api/**'
+              - 'packages/api-core/**'
               - 'packages/auth/**'
               - 'packages/validators/pustaka/**'
             web_api:
@@ -222,6 +225,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/labs typecheck
       - run: pnpm --filter @niwa/labs run deploy
 
   deploy-web:
@@ -238,4 +242,5 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/web typecheck
       - run: pnpm --filter @niwa/web run deploy

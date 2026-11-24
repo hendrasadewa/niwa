@@ -19,11 +19,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+  Input,
+  Button,
+  Badge,
+  Skeleton,
+} from "@niwa/ui/primitives";
 import { apiClient, getStoreLogoUrl } from "@/lib/api";
 import type { PreOrderWave, Store } from "@/types/api";
 import { formatCurrencyIDR, formatUnixDate } from "@/lib/utils";

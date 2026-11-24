@@ -13,13 +13,17 @@ export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
   "http://localhost:8789";
 
-export const TOKEN_STORAGE_KEY = "open_po_auth_token";
-export const REFRESH_TOKEN_STORAGE_KEY = "open_po_refresh_token";
-export const USER_STORAGE_KEY = "open_po_auth_user";
-export const STORES_STORAGE_KEY = "open_po_owned_stores";
 export const ACTIVE_STORE_STORAGE_KEY = "open_po_active_store_id";
-export const TOKEN_COOKIE_NAME = "open_po_token";
-export const ROLES_COOKIE_NAME = "open_po_roles";
+
+const LEGACY_STORAGE_KEYS = [
+  "open_po_auth_token",
+  "open_po_refresh_token",
+  "open_po_auth_user",
+  "open_po_owned_stores",
+  ACTIVE_STORE_STORAGE_KEY,
+] as const;
+
+const LEGACY_COOKIES = ["open_po_token", "open_po_roles"] as const;
 
 let inMemoryUser: User | null = null;
 let inMemoryStores: Store[] = [];
@@ -40,10 +44,6 @@ export function getAuthToken(): string | null {
 
 export function setAuthToken(token: string): void {
   openPoSsoClient.setAccessToken(token);
-}
-
-export function setRefreshToken(_refreshToken: string): void {
-  // Refresh is handled by the HttpOnly __Host-niwa_session cookie on auth-api
 }
 
 export function getStoredUser(): User | null {
@@ -68,14 +68,12 @@ export function clearAuthToken(): void {
   inMemoryStores = [];
   if (typeof window === "undefined") return;
   try {
-    // Clean up any legacy localStorage/cookie artifacts from pre-SSO sessions
-    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-    window.localStorage.removeItem(USER_STORAGE_KEY);
-    window.localStorage.removeItem(STORES_STORAGE_KEY);
-    window.localStorage.removeItem(ACTIVE_STORE_STORAGE_KEY);
-    document.cookie = `${TOKEN_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
-    document.cookie = `${ROLES_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
+    for (const key of LEGACY_STORAGE_KEYS) {
+      window.localStorage.removeItem(key);
+    }
+    for (const cookie of LEGACY_COOKIES) {
+      document.cookie = `${cookie}=; path=/; max-age=0; SameSite=Lax`;
+    }
   } catch {
     // ignore storage errors
   }

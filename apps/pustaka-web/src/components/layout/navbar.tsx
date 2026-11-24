@@ -20,17 +20,16 @@ import {
 } from "@niwa/ui/components";
 import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
+  Button,
+  Badge,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
+} from "@niwa/ui/primitives";
 export function Navbar() {
   const pathname = usePathname();
   const { user, isAuthenticated, isAdmin, isLoading, loginWithSso, logout } =

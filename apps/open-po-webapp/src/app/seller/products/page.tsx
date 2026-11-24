@@ -24,39 +24,33 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Input,
+  Textarea,
+  Button,
+  Badge,
+} from "@niwa/ui/primitives";
 import { useAuth } from "@/providers/auth-provider";
 import { apiClient, ApiError, getProductImageUrl } from "@/lib/api";
 import type { Product } from "@/types/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 import { formatCurrencyIDR } from "@/lib/utils";
 
 export default function SellerProductsPage() {

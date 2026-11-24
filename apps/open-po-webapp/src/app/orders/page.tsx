@@ -19,23 +19,21 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Textarea,
+  Button,
+  Badge,
+} from "@niwa/ui/primitives";
 import { PageHeader } from "@niwa/ui/components";
 import { apiClient, ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 import type { OrderItemRecord, OrderRecord } from "@/types/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 import { formatCurrencyIDR, formatUnixDateTime } from "@/lib/utils";
 
 export default function MemberOrdersPage() {

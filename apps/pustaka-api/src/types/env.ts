@@ -7,6 +7,7 @@ export type Bindings = {
   AUTH_API?: Fetcher;
   AUTH_API_URL?: string;
   JWT_ISSUER?: string;
+  ALLOWED_ORIGINS?: string;
 };
 
 export type Variables = {

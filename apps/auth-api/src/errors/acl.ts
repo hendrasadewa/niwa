@@ -1,4 +1,4 @@
-import { AppError } from "./app-error";
+import { AppError } from "@niwa/api-core/errors";
 
 export const AclErrors = {
   appAlreadyExists: (appId: string) =>

@@ -12,26 +12,23 @@ import { Loader2, LogIn, MessageSquarePlus, Star } from "lucide-react";
 import type { BookReview } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@niwa/ui/hooks";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
+  Button,
+  Textarea,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-
+} from "@niwa/ui/primitives";
 export interface BookReviewsSectionProps {
   bookId: string;
 }

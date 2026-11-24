@@ -18,33 +18,29 @@ import type {
   LibraryVisibility,
 } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@niwa/ui/hooks";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
+  Input,
+  Label,
+  Textarea,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@niwa/ui/primitives";
 import { cn } from "@/lib/utils";
 
 export interface LibrarySettingsTabProps {

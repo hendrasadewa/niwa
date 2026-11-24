@@ -23,32 +23,28 @@ import {
   ApiError,
   apiClient,
   setAuthToken,
-  setRefreshToken,
 } from "@/lib/api";
 import { ColorSchemeToggle, PageHeader } from "@niwa/ui/components";
 import { useAuth } from "@/providers/auth-provider";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@niwa/ui/hooks";
 import { AppShell } from "@/components/layout/app-shell";
 import { BookCard } from "@/components/books/book-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
+  Badge,
+  Button,
+  Input,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-
+} from "@niwa/ui/primitives";
 export default function ProfilePage() {
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
@@ -73,9 +69,6 @@ export default function ProfilePage() {
       );
       if (res.token) {
         setAuthToken(res.token);
-      }
-      if (res.refresh_token) {
-        setRefreshToken(res.refresh_token);
       }
       passwordForm.reset({
         current_password: "",

@@ -8,9 +8,8 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api";
-import { toast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
-
+import { toast } from "@niwa/ui/hooks";
+import { Toaster } from "@niwa/ui/primitives";
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(
     () =>

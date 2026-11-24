@@ -4,84 +4,103 @@ This file provides guidance to AI coding agents working in the `niwa` monorepo (
 
 ## Repository Overview & Architecture
 
-`niwa` is a TypeScript & pnpm monorepo targeting Cloudflare Workers/Pages across its applications, with a shared UI library.
+`niwa` is a TypeScript & pnpm workspace monorepo targeting Cloudflare Workers, D1, R2, and Static Assets across all products, supported by shared workspace packages.
 
 ### Workspace Structure
 
-- **`apps/web` (`@niwa/web`)**
-  - **Purpose**: Hendra Sadewa's personal website (`https://hendrasadewa.com`).
-  - **Stack**: Next.js 16 (App Router, `src/app`), React 19, Tailwind CSS v4 (`@tailwindcss/postcss`), deployed to Cloudflare Workers via `@opennextjs/cloudflare` (`niwa-web`).
-  - **Config**: Transpiles `@niwa/ui` in `next.config.ts`; initializes OpenNext Cloudflare dev bindings via `initOpenNextCloudflareForDev()`.
-  - **Note**: Next.js 16 includes agent rules in `apps/web/AGENTS.md`—consult `apps/web/node_modules/next/dist/docs/` for Next.js 16 API changes.
+#### Backend APIs (`apps/*-api` — Hono v4 + Drizzle ORM + Cloudflare D1)
 
-- **`apps/web-api` (`@niwa/web-api`)**
-  - **Purpose**: REST API service (`niwa-web-api`).
-  - **Stack**: Hono v4 on Cloudflare Workers (`src/index.ts`), Cloudflare D1 SQLite database (`DB` binding -> `niwa-db`), Drizzle ORM (`src/db/schema.ts`, migrations output to `./drizzle`).
+- **`apps/auth-api` (`@niwa/auth-api`, Worker: `niwa-auth-api`, dev port `8788`)**
+  - Reference implementation of the canonical Niwa layered API architecture.
+  - Standalone Identity Provider (IdP), ES256 JWKS JWT issuer, SSO sessions (`__Host-niwa_session`), Passkeys/WebAuthn, email verification, and multi-app RBAC/ACL service.
+- **`apps/open-po-api` (`@niwa/open-po-api`, Worker: `niwa-open-po-api`, dev port `8789`)**
+  - Micro-ecommerce pre-order management API (stores, products, waves, checkout, Kanban fulfillment, public tracking, reviews) backed by D1 + R2 (`BUCKET`) + `@niwa/auth/server` + `@niwa/api-core`.
+- **`apps/pustaka-api` (`@niwa/pustaka-api`, Worker: `niwa-pustaka-api`, dev port `8787`)**
+  - Personal/household library, shared libraries/invites, reading lists, reading progress, and book reviews API backed by D1 + R2 (`BUCKET`) + `@niwa/auth/server` + `@niwa/api-core`.
+- **`apps/web-api` (`@niwa/web-api`, Worker: `niwa-web-api`, dev port `8790`)**
+  - Personal website API (`api.hendrasadewa.com`), currently a minimal stub deferred until domain endpoints are designed.
 
-- **`apps/labs` (`@niwa/labs`)**
-  - **Purpose**: Interactive experiments, demos, and prototypes (`niwa-labs`).
-  - **Stack**: Vite 8 + React 19 SPA, React Router v8 (`createBrowserRouter` in `src/main.tsx`), Tailwind CSS v4 (`@tailwindcss/vite`), deployed as static SPA assets via Cloudflare Wrangler (`not_found_handling: "single-page-application"`).
+#### Frontend Archetype A — Next.js 16 App Router + OpenNext (`@opennextjs/cloudflare`)
 
-- **`packages/ui` (`@niwa/ui`)**
-  - **Purpose**: Shared React 19 UI library consumed as source TypeScript (transpiled by consuming bundlers).
-  - **Subpath Exports**:
-    - `@niwa/ui/components` -> `./src/components/index.ts`
-    - `@niwa/ui/hooks` -> `./src/hooks/index.ts`
-    - `@niwa/ui/types` -> `./src/types/index.ts`
-    - `@niwa/ui/utils` -> `./src/utils/index.ts`
+Used for SEO/SSR product web apps:
+- **`apps/web` (`@niwa/web`, Worker: `niwa-web`, dev port `3000`)** — Personal website (`https://hendrasadewa.com`).
+- **`apps/pustaka-web` (`@niwa/pustaka-web`, Worker: `niwa-pustaka-web`, dev port `3001`)** — Pustaka library web app (`https://pustaka.hendrasadewa.com`).
+- **`apps/open-po-webapp` (`@niwa/open-po-webapp`, Worker: `niwa-open-po-webapp`, dev port `3002`)** — Open-PO storefront & seller console (`https://preorder.hendrasadewa.com`). *(Legacy `-webapp` name is intentionally preserved to avoid live Cloudflare Worker churn; all new products must use `<product>-web`.)*
+
+*(Note: Next.js 16 includes agent rules inside each Next.js app's `AGENTS.md`—consult `apps/<app>/node_modules/next/dist/docs/` for Next.js 16 API changes.)*
+
+#### Frontend Archetype B — Vite 8 + React Router v8 SPAs (Cloudflare Static Assets)
+
+Used for lightweight client-only portals and interactive experiments (`not_found_handling: "single-page-application"`):
+- **`apps/auth-web` (`@niwa/auth-web`, Worker: `niwa-auth-web`)** — Hosted Niwa Identity Provider portal (`https://auth.hendrasadewa.com`).
+- **`apps/labs` (`@niwa/labs`, Worker: `niwa-labs`)** — Interactive experiments, demos, and design-token showcase (`https://labs.hendrasadewa.com`).
+
+#### Shared Packages (`packages/*`)
+
+- **`packages/api-core` (`@niwa/api-core`)** — Shared Hono v4 / Zod v4 backend primitives: `AppError`, `CommonErrors`, `errorHandler`, `notFoundHandler`, `validate()`, `createDbMiddleware()`, `createRbacMiddlewares()`, and `createOriginCorsMiddleware()`.
+- **`packages/auth` (`@niwa/auth`)** — Shared SSO client (`./client`), React provider/hooks (`./react`), ES256 JWKS verifier (`./server`), and JWT types (`./types`).
+- **`packages/api-client` (`@niwa/api-client`)** — Shared typed Fetch API client (`createApiClient`, `ApiError`, automatic 401 refresh-retry).
+- **`packages/ui` (`@niwa/ui`)** — Shared design tokens and React 19 UI library (consumed as source TypeScript):
+  - `@niwa/ui/styles/tokens.css` & `@niwa/ui/tokens` — Calm botanical design tokens & brand themes
+  - `@niwa/ui/components` — Lightweight, zero-Radix core primitives (`Button`, `Card`, `DataTable`, `PageHeader`, `Spinner`, `ColorSchemeToggle`, etc.)
+  - `@niwa/ui/primitives` — Shared Radix UI / interactive compound primitives (`Dialog`, `DropdownMenu`, `Select`, `Form`, `Table`, `Toast`, `Toaster`, `Input`, `Label`, `Badge`, `Button`, `Card`, `Textarea`, `Progress`, `Skeleton`)
+  - `@niwa/ui/hooks` — Shared React hooks (`useToast`, `toast`)
+  - `@niwa/ui/utils` — `cn()` (`clsx` + `tailwind-merge`)
+  - `@niwa/ui/types` — Shared UI types
+- **`packages/validators/{auth,open-po,pustaka}` (`@niwa/*-validators`)** — Domain Zod v4 validation schemas shared across each API and frontend.
+
+---
 
 ## Package Management & Commands
 
 - **Package Manager**: `pnpm@10.32.1`
-- **Important Workspace Note**: Root `package.json` defines `pnpm --filter` and `pnpm -r` scripts, but if `pnpm-workspace.yaml` is not yet configured at the repository root, run package commands directly inside each app directory or add a root `pnpm-workspace.yaml` covering `apps/*` and `packages/*`.
+- **Workspace & Catalogs**: Root `pnpm-workspace.yaml` covers `apps/*`, `packages/*`, and `packages/validators/*`, and defines shared `catalog:` / `catalogs:` version ranges. Always prefer `"catalog:"` for shared dependencies and never commit nested `pnpm-lock.yaml` or `pnpm-workspace.yaml` inside sub-apps.
 
 ### Root Commands (`package.json`)
 
 ```bash
-pnpm dev:web       # Start @niwa/web Next.js dev server
-pnpm dev:api       # Start @niwa/web-api Wrangler dev server
-pnpm dev:labs      # Start @niwa/labs Vite dev server
-pnpm build         # Run build across all workspace packages
-pnpm typecheck     # Run typecheck across all workspace packages
+pnpm dev:web          # @niwa/web (Next.js, port 3000)
+pnpm dev:pustaka-web  # @niwa/pustaka-web (Next.js, port 3001)
+pnpm dev:open-po-web  # @niwa/open-po-webapp (Next.js, port 3002)
+pnpm dev:auth-web     # @niwa/auth-web (Vite SPA)
+pnpm dev:labs         # @niwa/labs (Vite SPA)
+pnpm dev:pustaka      # @niwa/pustaka-api (Wrangler, port 8787)
+pnpm dev:auth         # @niwa/auth-api (Wrangler, port 8788)
+pnpm dev:open-po      # @niwa/open-po-api (Wrangler, port 8789)
+pnpm dev:api          # @niwa/web-api (Wrangler, port 8790)
+pnpm typecheck        # Run typecheck across all workspace packages
+pnpm build            # Run build across all workspace packages
+pnpm deploy:<app>     # Deploy individual apps via Wrangler / OpenNext
 ```
 
 ### Per-App Commands
 
-- **`apps/web` (`@niwa/web`)**:
-  - `pnpm dev` — Run `next dev`
-  - `pnpm build` — Run `next build`
-  - `pnpm lint` — Run `eslint`
-  - `pnpm preview` — Build and preview on Cloudflare runtime via `opennextjs-cloudflare`
-  - `pnpm deploy` — Build and deploy to Cloudflare via `opennextjs-cloudflare`
+- **Next.js apps (`web`, `open-po-webapp`, `pustaka-web`)**: `pnpm dev`, `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm preview`, `pnpm deploy`
+- **Vite SPA apps (`auth-web`, `labs`)**: `pnpm dev`, `pnpm build`, `pnpm typecheck`, `pnpm preview`, `pnpm deploy` (`pnpm lint` in `labs`)
+- **Backend APIs (`auth-api`, `open-po-api`, `pustaka-api`, `web-api`)**: `pnpm dev`, `pnpm typecheck`, `pnpm deploy`, `pnpm db:generate`, `pnpm db:migrate:local`, `pnpm db:migrate:remote`
 
-- **`apps/web-api` (`@niwa/web-api`)**:
-  - `pnpm dev` — Run `wrangler dev`
-  - `pnpm deploy` — Run `wrangler deploy`
-  - `pnpm db:generate` — Generate Drizzle SQLite migrations from `src/db/schema.ts`
-  - `pnpm db:migrate:local` — Apply D1 migrations locally (`wrangler d1 migrations apply niwa-db --local`)
-  - `pnpm db:migrate:remote` — Apply D1 migrations to remote D1 (`wrangler d1 migrations apply niwa-db --remote`)
-
-- **`apps/labs` (`@niwa/labs`)**:
-  - `pnpm dev` — Run `vite`
-  - `pnpm build` — Run `tsc -b && vite build`
-  - `pnpm lint` — Run `eslint .`
-  - `pnpm preview` — Run `vite preview`
-  - `pnpm deploy` — Run `vite build && wrangler deploy`
+---
 
 ## Conventions & Guidelines
 
-1. **TypeScript**:
+1. **Naming & Config Standardization**:
+   - New products must follow `apps/<product>-api` (`@niwa/<product>-api`) and `apps/<product>-web` (`@niwa/<product>-web`), with shared schemas in `packages/validators/<product>` (`@niwa/<product>-validators`).
+   - All Cloudflare apps use **`wrangler.jsonc`** (not `wrangler.toml`).
+   - Per-app agent context lives in `AGENTS.md` (preserving the Next.js `<!-- BEGIN:nextjs-agent-rules -->` block in Next.js apps).
+2. **TypeScript**:
    - Base compiler options live in [`tsconfig.base.json`](./tsconfig.base.json) (`strict: true`, `noUncheckedIndexedAccess: true`, `moduleResolution: "Bundler"`).
-   - Path alias `@/*` maps to `./src/*` inside `apps/web`.
-2. **Styling**:
-   - Both `apps/web` and `apps/labs` use **Tailwind CSS v4** (`@import "tailwindcss";`). Avoid legacy Tailwind v3 configuration patterns (`tailwind.config.js`).
-3. **Shared UI (`@niwa/ui`)**:
-   - Export new shared components, hooks, types, or utilities from their respective barrel files in `packages/ui/src/{components,hooks,types,utils}/index.ts`.
+   - Path alias `@/*` maps to `./src/*` inside Next.js apps.
+   - Every active app and package must expose a `typecheck` script so root `pnpm typecheck` and GitHub Actions validate it.
+3. **Styling & Shared UI (`@niwa/ui`)**:
+   - All frontends use **Tailwind CSS v4** (`@import "tailwindcss";` + `@import "@niwa/ui/styles/tokens.css";`). Avoid legacy Tailwind v3 config patterns.
+   - **Do not duplicate shadcn `components/ui/*` files inside apps.** Consume shared Radix/interactive primitives from `@niwa/ui/primitives`, lightweight components from `@niwa/ui/components`, and `useToast`/`toast` from `@niwa/ui/hooks`. Add new shared primitives to `packages/ui` instead of copying them into apps.
 4. **Database & API Architecture (`apps/*-api`)**:
-   - All Cloudflare Workers APIs (`apps/auth-api`, `apps/open-po-api`, `apps/pustaka-api`, `apps/web-api`, and future `*-api` apps) follow the standard **Hono + Drizzle + D1** layered architecture (starting with `apps/auth-api` as the reference implementation).
-   - **Standard `src/` layout**: `types/`, `db/`, `errors/`, `middlewares/`, `validators/`, `repositories/`, `services/`, `routes/` (split by sub-resources), and `utils/`.
-   - **Strict one-way dependencies**: `routes` → `services` → `repositories` → `db` (`utils` is pure with zero DB/Hono imports; `services` has zero Hono imports; `routes` has zero Drizzle imports).
-   - **Dependency Injection**: Instantiate Drizzle per request via `middlewares/db.ts` (`c.set("db", createDb(c.env.DB))`), and wire factory repos/services (`createXRepo(db)` → `createXService({ ...repos })`) via **per-route / domain factory helpers**.
-   - **Validation & Errors**: Wrap `@hono/zod-validator` + Zod in `src/validators/` (re-exporting shared workspace schemas from `packages/validators/*` when present) and throw typed errors from the `src/errors/` catalog handled globally by `app.onError(...)` with the flat JSON contract `{ error, code, message, details? }`.
-   - **D1 Migrations & Atomicity**: Define tables in `src/db/schema.ts`, generate migrations with `pnpm db:generate` (never hand-edit SQL), and use `db.batch([...])` instead of `db.transaction(...)` for atomic multi-statement writes on D1.
-   - **Detailed Guide & Templates**: Activate the **`niwa-api-architecture`** skill (`.agents/skills/niwa-api-architecture/SKILL.md`) before reading, adding, or refactoring any `apps/*-api` service.
+   - All Cloudflare Workers APIs follow the canonical **Hono v4 + Drizzle + D1** layered architecture (`apps/auth-api` is the reference implementation) built on **`@niwa/api-core`**:
+     - **Standard `src/` layout**: `types/`, `db/`, `errors/` (domain catalogs re-exporting `@niwa/api-core/errors`), `middlewares/` (`db.ts`, `auth.ts`, `rbac.ts`), `validators/` (re-exporting `validate` from `@niwa/api-core/validators` + `@niwa/*-validators`), `repositories/`, `services/`, `routes/` (split by sub-resources), and `utils/`.
+     - **Strict one-way dependencies**: `routes` → `services` → `repositories` → `db` (`utils` has zero DB/Hono imports; `services` has zero Hono/Drizzle imports; `routes` has zero Drizzle imports).
+     - **Shared Core & Security**: Reuse `AppError`, `CommonErrors`, `errorHandler`, `notFoundHandler`, `validate()`, `createDbMiddleware()`, `createRbacMiddlewares()`, and `createOriginCorsMiddleware()` from `@niwa/api-core`. Configure `ALLOWED_ORIGINS` in `wrangler.jsonc` instead of open `cors()`.
+     - **Dependency Injection**: Instantiate Drizzle per request via `middlewares/db.ts` and wire repos/services lazily inside per-route factory helpers (`getXService(c)`).
+     - **D1 Migrations & Atomicity**: Define tables in `src/db/schema.ts`, generate migrations with `pnpm db:generate` (never hand-edit SQL), and use `db.batch([...])` instead of `db.transaction(...)`.
+     - **Detailed Guide & Templates**: Activate the **`niwa-api-architecture`** skill (`.agents/skills/niwa-api-architecture/SKILL.md`) before reading, adding, or refactoring any `apps/*-api` service.
+5. **CI/CD (`.github/workflows/deploy.yml`)**:
+   - When adding a new shared package or wiring an existing one into an app, update the `dorny/paths-filter` rules in `.github/workflows/deploy.yml` so changes to shared packages trigger dependent app deployments.

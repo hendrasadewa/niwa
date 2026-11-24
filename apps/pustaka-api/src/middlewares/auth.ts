@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
-import { AppError } from "../errors/app-error";
+import { AppError } from "@niwa/api-core/errors";
 import { AuthErrors } from "../errors/auth";
 import type { AuthUser, NiwaJwtPayload, RoleName } from "../types/auth";
 import type { AppEnv, Bindings } from "../types/env";

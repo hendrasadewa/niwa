@@ -1,6 +1,6 @@
+import { errorHandler, notFoundHandler } from "@niwa/api-core/errors";
+import { createOriginCorsMiddleware } from "@niwa/api-core/middlewares";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { errorHandler, notFoundHandler } from "./errors/handler";
 import { dbMiddleware } from "./middlewares/db";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
@@ -14,7 +14,12 @@ import type { AppEnv } from "./types/env";
 
 const app = new Hono<AppEnv>();
 
-app.use("*", cors());
+app.use(
+  "*",
+  createOriginCorsMiddleware<AppEnv>({
+    defaultAllowedOrigins: ["https://preorder.hendrasadewa.com"],
+  })
+);
 app.use("/api/*", dbMiddleware);
 
 app.onError(errorHandler);
@@ -27,10 +32,9 @@ app.get("/", (c) =>
   })
 );
 
-// Module 1: Auth & User Profile (/api/v1/auth, /api/v1/me, and /api/v1 root aliases)
+// Module 1: Auth & User Profile (/api/v1/auth, /api/v1/me)
 app.route("/api/v1/auth", authRoutes);
 app.route("/api/v1/me", meRoutes);
-app.route("/api/v1", authRoutes);
 
 // Module 2: Seller Store Creation, Configuration & R2 Logo (/api/v1/stores)
 app.route("/api/v1/stores", storesRoutes);

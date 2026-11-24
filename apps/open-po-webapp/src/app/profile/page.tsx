@@ -27,24 +27,22 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Input,
+  Textarea,
+  Button,
+  Badge,
+} from "@niwa/ui/primitives";
 import { ColorSchemeToggle, PageHeader } from "@niwa/ui/components";
 import { useAuth } from "@/providers/auth-provider";
-import { apiClient, ApiError, setAuthToken, setRefreshToken } from "@/lib/api";
+import { apiClient, ApiError, setAuthToken } from "@/lib/api";
 import type { ChangePasswordResponse, User } from "@/types/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 import { formatUnixDate } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -124,9 +122,6 @@ export default function ProfilePage() {
       );
       if (res.token) {
         setAuthToken(res.token);
-      }
-      if (res.refresh_token) {
-        setRefreshToken(res.refresh_token);
       }
       passwordForm.reset({
         current_password: "",

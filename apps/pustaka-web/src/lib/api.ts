@@ -13,11 +13,13 @@ export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
   "http://localhost:8787";
 
-export const TOKEN_STORAGE_KEY = "pustaka_auth_token";
-export const REFRESH_TOKEN_STORAGE_KEY = "pustaka_refresh_token";
-export const USER_STORAGE_KEY = "pustaka_auth_user";
-export const TOKEN_COOKIE_NAME = "pustaka_token";
-export const ROLES_COOKIE_NAME = "pustaka_roles";
+const LEGACY_STORAGE_KEYS = [
+  "pustaka_auth_token",
+  "pustaka_refresh_token",
+  "pustaka_auth_user",
+] as const;
+
+const LEGACY_COOKIES = ["pustaka_token", "pustaka_roles"] as const;
 
 let inMemoryUser: User | null = null;
 
@@ -39,10 +41,6 @@ export function setAuthToken(token: string): void {
   pustakaSsoClient.setAccessToken(token);
 }
 
-export function setRefreshToken(_refreshToken: string): void {
-  // Refresh is handled by the HttpOnly __Host-niwa_session cookie on auth-api
-}
-
 export function getStoredUser(): User | null {
   return inMemoryUser;
 }
@@ -56,12 +54,12 @@ export function clearAuthToken(): void {
   inMemoryUser = null;
   if (typeof window === "undefined") return;
   try {
-    // Clean up any legacy localStorage/cookie artifacts from pre-SSO sessions
-    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-    window.localStorage.removeItem(USER_STORAGE_KEY);
-    document.cookie = `${TOKEN_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
-    document.cookie = `${ROLES_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
+    for (const key of LEGACY_STORAGE_KEYS) {
+      window.localStorage.removeItem(key);
+    }
+    for (const cookie of LEGACY_COOKIES) {
+      document.cookie = `${cookie}=; path=/; max-age=0; SameSite=Lax`;
+    }
   } catch {
     // ignore storage errors
   }

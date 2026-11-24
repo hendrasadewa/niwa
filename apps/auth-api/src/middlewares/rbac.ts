@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { AuthErrors } from "../errors/auth";
-import { CommonErrors } from "../errors/common";
+import { CommonErrors } from "@niwa/api-core/errors";
 import type { AppEnv } from "../types/env";
 import { isUserAdmin } from "../utils/rbac";
 

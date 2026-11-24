@@ -4,9 +4,7 @@ import Link from "next/link";
 import { BookText, Library, MapPin, User as UserIcon } from "lucide-react";
 import type { Book, ReadingStatus } from "@/types/api";
 import { BookCover } from "@/components/books/book-cover";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-
+import { Badge, Card, CardContent } from "@niwa/ui/primitives";
 export const READING_STATUS_LABELS: Record<ReadingStatus, string> = {
   want_to_read: "Want to Read",
   reading: "Reading",

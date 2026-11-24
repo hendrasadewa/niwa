@@ -23,16 +23,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Input,
+  Textarea,
+  Button,
+  Badge,
+} from "@niwa/ui/primitives";
 import { useAuth } from "@/providers/auth-provider";
 import { useCart } from "@/providers/cart-provider";
 import { apiClient, ApiError, getOrderReceiptUrl } from "@/lib/api";
 import type { CheckoutResponse } from "@/types/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 import { formatCurrencyIDR } from "@/lib/utils";
 
 export default function CheckoutPage() {

@@ -2,7 +2,11 @@
   "name": "@niwa/pustaka-validators",
   "version": "0.0.0",
   "description": "Zod validation schemas for Pustaka API",
-  "keywords": ["pustaka", "zod", "validators"],
+  "keywords": [
+    "pustaka",
+    "zod",
+    "validators"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "main": "./src/index.ts",
@@ -15,9 +19,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^4.0.0"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.6.0"
+    "typescript": "catalog:"
   }
 }

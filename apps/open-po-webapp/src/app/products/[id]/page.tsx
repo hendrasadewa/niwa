@@ -17,9 +17,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Button,
+  Badge,
+} from "@niwa/ui/primitives";
 import { apiClient, getProductImageUrl } from "@/lib/api";
 import type { Product, ProductReview, ReviewSummary } from "@/types/api";
 import { formatCurrencyIDR, formatUnixDate } from "@/lib/utils";

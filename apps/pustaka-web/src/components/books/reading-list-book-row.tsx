@@ -8,10 +8,12 @@ import type { ReadingListItem, ReadingProgress } from "@/types/api";
 import { apiClient } from "@/lib/api";
 import { BookCover } from "@/components/books/book-cover";
 import { READING_STATUS_LABELS } from "@/components/books/book-card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
-
+import {
+  Badge,
+  Progress,
+  Card,
+  CardContent,
+} from "@niwa/ui/primitives";
 export interface ReadingListBookRowProps {
   item: ReadingListItem;
 }

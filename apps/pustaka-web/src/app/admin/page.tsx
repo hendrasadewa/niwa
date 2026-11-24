@@ -16,16 +16,15 @@ import type { Library, User } from "@/types/api";
 import { apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
+  Button,
+  Badge,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-
+} from "@niwa/ui/primitives";
 export default function AdminDashboardPage() {
   const { user } = useAuth();
 

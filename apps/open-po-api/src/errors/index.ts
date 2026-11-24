@@ -1,5 +1,9 @@
-export * from "./app-error";
+export {
+  AppError,
+  CommonErrors,
+  errorHandler,
+  notFoundHandler,
+  type AppErrorOptions,
+} from "@niwa/api-core/errors";
 export * from "./auth";
 export * from "./commerce";
-export * from "./common";
-export * from "./handler";

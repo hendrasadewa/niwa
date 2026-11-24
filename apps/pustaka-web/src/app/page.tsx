@@ -22,8 +22,7 @@ import {
   BookRowSkeleton,
 } from "@/components/books/book-card-skeleton";
 import { ReadingListBookRow } from "@/components/books/reading-list-book-row";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button, Card, CardContent } from "@niwa/ui/primitives";
 import { cn } from "@/lib/utils";
 
 type DashboardTab = "reading" | "want_to_read" | "completed" | "recent";

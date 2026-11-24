@@ -20,27 +20,24 @@ import type {
   LibraryMembersResponse,
 } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@niwa/ui/hooks";
 import {
+  Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  Input,
+  Label,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-
+} from "@niwa/ui/primitives";
 export interface LibraryMembersTabProps {
   library: Library;
   membersData?: LibraryMembersResponse;

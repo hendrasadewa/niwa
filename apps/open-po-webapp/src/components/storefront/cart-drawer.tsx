@@ -18,9 +18,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Button,
+  Badge,
+} from "@niwa/ui/primitives";
 import { useCart } from "@/providers/cart-provider";
 import { getProductImageUrl } from "@/lib/api";
 import { formatCurrencyIDR } from "@/lib/utils";

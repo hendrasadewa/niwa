@@ -4,6 +4,118 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@cloudflare/workers-types':
+      specifier: ^5.20260822.1
+      version: 5.20261114.1
+    '@hono/zod-validator':
+      specifier: ^0.7.6
+      version: 0.7.6
+    '@hookform/resolvers':
+      specifier: ^5.0.1
+      version: 5.9.2
+    '@opennextjs/cloudflare':
+      specifier: ^1.20.2
+      version: 1.20.17
+    '@radix-ui/react-dialog':
+      specifier: ^1.1.6
+      version: 1.3.1
+    '@radix-ui/react-dropdown-menu':
+      specifier: ^2.1.6
+      version: 2.2.1
+    '@radix-ui/react-label':
+      specifier: ^2.1.2
+      version: 2.1.17
+    '@radix-ui/react-select':
+      specifier: ^2.1.6
+      version: 2.4.1
+    '@radix-ui/react-slot':
+      specifier: ^1.1.2
+      version: 1.5.0
+    '@radix-ui/react-toast':
+      specifier: ^1.2.6
+      version: 1.3.1
+    '@tailwindcss/postcss':
+      specifier: ^4.3.3
+      version: 4.3.5
+    '@tailwindcss/vite':
+      specifier: ^4.3.3
+      version: 4.3.5
+    '@tanstack/react-query':
+      specifier: ^5.107.1
+      version: 5.107.1
+    '@types/react':
+      specifier: ^19.2.17
+      version: 19.3.0
+    '@types/react-dom':
+      specifier: ^19.2.3
+      version: 19.3.0
+    '@vitejs/plugin-react':
+      specifier: ^6.0.4
+      version: 6.3.0
+    class-variance-authority:
+      specifier: ^0.7.1
+      version: 0.7.1
+    clsx:
+      specifier: ^2.1.1
+      version: 2.1.1
+    drizzle-kit:
+      specifier: ^0.31.10
+      version: 0.31.11
+    drizzle-orm:
+      specifier: ^0.45.2
+      version: 0.45.4
+    eslint-config-next:
+      specifier: 16.3.2
+      version: 16.3.2
+    hono:
+      specifier: ^4.13.3
+      version: 4.13.18
+    jose:
+      specifier: ^6.2.18
+      version: 6.2.18
+    lucide-react:
+      specifier: ^1.18.0
+      version: 1.73.0
+    next:
+      specifier: 16.3.2
+      version: 16.3.2
+    react:
+      specifier: 19.2.8
+      version: 19.2.8
+    react-dom:
+      specifier: 19.2.8
+      version: 19.2.8
+    react-hook-form:
+      specifier: ^7.54.2
+      version: 7.92.0
+    react-router:
+      specifier: ^8.3.0
+      version: 8.5.1
+    tailwind-merge:
+      specifier: ^3.0.2
+      version: 3.7.0
+    tailwindcss:
+      specifier: ^4.3.3
+      version: 4.3.5
+    typescript:
+      specifier: ^5.9.3
+      version: 5.9.3
+    vite:
+      specifier: ^8.2.0
+      version: 8.3.8
+    wrangler:
+      specifier: ^4.125.0
+      version: 4.162.0
+    zod:
+      specifier: ^4.0.0
+      version: 4.6.7
+  vite:
+    typescript:
+      specifier: ~6.0.2
+      version: 6.0.3
+
 importers:
 
   .: {}
@@ -11,8 +123,11 @@ importers:
   apps/auth-api:
     dependencies:
       '@hono/zod-validator':
-        specifier: ^0.7.6
+        specifier: 'catalog:'
         version: 0.7.6(hono@4.13.18)(zod@4.6.7)
+      '@niwa/api-core':
+        specifier: workspace:*
+        version: link:../../packages/api-core
       '@niwa/auth-validators':
         specifier: workspace:*
         version: link:../../packages/validators/auth
@@ -20,29 +135,29 @@ importers:
         specifier: ^13.1.1
         version: 13.3.3
       drizzle-orm:
-        specifier: ^0.45.2
+        specifier: 'catalog:'
         version: 0.45.4(@cloudflare/workers-types@5.20261114.1)
       hono:
-        specifier: ^4.13.3
+        specifier: 'catalog:'
         version: 4.13.18
       jose:
-        specifier: ^6.2.18
+        specifier: 'catalog:'
         version: 6.2.18
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20260822.1
+        specifier: 'catalog:'
         version: 5.20261114.1
       drizzle-kit:
-        specifier: ^0.31.10
+        specifier: 'catalog:'
         version: 0.31.11
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)
 
   apps/auth-web:
@@ -57,44 +172,44 @@ importers:
         specifier: ^13.1.0
         version: 13.3.0
       '@tailwindcss/vite':
-        specifier: ^4.3.3
+        specifier: 'catalog:'
         version: 4.3.5(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.15)(yaml@2.9.1))
       react:
-        specifier: ^19.2.8
+        specifier: 'catalog:'
         version: 19.2.8
       react-dom:
-        specifier: ^19.2.8
+        specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
       react-router:
-        specifier: ^8.3.0
+        specifier: 'catalog:'
         version: 8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       tailwindcss:
-        specifier: ^4.3.3
+        specifier: 'catalog:'
         version: 4.3.5
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       '@types/node':
         specifier: ^24.13.3
         version: 24.19.2
       '@types/react':
-        specifier: ^19.2.17
+        specifier: 'catalog:'
         version: 19.3.0
       '@types/react-dom':
-        specifier: ^19.2.3
+        specifier: 'catalog:'
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
-        specifier: ^6.0.4
+        specifier: 'catalog:'
         version: 6.3.0(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.15)(yaml@2.9.1))
       typescript:
-        specifier: ~6.0.2
+        specifier: catalog:vite
         version: 6.0.3
       vite:
-        specifier: ^8.2.0
+        specifier: 'catalog:'
         version: 8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.15)(yaml@2.9.1)
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@24.19.2)
 
   apps/labs:
@@ -106,25 +221,25 @@ importers:
         specifier: 3.54.1-build1
         version: 3.54.1-build1
       '@tailwindcss/vite':
-        specifier: ^4.3.3
+        specifier: 'catalog:'
         version: 4.3.5(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.15)(yaml@2.9.1))
       '@tanstack/react-query':
-        specifier: ^5.107.1
+        specifier: 'catalog:'
         version: 5.107.1(@types/react@19.3.0)(react@19.2.8)
       react:
-        specifier: ^19.2.8
+        specifier: 'catalog:'
         version: 19.2.8
       react-barcode-scanner:
         specifier: ^4.1.0
         version: 4.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-dom:
-        specifier: ^19.2.8
+        specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
       react-router:
-        specifier: ^8.3.0
+        specifier: 'catalog:'
         version: 8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       tailwindcss:
-        specifier: ^4.3.3
+        specifier: 'catalog:'
         version: 4.3.5
     devDependencies:
       '@eslint/js':
@@ -134,13 +249,13 @@ importers:
         specifier: ^24.13.3
         version: 24.19.2
       '@types/react':
-        specifier: ^19.2.17
+        specifier: 'catalog:'
         version: 19.3.0
       '@types/react-dom':
-        specifier: ^19.2.3
+        specifier: 'catalog:'
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
-        specifier: ^6.0.4
+        specifier: 'catalog:'
         version: 6.3.0(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.15)(yaml@2.9.1))
       eslint:
         specifier: ^10.8.0
@@ -155,23 +270,26 @@ importers:
         specifier: ^17.7.0
         version: 17.14.0
       typescript:
-        specifier: ~6.0.2
+        specifier: catalog:vite
         version: 6.0.3
       typescript-eslint:
         specifier: ^8.65.0
         version: 8.72.2(eslint@10.15.0(jiti@2.7.0))(typescript@6.0.3)
       vite:
-        specifier: ^8.2.0
+        specifier: 'catalog:'
         version: 8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.15)(yaml@2.9.1)
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@24.19.2)
 
   apps/open-po-api:
     dependencies:
       '@hono/zod-validator':
-        specifier: ^0.7.6
+        specifier: 'catalog:'
         version: 0.7.6(hono@4.13.18)(zod@4.6.7)
+      '@niwa/api-core':
+        specifier: workspace:*
+        version: link:../../packages/api-core
       '@niwa/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -179,35 +297,35 @@ importers:
         specifier: workspace:*
         version: link:../../packages/validators/open-po
       drizzle-orm:
-        specifier: ^0.45.2
+        specifier: 'catalog:'
         version: 0.45.4(@cloudflare/workers-types@5.20261114.1)
       hono:
-        specifier: ^4.13.3
+        specifier: 'catalog:'
         version: 4.13.18
       jose:
-        specifier: ^6.2.18
+        specifier: 'catalog:'
         version: 6.2.18
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20260822.1
+        specifier: 'catalog:'
         version: 5.20261114.1
       drizzle-kit:
-        specifier: ^0.31.10
+        specifier: 'catalog:'
         version: 0.31.11
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)
 
   apps/open-po-webapp:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.9.2(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.2.8))(zod@4.6.7)
       '@niwa/api-client':
         specifier: workspace:*
@@ -221,94 +339,73 @@ importers:
       '@niwa/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@radix-ui/react-dialog':
-        specifier: ^1.1.6
-        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-dropdown-menu':
-        specifier: ^2.1.6
-        version: 2.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-label':
-        specifier: ^2.1.2
-        version: 2.1.17(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-progress':
-        specifier: ^1.1.2
-        version: 1.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-select':
-        specifier: ^2.1.6
-        version: 2.4.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-slot':
-        specifier: ^1.1.2
-        version: 1.5.0(@types/react@19.3.0)(react@19.2.8)
-      '@radix-ui/react-toast':
-        specifier: ^1.2.6
-        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@tanstack/react-query':
-        specifier: ^5.107.1
+        specifier: 'catalog:'
         version: 5.107.1(@types/react@19.3.0)(react@19.2.8)
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
       clsx:
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       lucide-react:
-        specifier: ^1.18.0
+        specifier: 'catalog:'
         version: 1.73.0(@types/react@19.3.0)(react@19.2.8)
       next:
-        specifier: 16.3.2
+        specifier: 'catalog:'
         version: 16.3.2(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
-        specifier: 19.2.8
+        specifier: 'catalog:'
         version: 19.2.8
       react-dom:
-        specifier: 19.2.8
+        specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
       react-hook-form:
-        specifier: ^7.54.2
+        specifier: 'catalog:'
         version: 7.92.0(@types/react@19.3.0)(react@19.2.8)
       tailwind-merge:
-        specifier: ^3.0.2
+        specifier: 'catalog:'
         version: 3.7.0
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       '@opennextjs/cloudflare':
-        specifier: ^1.20.2
+        specifier: 'catalog:'
         version: 1.20.17(next@16.3.2(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(wrangler@4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@20.19.43))
       '@tailwindcss/postcss':
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.5
       '@types/node':
         specifier: ^20
         version: 20.19.43
       '@types/react':
-        specifier: ^19
+        specifier: 'catalog:'
         version: 19.3.0
       '@types/react-dom':
-        specifier: ^19
+        specifier: 'catalog:'
         version: 19.3.0(@types/react@19.3.0)
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@2.7.0)
       eslint-config-next:
-        specifier: 16.3.2
+        specifier: 'catalog:'
         version: 16.3.2(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.5
       typescript:
-        specifier: ^5
+        specifier: 'catalog:'
         version: 5.9.3
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@20.19.43)
 
   apps/pustaka-api:
     dependencies:
       '@hono/zod-validator':
-        specifier: ^0.7.6
+        specifier: 'catalog:'
         version: 0.7.6(hono@4.13.18)(zod@4.6.7)
+      '@niwa/api-core':
+        specifier: workspace:*
+        version: link:../../packages/api-core
       '@niwa/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -316,35 +413,35 @@ importers:
         specifier: workspace:*
         version: link:../../packages/validators/pustaka
       drizzle-orm:
-        specifier: ^0.45.2
+        specifier: 'catalog:'
         version: 0.45.4(@cloudflare/workers-types@5.20261114.1)
       hono:
-        specifier: ^4.13.3
+        specifier: 'catalog:'
         version: 4.13.18
       jose:
-        specifier: ^6.2.18
+        specifier: 'catalog:'
         version: 6.2.18
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20260822.1
+        specifier: 'catalog:'
         version: 5.20261114.1
       drizzle-kit:
-        specifier: ^0.31.10
+        specifier: 'catalog:'
         version: 0.31.11
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)
 
   apps/pustaka-web:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.9.2(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.2.8))(zod@4.6.7)
       '@niwa/api-client':
         specifier: workspace:*
@@ -358,130 +455,106 @@ importers:
       '@niwa/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@radix-ui/react-dialog':
-        specifier: ^1.1.6
-        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-dropdown-menu':
-        specifier: ^2.1.6
-        version: 2.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-label':
-        specifier: ^2.1.2
-        version: 2.1.17(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-progress':
-        specifier: ^1.1.2
-        version: 1.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-select':
-        specifier: ^2.1.6
-        version: 2.4.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-slot':
-        specifier: ^1.1.2
-        version: 1.5.0(@types/react@19.3.0)(react@19.2.8)
-      '@radix-ui/react-toast':
-        specifier: ^1.2.6
-        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@tanstack/react-query':
-        specifier: ^5.107.1
+        specifier: 'catalog:'
         version: 5.107.1(@types/react@19.3.0)(react@19.2.8)
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
       clsx:
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       lucide-react:
-        specifier: ^1.18.0
+        specifier: 'catalog:'
         version: 1.73.0(@types/react@19.3.0)(react@19.2.8)
       next:
-        specifier: 16.3.2
+        specifier: 'catalog:'
         version: 16.3.2(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
-        specifier: 19.2.8
+        specifier: 'catalog:'
         version: 19.2.8
       react-dom:
-        specifier: 19.2.8
+        specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
       react-hook-form:
-        specifier: ^7.54.2
+        specifier: 'catalog:'
         version: 7.92.0(@types/react@19.3.0)(react@19.2.8)
       tailwind-merge:
-        specifier: ^3.0.2
+        specifier: 'catalog:'
         version: 3.7.0
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       '@opennextjs/cloudflare':
-        specifier: ^1.20.2
+        specifier: 'catalog:'
         version: 1.20.17(next@16.3.2(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(wrangler@4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@20.19.43))
       '@tailwindcss/postcss':
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.5
       '@types/node':
         specifier: ^20
         version: 20.19.43
       '@types/react':
-        specifier: ^19
+        specifier: 'catalog:'
         version: 19.3.0
       '@types/react-dom':
-        specifier: ^19
+        specifier: 'catalog:'
         version: 19.3.0(@types/react@19.3.0)
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@2.7.0)
       eslint-config-next:
-        specifier: 16.3.2
+        specifier: 'catalog:'
         version: 16.3.2(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.5
       typescript:
-        specifier: ^5
+        specifier: 'catalog:'
         version: 5.9.3
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@20.19.43)
 
   apps/web:
     dependencies:
       next:
-        specifier: 16.3.2
+        specifier: 'catalog:'
         version: 16.3.2(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
-        specifier: 19.2.8
+        specifier: 'catalog:'
         version: 19.2.8
       react-dom:
-        specifier: 19.2.8
+        specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
     devDependencies:
       '@opennextjs/cloudflare':
-        specifier: ^1.20.2
+        specifier: 'catalog:'
         version: 1.20.17(next@16.3.2(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(wrangler@4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@20.19.43))
       '@tailwindcss/postcss':
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.5
       '@types/node':
         specifier: ^20
         version: 20.19.43
       '@types/react':
-        specifier: ^19
+        specifier: 'catalog:'
         version: 19.3.0
       '@types/react-dom':
-        specifier: ^19
+        specifier: 'catalog:'
         version: 19.3.0(@types/react@19.3.0)
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@2.7.0)
       eslint-config-next:
-        specifier: 16.3.2
+        specifier: 'catalog:'
         version: 16.3.2(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.5
       typescript:
-        specifier: ^5
+        specifier: 'catalog:'
         version: 5.9.3
       wrangler:
-        specifier: ^4.125.0
+        specifier: 'catalog:'
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@20.19.43)
 
   apps/web-api:
@@ -509,66 +582,118 @@ importers:
   packages/api-client:
     devDependencies:
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/api-core:
+    dependencies:
+      '@hono/zod-validator':
+        specifier: 'catalog:'
+        version: 0.7.6(hono@4.13.18)(zod@4.6.7)
+      hono:
+        specifier: 'catalog:'
+        version: 4.13.18
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 'catalog:'
+        version: 5.20261114.1
+      typescript:
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/auth:
     dependencies:
       jose:
-        specifier: ^6.2.18
+        specifier: 'catalog:'
         version: 6.2.18
       react:
         specifier: ^19.2.8
         version: 19.2.8
     devDependencies:
       '@types/react':
-        specifier: ^19.2.17
+        specifier: 'catalog:'
         version: 19.3.0
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/ui:
     dependencies:
+      '@radix-ui/react-dialog':
+        specifier: 'catalog:'
+        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@radix-ui/react-dropdown-menu':
+        specifier: 'catalog:'
+        version: 2.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@radix-ui/react-label':
+        specifier: 'catalog:'
+        version: 2.1.17(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@radix-ui/react-select':
+        specifier: 'catalog:'
+        version: 2.4.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@radix-ui/react-slot':
+        specifier: 'catalog:'
+        version: 1.5.0(@types/react@19.3.0)(react@19.2.8)
+      '@radix-ui/react-toast':
+        specifier: 'catalog:'
+        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      class-variance-authority:
+        specifier: 'catalog:'
+        version: 0.7.1
+      clsx:
+        specifier: 'catalog:'
+        version: 2.1.1
+      lucide-react:
+        specifier: 'catalog:'
+        version: 1.73.0(@types/react@19.3.0)(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
+      react-hook-form:
+        specifier: 'catalog:'
+        version: 7.92.0(@types/react@19.3.0)(react@19.2.8)
+      tailwind-merge:
+        specifier: 'catalog:'
+        version: 3.7.0
     devDependencies:
       '@types/react':
-        specifier: ^19.2.17
+        specifier: 'catalog:'
         version: 19.3.0
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/validators/auth:
     dependencies:
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/validators/open-po:
     dependencies:
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/validators/pustaka:
     dependencies:
       zod:
-        specifier: ^4.0.0
+        specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
       typescript:
-        specifier: ^5.6.0
+        specifier: 'catalog:'
         version: 5.9.3
 
 packages:
@@ -2191,19 +2316,6 @@ packages:
 
   '@radix-ui/react-primitive@2.2.0':
     resolution: {integrity: sha512-HCTSPMNqv55Qk0IX4geJbpyXazmqulcimwuyjxTkKi29v+QZbG2Zho9BnbBq4YS2PF+KlNb2CXoLz66uUmblkg==}
-    peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
-      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      '@types/react-dom':
-        optional: true
-
-  '@radix-ui/react-progress@1.2.1':
-    resolution: {integrity: sha512-yQBiM6J3YM8Ums1orkEFpbznK47geKxa0igikzcaS1xHgdba3DdAQBsGbCTt5BVfR8zhEvgxQ0poGcINaD3lvw==}
     peerDependencies:
       '@types/react': '*'
       '@types/react-dom': '*'
@@ -6917,16 +7029,6 @@ snapshots:
   '@radix-ui/react-primitive@2.2.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@radix-ui/react-slot': 1.5.0(@types/react@19.3.0)(react@19.2.8)
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-    optionalDependencies:
-      '@types/react': 19.3.0
-      '@types/react-dom': 19.3.0(@types/react@19.3.0)
-
-  '@radix-ui/react-progress@1.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      '@radix-ui/react-context': 1.3.0(@types/react@19.3.0)(react@19.2.8)
-      '@radix-ui/react-primitive': 2.2.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
     optionalDependencies:

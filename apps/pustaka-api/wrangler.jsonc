@@ -1,0 +1,41 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "niwa-pustaka-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "pustaka.api.hendrasadewa.com",
+      "custom_domain": true
+    }
+  ],
+  "dev": {
+    "port": 8787
+  },
+  "vars": {
+    "AUTH_API_URL": "https://auth.api.hendrasadewa.com",
+    "JWT_ISSUER": "https://auth.api.hendrasadewa.com",
+    "ALLOWED_ORIGINS": "https://pustaka.hendrasadewa.com"
+  },
+  "services": [
+    {
+      "binding": "AUTH_API",
+      "service": "niwa-auth-api"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pustaka-db",
+      "database_id": "87913a41-c2bf-48d5-96b5-a89976d26a29",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "pustaka-covers"
+    }
+  ]
+}

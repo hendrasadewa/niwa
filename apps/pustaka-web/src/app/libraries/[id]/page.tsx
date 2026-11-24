@@ -23,24 +23,25 @@ import type {
   LibraryMembersResponse,
 } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@niwa/ui/hooks";
 import { AppShell } from "@/components/layout/app-shell";
 import { LibraryBooksTab } from "@/components/libraries/library-books-tab";
 import { LibraryBookshelvesTab } from "@/components/libraries/library-bookshelves-tab";
 import { LibraryMembersTab } from "@/components/libraries/library-members-tab";
 import { LibrarySettingsTab } from "@/components/libraries/library-settings-tab";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Skeleton,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@niwa/ui/primitives";
 import { cn } from "@/lib/utils";
 
 type WorkspaceTab = "books" | "bookshelves" | "members" | "settings";

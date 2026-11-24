@@ -14,22 +14,20 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+  Input,
+  Textarea,
+  Button,
+} from "@niwa/ui/primitives";
 import { useAuth } from "@/providers/auth-provider";
 import { apiClient, ApiError, getStoreLogoUrl } from "@/lib/api";
 import type { Store } from "@/types/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 
 export default function SellerStoreSettingsPage() {
   const { activeStore, refreshProfile } = useAuth();

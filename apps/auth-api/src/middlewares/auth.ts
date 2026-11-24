@@ -1,5 +1,5 @@
 import { createMiddleware } from "hono/factory";
-import { AppError } from "../errors/app-error";
+import { AppError } from "@niwa/api-core/errors";
 import { AuthErrors } from "../errors/auth";
 import { createRoleRepo } from "../repositories/roles";
 import { createUserRepo } from "../repositories/users";

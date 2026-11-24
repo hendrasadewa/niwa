@@ -5,19 +5,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Globe, Loader2, Lock } from "lucide-react";
 import type { Library, LibraryVisibility } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@niwa/ui/hooks";
 import {
+  Button,
+  Input,
+  Label,
+  Textarea,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@niwa/ui/primitives";
 import { cn } from "@/lib/utils";
 
 export interface CreateLibraryDialogProps {

@@ -1,6 +1,6 @@
+import { errorHandler, notFoundHandler } from "@niwa/api-core/errors";
+import { createOriginCorsMiddleware } from "@niwa/api-core/middlewares";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { errorHandler, notFoundHandler } from "./errors/handler";
 import { dbMiddleware } from "./middlewares/db";
 import { authRoutes } from "./routes/auth";
 import { booksRoutes } from "./routes/books";
@@ -13,7 +13,12 @@ import type { AppEnv } from "./types/env";
 
 const app = new Hono<AppEnv>();
 
-app.use("*", cors());
+app.use(
+  "*",
+  createOriginCorsMiddleware<AppEnv>({
+    defaultAllowedOrigins: ["https://pustaka.hendrasadewa.com"],
+  })
+);
 app.use("/api/*", dbMiddleware);
 
 app.onError(errorHandler);
@@ -26,10 +31,9 @@ app.get("/", (c) =>
   })
 );
 
-// Auth & Users (/api/v1/auth, /api/v1/users, and /api/v1 root aliases)
+// Auth & Users (/api/v1/auth, /api/v1/users)
 app.route("/api/v1/auth", authRoutes);
 app.route("/api/v1/users", usersRoutes);
-app.route("/api/v1", authRoutes);
 
 // Libraries & Invites (/api/v1/libraries, /api/v1/invites)
 app.route("/api/v1/libraries", librariesRoutes);

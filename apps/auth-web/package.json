@@ -2,7 +2,13 @@
   "name": "@niwa/auth-web",
   "version": "0.0.0",
   "description": "Hosted Niwa Identity Provider Portal (Login, Consent, Account & Security, Admin ACL)",
-  "keywords": ["niwa", "auth", "sso", "idp", "portal"],
+  "keywords": [
+    "niwa",
+    "auth",
+    "sso",
+    "idp",
+    "portal"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "type": "module",
@@ -18,20 +24,20 @@
     "@niwa/auth-validators": "workspace:*",
     "@niwa/ui": "workspace:*",
     "@simplewebauthn/browser": "^13.1.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router": "^8.3.0",
-    "tailwindcss": "^4.3.3",
-    "zod": "^4.0.0"
+    "@tailwindcss/vite": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router": "catalog:",
+    "tailwindcss": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.4",
-    "typescript": "~6.0.2",
-    "vite": "^8.2.0",
-    "wrangler": "^4.125.0"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "typescript": "catalog:vite",
+    "vite": "catalog:",
+    "wrangler": "catalog:"
   }
 }

@@ -2,7 +2,12 @@
   "name": "@niwa/open-po-validators",
   "version": "0.0.0",
   "description": "Zod validation schemas for Open-PO Pre-Order Management API",
-  "keywords": ["open-po", "pre-order", "zod", "validators"],
+  "keywords": [
+    "open-po",
+    "pre-order",
+    "zod",
+    "validators"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "main": "./src/index.ts",
@@ -15,9 +20,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^4.0.0"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.6.0"
+    "typescript": "catalog:"
   }
 }

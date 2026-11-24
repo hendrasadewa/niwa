@@ -16,18 +16,17 @@ import {
 import type { InvitePreview } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@niwa/ui/hooks";
 import { AppShell } from "@/components/layout/app-shell";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
+  Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-
+} from "@niwa/ui/primitives";
 export default function InviteAcceptPage() {
   const params = useParams<{ code: string }>();
   const router = useRouter();

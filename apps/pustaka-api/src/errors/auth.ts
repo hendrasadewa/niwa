@@ -1,5 +1,5 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { AppError } from "./app-error";
+import { AppError } from "@niwa/api-core/errors";
 
 export const AuthErrors = {
   missingAuthHeader: () =>

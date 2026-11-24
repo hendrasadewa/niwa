@@ -2,7 +2,13 @@
   "name": "@niwa/auth-validators",
   "version": "0.0.0",
   "description": "Shared Zod validation schemas for Niwa Identity & Multi-App RBAC Service",
-  "keywords": ["niwa", "auth", "rbac", "zod", "validators"],
+  "keywords": [
+    "niwa",
+    "auth",
+    "rbac",
+    "zod",
+    "validators"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "main": "./src/index.ts",
@@ -15,9 +21,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^4.0.0"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.6.0"
+    "typescript": "catalog:"
   }
 }

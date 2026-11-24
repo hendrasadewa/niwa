@@ -1,6 +1,6 @@
 # Niwa API Architecture — TypeScript Reference Patterns
 
-Use these copy-ready blueprints when implementing or refactoring any `apps/*-api` service.
+Use these copy-ready blueprints when implementing or refactoring any `apps/*-api` service. Shared core primitives live in `packages/api-core` (`@niwa/api-core`).
 
 ---
 
@@ -11,12 +11,13 @@ import type { Database } from "../db";
 
 export type Bindings = {
   DB: D1Database;
-  // Add worker secrets/vars here
+  ALLOWED_ORIGINS?: string;
+  // Add worker secrets/vars/bindings (BUCKET, AUTH_API, JWT_ISSUER, etc.) here
 };
 
 export type Variables = {
   db: Database;
-  // Add request-scoped state (e.g., user, jwtPayload)
+  // Add request-scoped state (e.g., user, jwtPayload, authToken)
 };
 
 export type AppEnv = {
@@ -44,139 +45,71 @@ export * from "./schema";
 
 ```ts
 // src/middlewares/db.ts
-import { createMiddleware } from "hono/factory";
-import { createDb } from "../db";
+import { createDbMiddleware } from "@niwa/api-core/middlewares";
+import { createDb, type Database } from "../db";
 import type { AppEnv } from "../types/env";
 
-export const dbMiddleware = createMiddleware<AppEnv>(async (c, next) => {
-  c.set("db", createDb(c.env.DB));
-  await next();
-});
+export const dbMiddleware = createDbMiddleware<AppEnv, Database>(createDb);
 ```
 
 ---
 
 ## 3. Error Catalog (`src/errors/`)
 
+`AppError`, `CommonErrors`, `errorHandler`, and `notFoundHandler` live in `@niwa/api-core/errors`. Apps only define domain-specific error factories and re-export the shared primitives from `src/errors/index.ts`.
+
 ```ts
-// src/errors/app-error.ts
-import type { ContentfulStatusCode } from "hono/utils/http-status";
-
-export type AppErrorOptions = {
-  status: ContentfulStatusCode;
-  error: string;
-  code: string;
-  message: string;
-  details?: unknown;
-};
-
-export class AppError extends Error {
-  readonly status: ContentfulStatusCode;
-  readonly error: string;
-  readonly code: string;
-  readonly details?: unknown;
-
-  constructor(opts: AppErrorOptions) {
-    super(opts.message);
-    this.name = "AppError";
-    this.status = opts.status;
-    this.error = opts.error;
-    this.code = opts.code;
-    this.details = opts.details;
-  }
-}
+// src/errors/index.ts
+export {
+  AppError,
+  CommonErrors,
+  errorHandler,
+  notFoundHandler,
+  type AppErrorOptions,
+} from "@niwa/api-core/errors";
+export * from "./auth";
+export * from "./<domain>";
 ```
 
 ```ts
-// src/errors/common.ts
-import { AppError } from "./app-error";
+// src/errors/<domain>.ts
+import { AppError } from "@niwa/api-core/errors";
 
-export const CommonErrors = {
-  validation: (details: unknown, message = "Validation failed") =>
+export const DomainErrors = {
+  notFound: (id: string) =>
     new AppError({
-      status: 400,
-      error: "Validation Error",
-      code: "VALIDATION_ERROR",
-      message,
-      details,
+      status: 404,
+      error: "NotFound",
+      code: "ITEM_NOT_FOUND",
+      message: `Item ${id} not found`,
     }),
-
-  unauthorized: (message = "Authentication required", code = "UNAUTHORIZED") =>
-    new AppError({ status: 401, error: "Unauthorized", code, message }),
-
-  forbidden: (message = "Insufficient permissions", code = "FORBIDDEN") =>
-    new AppError({ status: 403, error: "Forbidden", code, message }),
-
-  notFound: (message = "Resource not found", code = "NOT_FOUND") =>
-    new AppError({ status: 404, error: "Not Found", code, message }),
 };
-```
-
-```ts
-// src/errors/handler.ts
-import type { ErrorHandler, NotFoundHandler } from "hono";
-import type { AppEnv } from "../types/env";
-import { AppError } from "./app-error";
-
-export const errorHandler: ErrorHandler<AppEnv> = (err, c) => {
-  if (err instanceof AppError) {
-    return c.json(
-      {
-        error: err.error,
-        code: err.code,
-        message: err.message,
-        ...(err.details !== undefined ? { details: err.details } : {}),
-      },
-      err.status
-    );
-  }
-
-  console.error("[UnhandledError]", err);
-  return c.json(
-    {
-      error: "Internal Server Error",
-      code: "INTERNAL_SERVER_ERROR",
-      message: "An unexpected error occurred",
-    },
-    500
-  );
-};
-
-export const notFoundHandler: NotFoundHandler<AppEnv> = (c) =>
-  c.json(
-    {
-      error: "Not Found",
-      code: "ROUTE_NOT_FOUND",
-      message: `Route ${c.req.method} ${c.req.path} not found`,
-    },
-    404
-  );
 ```
 
 ---
 
-## 4. Unified Zod Validator Wrapper (`src/validators/index.ts`)
+## 4. Unified Zod Validator Wrapper (`src/validators/index.ts`) & RBAC (`src/middlewares/rbac.ts`)
 
 ```ts
-import { zValidator } from "@hono/zod-validator";
-import type { ValidationTargets } from "hono";
-import type { ZodType } from "zod";
-import { CommonErrors } from "../errors/common";
+// src/validators/index.ts
+export { validate } from "@niwa/api-core/validators";
+```
 
-export function validate<
-  Target extends keyof ValidationTargets,
-  Schema extends ZodType,
->(target: Target, schema: Schema) {
-  return zValidator(target, schema, (result) => {
-    if (!result.success) {
-      const details = result.error.issues.map((issue) => ({
-        path: issue.path.join("."),
-        message: issue.message,
-      }));
-      throw CommonErrors.validation(details, "Invalid request payload");
-    }
-  });
-}
+```ts
+// src/middlewares/rbac.ts
+import { createRbacMiddlewares } from "@niwa/api-core/middlewares";
+import { AuthErrors } from "../errors/auth";
+import type { RoleName } from "../types/auth";
+import type { AppEnv } from "../types/env";
+
+export const { requireRole, requirePermission } = createRbacMiddlewares<
+  AppEnv,
+  RoleName
+>({
+  onInsufficientRole: (allowedRoles) => AuthErrors.insufficientRole(allowedRoles),
+  onMissingPermissions: (requiredPermissions) =>
+    AuthErrors.missingPermissions(requiredPermissions),
+});
 ```
 
 ---
@@ -289,26 +222,29 @@ aclAppsRoutes.post("/", validate("json", createAppSchema), async (c) => {
 ## 8. Entrypoint Assembly (`src/index.ts`)
 
 ```ts
+import { errorHandler, notFoundHandler } from "@niwa/api-core/errors";
+import { createOriginCorsMiddleware } from "@niwa/api-core/middlewares";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { errorHandler, notFoundHandler } from "./errors/handler";
 import { dbMiddleware } from "./middlewares/db";
-import { aclRoutes } from "./routes/acl";
-import { authRoutes } from "./routes/auth";
+import { itemsRoutes } from "./routes/items";
 import type { AppEnv } from "./types/env";
 
 const app = new Hono<AppEnv>();
 
-app.use("*", cors());
+app.use(
+  "*",
+  createOriginCorsMiddleware<AppEnv>({
+    defaultAllowedOrigins: ["https://<product>.hendrasadewa.com"],
+  })
+);
 app.use("/api/*", dbMiddleware);
 
 app.onError(errorHandler);
 app.notFound(notFoundHandler);
 
-app.get("/", (c) => c.json({ service: "niwa-auth-api", status: "ok" }));
+app.get("/", (c) => c.json({ service: "<product>-api", status: "ok" }));
 
-app.route("/api/v1/auth", authRoutes);
-app.route("/api/v1/acl", aclRoutes);
+app.route("/api/v1/items", itemsRoutes);
 
 export default app;
 ```

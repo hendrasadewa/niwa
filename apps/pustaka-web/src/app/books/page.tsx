@@ -22,16 +22,15 @@ import {
   BookGridSkeleton,
   BookRowSkeleton,
 } from "@/components/books/book-card-skeleton";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
+  Input,
+  Button,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-
+} from "@niwa/ui/primitives";
 export default function BooksCatalogPage() {
   const { isAuthenticated } = useAuth();
   const [searchInput, setSearchInput] = React.useState("");

@@ -5,20 +5,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit2, LibraryBig, Loader2, MapPin, Plus, Trash2 } from "lucide-react";
 import type { Bookshelf, Library } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useToast } from "@niwa/ui/hooks";
 import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Label,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-
+} from "@niwa/ui/primitives";
 export interface LibraryBookshelvesTabProps {
   library: Library;
   bookshelves: Bookshelf[];

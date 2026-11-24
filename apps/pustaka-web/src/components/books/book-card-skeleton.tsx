@@ -1,6 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-
+import { Card, CardContent, Skeleton } from "@niwa/ui/primitives";
 export function BookCardSkeleton() {
   return (
     <Card className="flex h-full flex-col overflow-hidden">

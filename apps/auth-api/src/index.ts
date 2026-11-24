@@ -1,5 +1,5 @@
+import { errorHandler, notFoundHandler } from "@niwa/api-core/errors";
 import { Hono } from "hono";
-import { errorHandler, notFoundHandler } from "./errors/handler";
 import { strictCorsMiddleware } from "./middlewares/cors";
 import { dbMiddleware } from "./middlewares/db";
 import { accountRoutes } from "./routes/account";

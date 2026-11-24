@@ -21,10 +21,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+  Button,
+  Badge,
+  Progress,
+} from "@niwa/ui/primitives";
 import { apiClient, getProductImageUrl, getStoreLogoUrl } from "@/lib/api";
 import type { PreOrderWave, Product, Store } from "@/types/api";
 import { useCart } from "@/providers/cart-provider";

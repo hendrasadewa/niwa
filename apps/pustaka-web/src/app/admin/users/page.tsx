@@ -7,42 +7,35 @@ import { Loader2, Shield, UserPlus, Users } from "lucide-react";
 import type { User } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@niwa/ui/hooks";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
+  Button,
+  Input,
+  Badge,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-
+} from "@niwa/ui/primitives";
 export default function AdminUsersPage() {
   const { user: currentUser, refreshProfile } = useAuth();
   const queryClient = useQueryClient();

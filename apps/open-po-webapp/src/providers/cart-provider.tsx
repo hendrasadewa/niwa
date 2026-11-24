@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 
 export const CART_STORAGE_KEY = "open_po_cart";
 

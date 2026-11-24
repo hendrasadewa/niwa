@@ -20,30 +20,26 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+  Input,
+  Button,
+  Badge,
+  Progress,
+} from "@niwa/ui/primitives";
 import { useAuth } from "@/providers/auth-provider";
 import { apiClient, ApiError } from "@/lib/api";
 import type { PreOrderWave, Product } from "@/types/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 import {
   formatCurrencyIDR,
   formatUnixDate,

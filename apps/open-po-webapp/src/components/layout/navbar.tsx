@@ -19,16 +19,16 @@ import {
   BottomNavItemContent,
   bottomNavItemClasses,
 } from "@niwa/ui/components";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
+  Button,
+  Badge,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@niwa/ui/primitives";
 import { useAuth } from "@/providers/auth-provider";
 import { useCart } from "@/providers/cart-provider";
 import { CartDrawer } from "@/components/storefront/cart-drawer";

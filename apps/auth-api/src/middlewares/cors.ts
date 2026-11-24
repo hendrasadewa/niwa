@@ -1,5 +1,5 @@
+import { createOriginCorsMiddleware } from "@niwa/api-core/middlewares";
 import type { Context } from "hono";
-import { createMiddleware } from "hono/factory";
 import { createDb } from "../db";
 import { SsoErrors } from "../errors/sso";
 import { createAppRepo } from "../repositories/apps";
@@ -41,41 +41,12 @@ export async function isRequestOriginAllowed(
  * - All other routes strictly validate `Origin` against the Niwa allowlist before
  *   emitting `Access-Control-Allow-Credentials: true`.
  */
-export const strictCorsMiddleware = createMiddleware<AppEnv>(async (c, next) => {
-  if (c.req.path.startsWith("/.well-known/")) {
-    c.header("Access-Control-Allow-Origin", "*");
-    c.header("Access-Control-Allow-Methods", "GET, OPTIONS");
-    if (c.req.method === "OPTIONS") {
-      return c.body(null, 204);
-    }
-    await next();
-    return;
-  }
-
-  const origin = c.req.header("Origin");
-  if (origin) {
-    const allowed = await isRequestOriginAllowed(c, origin);
-    if (allowed) {
-      c.header("Access-Control-Allow-Origin", origin);
-      c.header("Access-Control-Allow-Credentials", "true");
-      c.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-      );
-      c.header(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, X-Niwa-Requested-With"
-      );
-      c.header("Access-Control-Max-Age", "86400");
-      c.header("Vary", "Origin");
-    } else if (c.req.method === "OPTIONS") {
-      throw SsoErrors.originNotAllowed();
-    }
-  }
-
-  if (c.req.method === "OPTIONS") {
-    return c.body(null, 204);
-  }
-
-  await next();
+export const strictCorsMiddleware = createOriginCorsMiddleware<AppEnv>({
+  allowCredentials: true,
+  publicReadPaths: ["/.well-known/"],
+  allowHeaders: "Content-Type, Authorization, X-Niwa-Requested-With",
+  isAllowed: (c, origin) => isRequestOriginAllowed(c, origin),
+  onOriginRejected: () => {
+    throw SsoErrors.originNotAllowed();
+  },
 });

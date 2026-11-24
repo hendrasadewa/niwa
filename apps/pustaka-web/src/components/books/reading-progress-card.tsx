@@ -13,19 +13,17 @@ import { BookMarked, CheckCircle2, Edit3, Loader2, LogIn, Plus } from "lucide-re
 import type { Book, ReadingListItem, ReadingProgress } from "@/types/api";
 import { ApiError, apiClient } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@niwa/ui/hooks";
 import { READING_STATUS_LABELS } from "@/components/books/book-card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import {
+  Button,
+  Input,
+  Progress,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,15 +31,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -49,8 +43,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-
+} from "@niwa/ui/primitives";
 export interface ReadingProgressCardProps {
   book: Book;
 }

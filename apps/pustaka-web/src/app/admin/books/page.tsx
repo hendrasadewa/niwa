@@ -7,15 +7,14 @@ import { ArrowRight, BookCopy, Library as LibraryIcon } from "lucide-react";
 import type { Library } from "@/types/api";
 import { apiClient } from "@/lib/api";
 import { AdminShell } from "@/components/layout/admin-shell";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-
+} from "@niwa/ui/primitives";
 export default function AdminBooksRedirectPage() {
   const librariesQuery = useQuery({
     queryKey: ["libraries", { scope: "mine" }],

@@ -1,0 +1,33 @@
+{
+  "name": "@niwa/api-core",
+  "version": "0.0.0",
+  "description": "Shared Hono v4, Zod v4, error catalog, RBAC, DB, and CORS primitives for Niwa Cloudflare Workers APIs",
+  "keywords": [
+    "niwa",
+    "hono",
+    "cloudflare-workers",
+    "zod",
+    "api-core"
+  ],
+  "license": "ISC",
+  "author": "Hendra Sadewa <me@hendrasadewa.com>",
+  "exports": {
+    ".": "./src/index.ts",
+    "./errors": "./src/errors/index.ts",
+    "./validators": "./src/validators/index.ts",
+    "./middlewares": "./src/middlewares/index.ts"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "typescript": "catalog:"
+  }
+}

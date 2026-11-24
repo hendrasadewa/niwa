@@ -14,21 +14,19 @@ import {
   Settings,
   Store as StoreIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@niwa/ui/primitives";
 import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
 

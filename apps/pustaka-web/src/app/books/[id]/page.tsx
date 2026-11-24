@@ -22,10 +22,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { BookCover } from "@/components/books/book-cover";
 import { ReadingProgressCard } from "@/components/books/reading-progress-card";
 import { BookReviewsSection } from "@/components/books/book-reviews-section";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-
+import { Badge, Button, Skeleton } from "@niwa/ui/primitives";
 export default function BookDetailPage() {
   const params = useParams<{ id: string }>();
   const bookId = params.id;

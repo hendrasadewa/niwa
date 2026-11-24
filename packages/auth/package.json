@@ -2,7 +2,14 @@
   "name": "@niwa/auth",
   "version": "0.0.0",
   "description": "Shared first-party SSO client, React provider, and ES256 JWKS verifier for Niwa apps",
-  "keywords": ["niwa", "auth", "sso", "jwt", "jwks", "react"],
+  "keywords": [
+    "niwa",
+    "auth",
+    "sso",
+    "jwt",
+    "jwks",
+    "react"
+  ],
   "license": "ISC",
   "author": "Hendra Sadewa <me@hendrasadewa.com>",
   "exports": {
@@ -16,7 +23,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "jose": "^6.2.18"
+    "jose": "catalog:"
   },
   "peerDependencies": {
     "react": "^19.2.8"
@@ -27,7 +34,7 @@
     }
   },
   "devDependencies": {
-    "@types/react": "^19.2.17",
-    "typescript": "^5.6.0"
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
   }
 }

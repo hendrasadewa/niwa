@@ -23,29 +23,25 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Input,
+  Button,
+  Badge,
+} from "@niwa/ui/primitives";
 import { useAuth } from "@/providers/auth-provider";
 import { apiClient, getOrderReceiptUrl } from "@/lib/api";
 import type { KanbanBoard, OrderRecord, PreOrderWave } from "@/types/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@niwa/ui/hooks";
 import { formatCurrencyIDR, formatUnixDateTime } from "@/lib/utils";
 
 export default function SellerKanbanOrdersPage() {

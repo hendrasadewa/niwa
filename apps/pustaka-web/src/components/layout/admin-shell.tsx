@@ -12,8 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AppShell } from "@/components/layout/app-shell";
-import { Badge } from "@/components/ui/badge";
-
+import { Badge } from "@niwa/ui/primitives";
 const ADMIN_NAV_ITEMS = [
   {
     href: "/admin",

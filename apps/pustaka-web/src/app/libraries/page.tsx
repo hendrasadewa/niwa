@@ -26,26 +26,24 @@ import { useAuth } from "@/providers/auth-provider";
 import { useDebounce } from "@/hooks/use-debounce";
 import { AppShell } from "@/components/layout/app-shell";
 import { CreateLibraryDialog } from "@/components/libraries/create-library-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
+  Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
+  Input,
+  Label,
+  Skeleton,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@niwa/ui/primitives";
 import { cn } from "@/lib/utils";
 
 type LibrariesTab = "mine" | "public";

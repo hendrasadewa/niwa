@@ -6,16 +6,15 @@ import { useRouter } from "next/navigation";
 import { Lock, LogIn } from "lucide-react";
 import { Spinner } from "@niwa/ui/components";
 import { useAuth } from "@/providers/auth-provider";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@niwa/ui/hooks";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-
+} from "@niwa/ui/primitives";
 export interface AuthGuardProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
