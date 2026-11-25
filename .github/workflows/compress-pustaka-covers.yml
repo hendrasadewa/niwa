@@ -1,0 +1,62 @@
+name: Compress Pustaka R2 Covers
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview compression savings without modifying R2 objects"
+        required: false
+        default: false
+        type: boolean
+      force:
+        description: "Re-process objects already tagged as compressed"
+        required: false
+        default: false
+        type: boolean
+      max_width:
+        description: "Maximum image width in pixels (aspect ratio preserved)"
+        required: false
+        default: "1200"
+        type: string
+      quality:
+        description: "WebP quality (1-100)"
+        required: false
+        default: "82"
+        type: string
+      limit:
+        description: "Optional max number of objects to process (empty = all)"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: compress-pustaka-covers
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  compress-covers:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET_NAME: pustaka-covers
+      R2_PREFIX: covers/
+      MAX_WIDTH: ${{ inputs.max_width }}
+      WEBP_QUALITY: ${{ inputs.quality }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      FORCE: ${{ inputs.force }}
+      LIMIT: ${{ inputs.limit }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Compress R2 cover images to WebP
+        run: pnpm --filter @niwa/pustaka-api run covers:compress
