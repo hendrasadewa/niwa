@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "niwa-blog-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "blog.api.hendrasadewa.com",
+      "custom_domain": true
+    }
+  ],
+  "dev": {
+    "port": 8791
+  },
+  "vars": {
+    "AUTH_API_URL": "https://auth.api.hendrasadewa.com",
+    "JWT_ISSUER": "https://auth.api.hendrasadewa.com",
+    "ALLOWED_ORIGINS": "https://blog.hendrasadewa.com",
+    "BLOG_PUBLIC_URL": "https://blog.hendrasadewa.com",
+    "BLOG_API_PUBLIC_URL": "https://blog.api.hendrasadewa.com",
+    "ATPROTO_PDS_URL": "https://bsky.social",
+    "ATPROTO_OWNER_DID": "",
+    "ATPROTO_PUBLICATION_RKEY": ""
+  },
+  "services": [
+    {
+      "binding": "AUTH_API",
+      "service": "niwa-auth-api"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "blog-db",
+      "database_id": "df27f725-ab6b-4c35-8f45-5ca2f65d7d73",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "blog-media"
+    }
+  ]
+}

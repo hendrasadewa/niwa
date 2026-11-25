@@ -1,0 +1,11 @@
+# Local development overrides for apps/blog-api (copy to .dev.vars — never commit .dev.vars)
+AUTH_API_URL=http://localhost:8788
+JWT_ISSUER=http://localhost:8788
+ALLOWED_ORIGINS=http://localhost:3004
+BLOG_PUBLIC_URL=http://localhost:3004
+BLOG_API_PUBLIC_URL=http://localhost:8791
+ATPROTO_PDS_URL=https://bsky.social
+ATPROTO_OWNER_DID=
+ATPROTO_PUBLICATION_RKEY=
+BSKY_IDENTIFIER=
+BSKY_APP_PASSWORD=

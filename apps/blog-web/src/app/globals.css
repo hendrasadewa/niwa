@@ -1,0 +1,233 @@
+@import "tailwindcss";
+@import "@niwa/ui/styles/tokens.css";
+@source "../../../../packages/ui/src";
+
+html {
+  --font-serif: var(--font-playfair-display), "Playfair Display", Georgia,
+    "Times New Roman", serif;
+  --font-sans: var(--font-open-sans), "Open Sans", ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+}
+
+/* Editorial Markdown Prose Styling */
+.blog-prose {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--foreground);
+}
+
+.blog-prose > * + * {
+  margin-top: 1.25em;
+}
+
+.blog-prose h1,
+.blog-prose h2,
+.blog-prose h3,
+.blog-prose h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+}
+
+.blog-prose h1 {
+  font-size: 2rem;
+}
+
+.blog-prose h2 {
+  font-size: 1.55rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.blog-prose h3 {
+  font-size: 1.25rem;
+}
+
+.blog-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.blog-prose a:hover {
+  opacity: 0.8;
+}
+
+.blog-prose ul,
+.blog-prose ol {
+  padding-left: 1.5rem;
+}
+
+.blog-prose ul {
+  list-style-type: disc;
+}
+
+.blog-prose ol {
+  list-style-type: decimal;
+}
+
+.blog-prose li + li {
+  margin-top: 0.35rem;
+}
+
+.blog-prose blockquote {
+  border-left: 3px solid var(--primary);
+  padding: 0.25rem 0 0.25rem 1.15rem;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.blog-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.25rem 0;
+}
+
+.blog-prose img {
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+}
+
+.blog-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  display: block;
+}
+
+.blog-prose th,
+.blog-prose td {
+  border: 1px solid var(--border);
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+}
+
+.blog-prose th {
+  background-color: var(--muted);
+  font-weight: 600;
+}
+
+.blog-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: var(--muted);
+  padding: 0.15em 0.38em;
+  border-radius: 0.35rem;
+}
+
+.blog-prose pre {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.blog-prose pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+/* Syntax Highlighting (highlight.js semantic classes) */
+.hljs-comment,
+.hljs-quote {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-addition {
+  color: #9333ea;
+}
+
+.hljs-string,
+.hljs-attr,
+.hljs-template-variable,
+.hljs-doctag {
+  color: #15803d;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-type,
+.hljs-built_in {
+  color: #b45309;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-function {
+  color: #1d4ed8;
+}
+
+.hljs-deletion {
+  color: #b91c1c;
+}
+
+:root.dark .hljs-comment,
+:root.dark .hljs-quote,
+[data-theme="dark"] .hljs-comment,
+[data-theme="dark"] .hljs-quote {
+  color: #9ca3af;
+}
+
+:root.dark .hljs-keyword,
+:root.dark .hljs-selector-tag,
+[data-theme="dark"] .hljs-keyword,
+[data-theme="dark"] .hljs-selector-tag {
+  color: #c084fc;
+}
+
+:root.dark .hljs-string,
+:root.dark .hljs-attr,
+[data-theme="dark"] .hljs-string,
+[data-theme="dark"] .hljs-attr {
+  color: #86efac;
+}
+
+:root.dark .hljs-number,
+:root.dark .hljs-literal,
+:root.dark .hljs-type,
+:root.dark .hljs-built_in,
+[data-theme="dark"] .hljs-number,
+[data-theme="dark"] .hljs-literal,
+[data-theme="dark"] .hljs-type,
+[data-theme="dark"] .hljs-built_in {
+  color: #fcd34d;
+}
+
+:root.dark .hljs-title,
+:root.dark .hljs-section,
+:root.dark .hljs-function,
+[data-theme="dark"] .hljs-title,
+[data-theme="dark"] .hljs-section,
+[data-theme="dark"] .hljs-function {
+  color: #93c5fd;
+}

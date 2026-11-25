@@ -1,0 +1,40 @@
+{
+  "name": "@niwa/blog-api",
+  "version": "0.0.0",
+  "description": "Niwa Blog ATProto Standard.site publishing and private drafts API",
+  "keywords": [
+    "blog",
+    "atproto",
+    "standard-site",
+    "hono",
+    "cloudflare-workers"
+  ],
+  "license": "ISC",
+  "author": "Hendra Sadewa <me@hendrasadewa.com>",
+  "main": "src/index.ts",
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "dev": "wrangler dev --port 8791",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply blog-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply blog-db --remote"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "catalog:",
+    "@niwa/api-core": "workspace:*",
+    "@niwa/auth": "workspace:*",
+    "@niwa/blog-validators": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "jose": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "drizzle-kit": "catalog:",
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

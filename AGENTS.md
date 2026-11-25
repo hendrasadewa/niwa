@@ -17,6 +17,8 @@ This file provides guidance to AI coding agents working in the `niwa` monorepo (
   - Micro-ecommerce pre-order management API (stores, products, waves, checkout, Kanban fulfillment, public tracking, reviews) backed by D1 + R2 (`BUCKET`) + `@niwa/auth/server` + `@niwa/api-core`.
 - **`apps/pustaka-api` (`@niwa/pustaka-api`, Worker: `niwa-pustaka-api`, dev port `8787`)**
   - Personal/household library, shared libraries/invites, reading lists, reading progress, and book reviews API backed by D1 + R2 (`BUCKET`) + `@niwa/auth/server` + `@niwa/api-core`.
+- **`apps/blog-api` (`@niwa/blog-api`, Worker: `niwa-blog-api`, dev port `8791`)**
+  - Personal ATProto (`standard.site`) blogging API (private D1 drafts, R2 inline media & PDS JSON cache, authenticated `site.standard.publication`/`document` & `app.bsky.feed.post` publisher) backed by D1 + R2 (`BUCKET`) + `@niwa/auth/server` + `@niwa/api-core`.
 - **`apps/web-api` (`@niwa/web-api`, Worker: `niwa-web-api`, dev port `8790`)**
   - Personal website API (`api.hendrasadewa.com`), currently a minimal stub deferred until domain endpoints are designed.
 
@@ -26,6 +28,7 @@ Used for SEO/SSR product web apps:
 - **`apps/web` (`@niwa/web`, Worker: `niwa-web`, dev port `3000`)** — Personal website (`https://hendrasadewa.com`).
 - **`apps/pustaka-web` (`@niwa/pustaka-web`, Worker: `niwa-pustaka-web`, dev port `3001`)** — Pustaka library web app (`https://pustaka.hendrasadewa.com`).
 - **`apps/open-po-webapp` (`@niwa/open-po-webapp`, Worker: `niwa-open-po-webapp`, dev port `3002`)** — Open-PO storefront & seller console (`https://preorder.hendrasadewa.com`). *(Legacy `-webapp` name is intentionally preserved to avoid live Cloudflare Worker churn; all new products must use `<product>-web`.)*
+- **`apps/blog-web` (`@niwa/blog-web`, Worker: `niwa-blog-web`, dev port `3004`)** — Personal ATProto (`standard.site`) semi-micro-blogging web app & Markdown Studio (`https://blog.hendrasadewa.com`).
 
 *(Note: Next.js 16 includes agent rules inside each Next.js app's `AGENTS.md`—consult `apps/<app>/node_modules/next/dist/docs/` for Next.js 16 API changes.)*
 
@@ -47,7 +50,7 @@ Used for lightweight client-only portals and interactive experiments (`not_found
   - `@niwa/ui/hooks` — Shared React hooks (`useToast`, `toast`)
   - `@niwa/ui/utils` — `cn()` (`clsx` + `tailwind-merge`)
   - `@niwa/ui/types` — Shared UI types
-- **`packages/validators/{auth,open-po,pustaka}` (`@niwa/*-validators`)** — Domain Zod v4 validation schemas shared across each API and frontend.
+- **`packages/validators/{auth,blog,open-po,pustaka}` (`@niwa/*-validators`)** — Domain Zod v4 validation schemas shared across each API and frontend.
 
 ---
 
@@ -62,12 +65,14 @@ Used for lightweight client-only portals and interactive experiments (`not_found
 pnpm dev:web          # @niwa/web (Next.js, port 3000)
 pnpm dev:pustaka-web  # @niwa/pustaka-web (Next.js, port 3001)
 pnpm dev:open-po-web  # @niwa/open-po-webapp (Next.js, port 3002)
+pnpm dev:blog-web     # @niwa/blog-web (Next.js, port 3004)
 pnpm dev:auth-web     # @niwa/auth-web (Vite SPA)
 pnpm dev:labs         # @niwa/labs (Vite SPA)
 pnpm dev:pustaka      # @niwa/pustaka-api (Wrangler, port 8787)
 pnpm dev:auth         # @niwa/auth-api (Wrangler, port 8788)
 pnpm dev:open-po      # @niwa/open-po-api (Wrangler, port 8789)
 pnpm dev:api          # @niwa/web-api (Wrangler, port 8790)
+pnpm dev:blog         # @niwa/blog-api (Wrangler, port 8791)
 pnpm typecheck        # Run typecheck across all workspace packages
 pnpm build            # Run build across all workspace packages
 pnpm deploy:<app>     # Deploy individual apps via Wrangler / OpenNext

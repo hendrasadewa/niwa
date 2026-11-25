@@ -75,6 +75,23 @@ export const DEFAULT_APPS: ReadonlyArray<{
     require_consent: true,
     icon_url: null,
   },
+  {
+    id: "blog",
+    name: "Niwa Blog",
+    description:
+      "Personal ATProto / Standard.site Micro-Essays and Long-Form Writing Studio",
+    allowed_origins: [
+      "https://blog.hendrasadewa.com",
+      "http://localhost:3004",
+    ],
+    allowed_redirect_uris: [
+      "https://blog.hendrasadewa.com",
+      "http://localhost:3004",
+    ],
+    default_role_name: null,
+    require_consent: false,
+    icon_url: null,
+  },
 ];
 
 export const DEFAULT_ROLES: ReadonlyArray<{
@@ -132,6 +149,14 @@ export const DEFAULT_ROLES: ReadonlyArray<{
     app_id: "labs",
     name: "member",
     description: "Default member role for Niwa Labs experiments.",
+  },
+  // Blog roles
+  {
+    id: "blog:role-admin",
+    app_id: "blog",
+    name: "admin",
+    description:
+      "Author and administrator privileges over Niwa Blog drafts, media uploads, and ATProto Standard.site publishing.",
   },
 ];
 
@@ -229,6 +254,30 @@ export const DEFAULT_PERMISSIONS: ReadonlyArray<{
     app_id: "pustaka",
     slug: "users:manage",
     description: "Manage users and role assignments",
+    roles: ["admin"],
+  },
+  // Blog permissions
+  {
+    id: "blog:perm-posts-manage",
+    app_id: "blog",
+    slug: "posts:manage",
+    description:
+      "Create, edit, publish, and unpublish blog drafts and ATProto Standard.site documents",
+    roles: ["admin"],
+  },
+  {
+    id: "blog:perm-media-upload",
+    app_id: "blog",
+    slug: "media:upload",
+    description: "Upload inline R2 images and ATProto cover image blobs",
+    roles: ["admin"],
+  },
+  {
+    id: "blog:perm-publication-manage",
+    app_id: "blog",
+    slug: "publication:manage",
+    description:
+      "Initialize and update the site.standard.publication ATProto record and refresh caches",
     roles: ["admin"],
   },
 ];

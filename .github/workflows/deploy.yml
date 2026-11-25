@@ -16,10 +16,12 @@ on:
           - auth-api
           - open-po-api
           - pustaka-api
+          - blog-api
           - web-api
           - auth-web
           - open-po-webapp
           - pustaka-web
+          - blog-web
           - labs
           - web
 
@@ -38,10 +40,12 @@ jobs:
       auth_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'auth-api')) || steps.filter.outputs.auth_api == 'true' }}
       open_po_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'open-po-api')) || steps.filter.outputs.open_po_api == 'true' }}
       pustaka_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'pustaka-api')) || steps.filter.outputs.pustaka_api == 'true' }}
+      blog_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'blog-api')) || steps.filter.outputs.blog_api == 'true' }}
       web_api: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'web-api')) || steps.filter.outputs.web_api == 'true' }}
       auth_web: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'auth-web')) || steps.filter.outputs.auth_web == 'true' }}
       open_po_webapp: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'open-po-webapp')) || steps.filter.outputs.open_po_webapp == 'true' }}
       pustaka_web: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'pustaka-web')) || steps.filter.outputs.pustaka_web == 'true' }}
+      blog_web: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'blog-web')) || steps.filter.outputs.blog_web == 'true' }}
       labs: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'labs')) || steps.filter.outputs.labs == 'true' }}
       web: ${{ (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'web')) || steps.filter.outputs.web == 'true' }}
     steps:
@@ -66,6 +70,11 @@ jobs:
               - 'packages/api-core/**'
               - 'packages/auth/**'
               - 'packages/validators/pustaka/**'
+            blog_api:
+              - 'apps/blog-api/**'
+              - 'packages/api-core/**'
+              - 'packages/auth/**'
+              - 'packages/validators/blog/**'
             web_api:
               - 'apps/web-api/**'
             auth_web:
@@ -84,6 +93,12 @@ jobs:
               - 'packages/auth/**'
               - 'packages/ui/**'
               - 'packages/validators/pustaka/**'
+            blog_web:
+              - 'apps/blog-web/**'
+              - 'packages/api-client/**'
+              - 'packages/auth/**'
+              - 'packages/ui/**'
+              - 'packages/validators/blog/**'
             labs:
               - 'apps/labs/**'
               - 'packages/ui/**'
@@ -138,6 +153,22 @@ jobs:
       - run: pnpm --filter @niwa/pustaka-api typecheck
       - run: pnpm --filter @niwa/pustaka-api db:migrate:remote
       - run: pnpm --filter @niwa/pustaka-api run deploy
+
+  deploy-blog-api:
+    needs: [changes, deploy-auth-api]
+    if: ${{ always() && needs.deploy-auth-api.result != 'failure' && needs.deploy-auth-api.result != 'cancelled' && needs.changes.outputs.blog_api == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/blog-api typecheck
+      - run: pnpm --filter @niwa/blog-api db:migrate:remote
+      - run: pnpm --filter @niwa/blog-api run deploy
 
   deploy-web-api:
     needs: [changes, deploy-auth-api]
@@ -207,6 +238,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @niwa/pustaka-web typecheck
       - run: pnpm --filter @niwa/pustaka-web run deploy
+
+  deploy-blog-web:
+    needs: [changes, deploy-blog-api]
+    if: ${{ always() && needs.deploy-blog-api.result != 'failure' && needs.deploy-blog-api.result != 'cancelled' && needs.changes.outputs.blog_web == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SITE_URL: https://blog.hendrasadewa.com
+      NEXT_PUBLIC_API_URL: https://blog.api.hendrasadewa.com
+      NEXT_PUBLIC_AUTH_API_URL: https://auth.api.hendrasadewa.com
+      NEXT_PUBLIC_AUTH_WEB_URL: https://auth.hendrasadewa.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @niwa/blog-web typecheck
+      - run: pnpm --filter @niwa/blog-web run deploy
 
   deploy-labs:
     needs: [changes, deploy-auth-api, deploy-open-po-api, deploy-pustaka-api, deploy-web-api]
